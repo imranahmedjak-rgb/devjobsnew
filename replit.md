@@ -154,3 +154,21 @@ Single table design for jobs:
 - All jobs have direct application links
 - Sources: ReliefWeb, Arbeitnow, RemoteOK, Jobicy, Himalayas, UN Careers, and company career pages
 - Verified URLs from trusted sources
+
+### AI Chat Assistant
+- **Location**: Floating button in bottom-right corner of all pages
+- **Purpose**: Helps users with job searching, career advice, and platform navigation
+- **Technology**: OpenAI GPT models via Replit AI Integrations (no API key required)
+- **Features**:
+  - Real-time streaming responses using Server-Sent Events (SSE)
+  - Conversation history persisted in PostgreSQL database
+  - New chat functionality to start fresh conversations
+- **Database Tables**:
+  - `conversations`: Stores chat sessions with title and timestamps
+  - `messages`: Individual messages with role (user/assistant), content, and timestamps
+- **API Endpoints**:
+  - `POST /api/conversations`: Create new conversation
+  - `GET /api/conversations/:id`: Get conversation with messages
+  - `POST /api/conversations/:id/messages`: Send message and receive streaming response
+- **Component**: `client/src/components/AIChatWidget.tsx`
+- **Routes**: `server/replit_integrations/chat/routes.ts`
