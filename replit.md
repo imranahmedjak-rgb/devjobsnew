@@ -105,5 +105,6 @@ Single table design for jobs:
 - **SEO-Friendly URLs**: Clean `/jobs/:id` URL structure for job pages
 
 ### Job Application Links
-- **External API jobs** (Arbeitnow, RemoteOK): Link directly to specific job application pages
-- **Generated jobs** (UN, NGO, IFI): Link to organization's official careers portal where similar positions can be found
+- All jobs have direct, specific application links that go to the actual job posting page
+- Sources: Arbeitnow (European tech jobs), RemoteOK (remote jobs worldwide)
+- No organization homepage links - only verified direct job application URLs
