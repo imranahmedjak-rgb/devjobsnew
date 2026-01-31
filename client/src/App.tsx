@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import JobDetail from "@/pages/JobDetail";
 import NotFound from "@/pages/not-found";
+import Footer from "@/components/Footer";
 
 function Router() {
   return (
@@ -21,8 +22,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <div className="min-h-screen flex flex-col">
+          <div className="flex-1">
+            <Router />
+          </div>
+          <Footer />
+        </div>
         <Toaster />
-        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );

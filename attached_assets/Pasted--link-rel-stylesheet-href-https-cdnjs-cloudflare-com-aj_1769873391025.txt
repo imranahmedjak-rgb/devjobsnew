@@ -1,0 +1,238 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<div class="tnw-widget-container" style="text-align: center;">
+    <h3 class="tnw-logo">Dev Global Jobs</h3>
+    <span class="tnw-subtitle">Associated with Trend Nova World Ltd.</span>
+    
+    <p class="tnw-desc">
+        Dev Global Jobs is an online opportunities platform associated with Trend Nova World Limited. We publish development sector jobs, consultancy roles, and professional opportunities worldwide, supporting organizations in humanitarian, sustainability, and education sectors.
+    </p>
+    
+    <div class="tnw-socials" style="display: flex; justify-content: center;">
+        <a href="https://www.facebook.com/trendnovaworld" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://x.com/trendnovaworld" target="_blank"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://www.linkedin.com/company/trendnovaworld/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.instagram.com/trendnovaworld/#" target="_blank"><i class="fab fa-instagram"></i></a>
+    </div>
+
+    <div class="tnw-copyright">
+        &copy; 2026 Dev Global Jobs. All Rights Reserved.
+    </div>
+</div> <div class="tnw-widget-container" style="text-align: center;">
+    <h6 class="tnw-heading" style="text-align: center;">Trend Nova World Group</h6>
+    <ul class="tnw-links" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center;">
+        <li><a href="https://trendnovaworld.com/" target="_blank"><i class="fas fa-globe"></i> Trend Nova World (Main)</a></li>
+        <li><a href="https://trendnovaworld.org/" target="_blank"><i class="fas fa-sitemap"></i> Trend Nova World Group</a></li>
+    </ul>
+
+    <div class="tnw-spacer"></div>
+
+    <h6 class="tnw-heading" style="text-align: center;">Corporate Divisions</h6>
+    <ul class="tnw-links divisions-grid" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center;">
+        <li><a href="https://hr.trendnovaworld.com/">Global HR Solutions</a></li>
+        <li><a href="https://logistics.trendnovaworld.com/">Logistics & Supply Chain</a></li>
+        <li><a href="https://realestate.trendnovaworld.com/">Real Estate Investment</a></li>
+        <li><a href="https://fashion.trendnovaworld.com/">Fashion & Retail</a></li>
+        <li><a href="https://education.trendnovaworld.com/">Education & Tech</a></li>
+        <li><a href="https://development.trendnovaworld.com/">Development Sector</a></li>
+    </ul>
+</div><div class="tnw-widget-container" style="text-align: center;">
+    
+    <div class="tnw-highlight-box">
+        <h6 class="tnw-heading-small" style="text-align: center;">For Job Publishing & Inquiries</h6>
+        <div class="tnw-contact-row" style="justify-content: center;">
+            <i class="fas fa-envelope"></i> 
+            <a href="mailto:publication@devglobaljobs.com">publication@devglobaljobs.com</a>
+        </div>
+        <div class="tnw-contact-row" style="justify-content: center;">
+            <i class="fab fa-whatsapp"></i> 
+            <a href="https://wa.me/994518673521" target="_blank">+994 51 867 35 21 (Publications)</a>
+        </div>
+    </div>
+
+    <div class="tnw-general-contact">
+        <div class="tnw-contact-row" style="justify-content: center;">
+            <i class="fas fa-envelope"></i> 
+            <a href="mailto:info@devglobaljobs.com">info@devglobaljobs.com</a>
+        </div>
+        <div class="tnw-contact-row" style="justify-content: center;">
+            <i class="fas fa-phone-alt"></i> 
+            <a href="tel:+447473863903">+44 7473 863903 (UK Line)</a>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h6 class="tnw-heading-small" style="text-align: center;">Legal & Information</h6>
+        <ul class="tnw-links" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center;">
+            <li><a href="https://devglobaljobs.com/about-us/">About Us</a></li>
+            <li><a href="https://devglobaljobs.com/contact-us/">Contact Us</a></li>
+            <li><a href="https://devglobaljobs.com/terms-and-conditions/">Terms and Conditions</a></li>
+            <li><a href="https://devglobaljobs.com/privacy-policy/">Privacy Policy</a></li>
+            <li><a href="https://devglobaljobs.com/cookie-policy/">Cookie Policy</a></li>
+            <li><a href="https://devglobaljobs.com/disclaimer/">Disclaimer</a></li>
+        </ul>
+    </div>
+
+</div>
+
+<style>
+/* 1. Force the Footer Background to Dark Navy */
+.site-footer, .footer-widgets {
+    background-color: #0f172a !important; /* Deep Navy Background */
+    color: #94a3b8 !important; /* Light Grey Text */
+}
+
+/* 2. Typography & Layout */
+.tnw-widget-container {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 10px;
+}
+
+/* Headings */
+.tnw-logo {
+    color: #ffffff !important;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.tnw-subtitle {
+    color: #38bdf8; /* Light Blue */
+    font-size: 12px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.tnw-heading {
+    color: #ffffff !important;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    /* Removed border-left since centering makes it look odd usually, but kept purely style if needed */
+    /* border-left: 3px solid #0072c6; */ 
+    padding-left: 0; /* Changed to 0 for center alignment */
+    margin-bottom: 15px;
+}
+
+.tnw-heading-small {
+    color: #ffffff !important;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+/* Highlight Box (Job Publishing) */
+.tnw-highlight-box {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    margin-bottom: 15px;
+}
+
+/* Contact Rows */
+.tnw-contact-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    /* Added justify-content center in HTML, but can be here too */
+}
+
+.tnw-contact-row i {
+    color: #38bdf8;
+    width: 16px;
+    text-align: center;
+}
+
+.tnw-contact-row a {
+    color: #e2e8f0 !important;
+    text-decoration: none;
+}
+
+.tnw-contact-row a:hover {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
+/* Address */
+.tnw-address {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #334155;
+    color: #cbd5e1;
+    justify-content: center; /* Centered address if used */
+}
+
+.tnw-address i {
+    color: #0072c6;
+    margin-top: 4px;
+}
+
+/* Links & Lists */
+.tnw-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tnw-links li {
+    margin-bottom: 8px;
+}
+
+.tnw-links a {
+    color: #94a3b8 !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+    justify-content: center; /* Ensures link content is centered */
+}
+
+.tnw-links a:hover {
+    color: #ffffff !important;
+    padding-left: 5px;
+}
+
+.divisions-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column for neatness */
+    gap: 6px;
+}
+
+/* Socials */
+.tnw-socials {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center; /* Centered socials */
+}
+
+.tnw-socials a {
+    width: 34px;
+    height: 34px;
+    background: #1e293b;
+    color: #fff !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.tnw-socials a:hover {
+    background: #0072c6;
+}
+
+.tnw-spacer { height: 20px; }
+.tnw-copyright { font-size: 11px; color: #64748b; }
+</style>
