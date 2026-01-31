@@ -66,8 +66,27 @@ const COUNTRIES_LIST = [
   "Latin America", "Middle East", "North America"
 ];
 
+const DEV_SECTOR_KEYWORDS = [
+  "ngo", "nonprofit", "non-profit", "humanitarian", "development", "un ", "united nations",
+  "unicef", "undp", "unhcr", "who", "wfp", "fao", "unesco", "iom", "unfpa", "unaids",
+  "world bank", "imf", "adb", "afdb", "international", "relief", "aid", "charity",
+  "foundation", "social impact", "sustainability", "climate", "environment", "health",
+  "education", "poverty", "refugee", "crisis", "emergency", "advocacy", "policy",
+  "global", "mission", "community", "civil society", "philanthropy", "grant",
+  "ingo", "donor", "bilateral", "multilateral", "cooperation", "programme", "program manager",
+  "monitoring", "evaluation", "m&e", "wash", "livelihood", "protection", "gender",
+  "child protection", "food security", "nutrition", "shelter", "cccm", "giz", "usaid",
+  "dfid", "echo", "ocha", "icrc", "ifrc", "red cross", "msf", "oxfam", "care",
+  "save the children", "plan international", "mercy corps", "irc", "nrc", "acted"
+];
+
+function isDevSectorJob(job: { title: string; company: string; description: string; tags?: string[] }): boolean {
+  const searchText = `${job.title} ${job.company} ${job.description} ${(job.tags || []).join(" ")}`.toLowerCase();
+  return DEV_SECTOR_KEYWORDS.some(keyword => searchText.includes(keyword.toLowerCase()));
+}
+
 async function fetchJobsFromArbeitnow(): Promise<number> {
-  console.log("Fetching jobs from Arbeitnow...");
+  console.log("Fetching jobs from Arbeitnow (filtering for development sector)...");
   try {
     const response = await fetch("https://www.arbeitnow.com/api/job-board-api");
     if (!response.ok) {
@@ -75,10 +94,20 @@ async function fetchJobsFromArbeitnow(): Promise<number> {
     }
 
     const data = await response.json() as ArbeitnowResponse;
-    const jobs = data.data;
-    console.log(`Fetched ${jobs.length} jobs from Arbeitnow.`);
+    const allJobs = data.data;
+    console.log(`Fetched ${allJobs.length} total jobs from Arbeitnow.`);
+    
+    const devSectorJobs = allJobs.filter(job => 
+      isDevSectorJob({ title: job.title, company: job.company_name, description: job.description, tags: job.tags })
+    );
+    console.log(`Filtered to ${devSectorJobs.length} development sector jobs.`);
 
-    const jobsToInsert: InsertJob[] = jobs.map((apiJob) => ({
+    if (devSectorJobs.length === 0) {
+      console.log("No development sector jobs found in current Arbeitnow listings.");
+      return 0;
+    }
+
+    const jobsToInsert: InsertJob[] = devSectorJobs.map((apiJob) => ({
       externalId: `arbeitnow-${apiJob.slug}`,
       title: apiJob.title,
       company: apiJob.company_name,
@@ -86,14 +115,14 @@ async function fetchJobsFromArbeitnow(): Promise<number> {
       description: apiJob.description,
       url: apiJob.url,
       remote: apiJob.remote,
-      tags: apiJob.tags,
+      tags: [...(apiJob.tags || []), "Development Sector"],
       salary: null,
       source: "Arbeitnow",
       postedAt: new Date(apiJob.created_at * 1000),
     }));
 
     const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Synced ${result.length} new jobs from Arbeitnow.`);
+    console.log(`Synced ${result.length} new development sector jobs from Arbeitnow.`);
     return result.length;
   } catch (error) {
     console.error("Error fetching jobs from Arbeitnow:", error);
@@ -102,30 +131,57 @@ async function fetchJobsFromArbeitnow(): Promise<number> {
 }
 
 async function fetchJobsFromReliefWeb(): Promise<number> {
-  console.log("Fetching jobs from ReliefWeb (Development Sector)...");
+  console.log("Fetching jobs from ReliefWeb API v1 (Development Sector)...");
   try {
-    const response = await fetch("https://api.reliefweb.int/v1/jobs?appname=devglobaljobs&limit=100&preset=latest&profile=full");
+    // Use ReliefWeb API v1 GET method - more reliable
+    const apiUrl = new URL("https://api.reliefweb.int/v1/jobs");
+    apiUrl.searchParams.set("appname", "devglobaljobs.com");
+    apiUrl.searchParams.set("limit", "200");
+    apiUrl.searchParams.set("preset", "latest");
+    apiUrl.searchParams.set("profile", "full");
+    
+    const response = await fetch(apiUrl.toString(), {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "DevGlobalJobs/1.0 (https://devglobaljobs.com; contact@devglobaljobs.com)"
+      }
+    });
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch jobs: ${response.statusText}`);
+      throw new Error(`Failed to fetch jobs: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json() as ReliefWebResponse;
-    const jobs = data.data;
+    const data = await response.json();
+    const jobs = data.data || [];
     console.log(`Fetched ${jobs.length} jobs from ReliefWeb.`);
 
-    const jobsToInsert: InsertJob[] = jobs.map((apiJob) => ({
-      externalId: `reliefweb-${apiJob.id}`,
-      title: apiJob.fields.title,
-      company: apiJob.fields.source?.[0]?.name || "International Organization",
-      location: apiJob.fields.country?.[0]?.name || "International",
-      description: apiJob.fields.body,
-      url: apiJob.fields.url,
-      remote: apiJob.fields.title.toLowerCase().includes("remote"),
-      tags: [apiJob.fields.type?.[0]?.name, "Development Sector", "Humanitarian"].filter(Boolean) as string[],
-      salary: null,
-      source: "ReliefWeb",
-      postedAt: new Date(apiJob.fields.date.created),
-    }));
+    const jobsToInsert: InsertJob[] = jobs.map((apiJob: any) => {
+      const fields = apiJob.fields || {};
+      const countries = fields.country || [];
+      const countryNames = countries.map((c: any) => c.name).join(", ");
+      const organization = fields.source?.[0]?.name || "International Organization";
+      const careerCategories = fields.career_categories?.map((c: any) => c.name) || [];
+      const jobType = fields.type?.[0]?.name || "Full-time";
+      const experience = fields.experience?.[0]?.name || "";
+      
+      // ReliefWeb provides direct job URL
+      const directJobUrl = fields.url || `https://reliefweb.int/job/${apiJob.id}`;
+      
+      return {
+        externalId: `reliefweb-${apiJob.id}`,
+        title: fields.title,
+        company: organization,
+        location: countryNames || "International",
+        description: fields.body || `<p>Apply for this ${jobType} position at ${organization}.</p>${fields.how_to_apply ? `<h3>How to Apply</h3><p>${fields.how_to_apply}</p>` : ''}`,
+        url: directJobUrl,
+        remote: fields.title?.toLowerCase().includes("remote") || countryNames.toLowerCase().includes("remote"),
+        tags: [...careerCategories, jobType, experience, "Development Sector", "Humanitarian", "NGO"].filter(Boolean) as string[],
+        salary: null,
+        source: "ReliefWeb",
+        postedAt: fields.date?.created ? new Date(fields.date.created) : new Date(),
+      };
+    });
 
     const result = await storage.createJobsBatch(jobsToInsert);
     console.log(`Synced ${result.length} new jobs from ReliefWeb.`);
@@ -137,7 +193,7 @@ async function fetchJobsFromReliefWeb(): Promise<number> {
 }
 
 async function fetchJobsFromRemoteOK(): Promise<number> {
-  console.log("Fetching jobs from RemoteOK...");
+  console.log("Fetching jobs from RemoteOK (filtering for development sector)...");
   try {
     const response = await fetch("https://remoteok.com/api", {
       headers: {
@@ -149,25 +205,40 @@ async function fetchJobsFromRemoteOK(): Promise<number> {
     }
 
     const data = await response.json() as RemoteOKJob[];
-    const jobs = data.filter(job => job.id && job.position);
-    console.log(`Fetched ${jobs.length} jobs from RemoteOK.`);
+    const allJobs = data.filter(job => job.id && job.position);
+    console.log(`Fetched ${allJobs.length} total jobs from RemoteOK.`);
 
-    const jobsToInsert: InsertJob[] = jobs.slice(0, 100).map((apiJob) => ({
+    const devSectorJobs = allJobs.filter(job => 
+      isDevSectorJob({ 
+        title: job.position, 
+        company: job.company || "", 
+        description: job.description || "", 
+        tags: job.tags 
+      })
+    );
+    console.log(`Filtered to ${devSectorJobs.length} development sector jobs.`);
+
+    if (devSectorJobs.length === 0) {
+      console.log("No development sector jobs found in current RemoteOK listings.");
+      return 0;
+    }
+
+    const jobsToInsert: InsertJob[] = devSectorJobs.slice(0, 100).map((apiJob) => ({
       externalId: `remoteok-${apiJob.id}`,
       title: apiJob.position,
-      company: apiJob.company || "Remote Company",
+      company: apiJob.company || "Remote Organization",
       location: apiJob.location || "Remote Worldwide",
       description: apiJob.description || `<p>Remote position at ${apiJob.company}</p>`,
       url: apiJob.url || `https://remoteok.com/remote-jobs/${apiJob.id}`,
       remote: true,
-      tags: apiJob.tags || ["Remote"],
+      tags: [...(apiJob.tags || []), "Development Sector", "Remote"],
       salary: apiJob.salary_min && apiJob.salary_max ? `$${apiJob.salary_min} - $${apiJob.salary_max}` : null,
       source: "RemoteOK",
       postedAt: apiJob.date ? new Date(apiJob.date) : new Date(),
     }));
 
     const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Synced ${result.length} new jobs from RemoteOK.`);
+    console.log(`Synced ${result.length} new development sector jobs from RemoteOK.`);
     return result.length;
   } catch (error) {
     console.error("Error fetching jobs from RemoteOK:", error);
@@ -456,16 +527,19 @@ async function generateDevelopmentBankJobs(): Promise<number> {
 }
 
 async function syncAllJobs(): Promise<number> {
-  console.log("Starting global job sync...");
-  // Only fetch from external APIs that provide direct job application links
+  console.log("Starting global job sync for development sector jobs...");
+  // Fetch from multiple sources, filtering for development sector jobs:
+  // - Arbeitnow: European/global jobs (filtered for dev sector keywords)
+  // - RemoteOK: Remote jobs worldwide (filtered for dev sector keywords)
+  // - ReliefWeb: Humanitarian jobs (requires approved appname - may fail)
+  // All sources provide direct job application links
   const counts = await Promise.all([
     fetchJobsFromArbeitnow(),
-    fetchJobsFromReliefWeb(),
     fetchJobsFromRemoteOK(),
-    fetchJobsFromUSAJobs(),
+    fetchJobsFromReliefWeb(),
   ]);
   const total = counts.reduce((acc: number, count: number) => acc + count, 0);
-  console.log(`Global sync complete. Total new jobs added: ${total}`);
+  console.log(`Global sync complete. Total new development sector jobs added: ${total}`);
   return total;
 }
 
