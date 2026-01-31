@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Briefcase, Plus, RefreshCw, Github } from "lucide-react";
+import { Briefcase, Plus, RefreshCw, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSyncJobs } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
@@ -15,8 +15,8 @@ export function Header() {
     syncJobs(undefined, {
       onSuccess: (data) => {
         toast({
-          title: "Jobs Synced",
-          description: `${data.count} jobs updated successfully.`,
+          title: "Jobs Updated",
+          description: `${data.count} new jobs added from worldwide sources.`,
         });
         setTimeout(() => setIsRotating(false), 1000);
       },
@@ -38,23 +38,23 @@ export function Header() {
           <div className="bg-primary text-primary-foreground p-2 rounded-lg group-hover:scale-105 transition-transform">
             <Briefcase className="w-5 h-5" />
           </div>
-          <span className="font-display font-bold text-xl tracking-tight">
-            Global<span className="text-primary">Jobs</span>
-          </span>
+          <div className="flex flex-col">
+            <span className="font-display font-bold text-xl tracking-tight leading-tight">
+              Dev Global<span className="text-primary">Jobs</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium leading-tight hidden sm:block">
+              Trend Nova World Ltd.
+            </span>
+          </div>
         </Link>
 
-        <div className="flex items-center gap-4">
-          <a 
-            href="https://github.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hidden sm:flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors items-center gap-2"
-          >
-            <Github className="w-4 h-4" />
-            <span>Open Source</span>
-          </a>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+            <Globe className="w-4 h-4 text-primary" />
+            <span>193 Countries</span>
+          </div>
           
-          <div className="h-6 w-px bg-border/60 hidden sm:block" />
+          <div className="h-6 w-px bg-border/60 hidden md:block" />
 
           <Button 
             variant="outline" 
@@ -62,15 +62,18 @@ export function Header() {
             onClick={handleSync}
             disabled={isPending}
             className="hidden sm:flex"
+            data-testid="button-refresh-feed"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isRotating ? "animate-spin" : ""}`} />
             {isPending ? "Syncing..." : "Refresh Feed"}
           </Button>
 
-          <Button size="sm" className="shadow-lg shadow-primary/20">
-            Post a Job
-            <Plus className="w-4 h-4 ml-1.5" />
-          </Button>
+          <Link href="/post-job">
+            <Button size="sm" className="shadow-lg shadow-primary/20" data-testid="button-post-job">
+              Post a Job
+              <Plus className="w-4 h-4 ml-1.5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

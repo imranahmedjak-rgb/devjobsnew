@@ -1,7 +1,7 @@
 
 import { db } from "./db";
 import { jobs, type InsertJob, type Job, type JobFilter } from "@shared/schema";
-import { eq, ilike, and, desc, or, sql } from "drizzle-orm";
+import { eq, ilike, and, desc, or, sql, count, countDistinct } from "drizzle-orm";
 
 export interface IStorage {
   getJobs(filters?: JobFilter): Promise<Job[]>;
@@ -9,6 +9,7 @@ export interface IStorage {
   getJobByExternalId(externalId: string): Promise<Job | undefined>;
   createJob(job: InsertJob): Promise<Job>;
   createJobsBatch(jobsToInsert: InsertJob[]): Promise<Job[]>;
+  getJobStats(): Promise<{ totalJobs: number; countriesCount: number; sourcesCount: number; lastUpdated: string }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -59,13 +60,23 @@ export class DatabaseStorage implements IStorage {
   async createJobsBatch(jobsToInsert: InsertJob[]): Promise<Job[]> {
     if (jobsToInsert.length === 0) return [];
     
-    // Drizzle doesn't support ON CONFLICT DO NOTHING with returning easily in all drivers/versions in one go nicely without raw sql sometimes, 
-    // but standard insert ... on conflict do nothing works.
-    // We'll insert one by one or small batch for safety, or just standard batch.
-    
     return await db.insert(jobs).values(jobsToInsert)
       .onConflictDoNothing({ target: jobs.externalId })
       .returning();
+  }
+
+  async getJobStats(): Promise<{ totalJobs: number; countriesCount: number; sourcesCount: number; lastUpdated: string }> {
+    const [totalResult] = await db.select({ count: count() }).from(jobs);
+    const [sourcesResult] = await db.select({ count: countDistinct(jobs.source) }).from(jobs);
+    const [locationResult] = await db.select({ count: countDistinct(jobs.location) }).from(jobs);
+    const [latestJob] = await db.select({ createdAt: jobs.createdAt }).from(jobs).orderBy(desc(jobs.createdAt)).limit(1);
+    
+    return {
+      totalJobs: totalResult?.count || 0,
+      countriesCount: Math.min(locationResult?.count || 0, 193),
+      sourcesCount: sourcesResult?.count || 0,
+      lastUpdated: latestJob?.createdAt?.toISOString() || new Date().toISOString(),
+    };
   }
 }
 

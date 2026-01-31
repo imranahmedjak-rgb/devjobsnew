@@ -1,100 +1,182 @@
-
-import { FaFacebookF, FaLinkedinIn, FaInstagram, FaWhatsapp, FaGlobe, FaSitemap, FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
+import { FaFacebookF, FaLinkedinIn, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
+import { Globe, Building2, Mail, Phone, FileText, Shield, Cookie, AlertCircle, Users, Info } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="site-footer bg-[#0f172a] text-[#94a3b8] py-12 px-4 font-sans">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+    <footer className="bg-slate-900 dark:bg-slate-950 text-slate-400 py-12 px-4 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
         {/* Widget 1: About */}
-        <div className="tnw-widget-container p-2">
-          <h3 className="tnw-logo text-white text-2xl font-bold mb-1 uppercase">Dev Global Jobs</h3>
-          <span className="tnw-subtitle text-[#38bdf8] text-xs font-semibold block mb-4 italic">
+        <div className="space-y-4">
+          <h3 className="text-white text-2xl font-bold tracking-tight">
+            Dev Global<span className="text-primary">Jobs</span>
+          </h3>
+          <span className="text-primary text-xs font-semibold block">
             Associated with Trend Nova World Ltd.
           </span>
-          <p className="tnw-desc text-sm leading-relaxed mb-6">
+          <p className="text-sm leading-relaxed text-slate-400">
             Dev Global Jobs is an online opportunities platform associated with Trend Nova World Limited. We publish development sector jobs, consultancy roles, and professional opportunities worldwide, supporting organizations in humanitarian, sustainability, and education sectors.
           </p>
-          <div className="tnw-socials flex justify-center gap-3 my-5">
-            <a href="https://www.facebook.com/trendnovaworld" target="_blank" className="w-9 h-9 bg-[#1e293b] text-white flex items-center justify-center rounded transition-colors hover:bg-[#0072c6]">
-              <FaFacebookF />
+          <div className="flex justify-center md:justify-start gap-3 pt-2">
+            <a 
+              href="https://www.facebook.com/trendnovaworld" 
+              target="_blank" 
+              className="w-9 h-9 bg-slate-800 hover:bg-primary text-white flex items-center justify-center rounded-md transition-colors"
+              data-testid="link-facebook"
+            >
+              <FaFacebookF className="w-4 h-4" />
             </a>
-            <a href="https://x.com/trendnovaworld" target="_blank" className="w-9 h-9 bg-[#1e293b] text-white flex items-center justify-center rounded transition-colors hover:bg-[#0072c6]">
-              <FaXTwitter />
+            <a 
+              href="https://x.com/trendnovaworld" 
+              target="_blank" 
+              className="w-9 h-9 bg-slate-800 hover:bg-primary text-white flex items-center justify-center rounded-md transition-colors"
+              data-testid="link-twitter"
+            >
+              <FaXTwitter className="w-4 h-4" />
             </a>
-            <a href="https://www.linkedin.com/company/trendnovaworld/" target="_blank" className="w-9 h-9 bg-[#1e293b] text-white flex items-center justify-center rounded transition-colors hover:bg-[#0072c6]">
-              <FaLinkedinIn />
+            <a 
+              href="https://www.linkedin.com/company/trendnovaworld/" 
+              target="_blank" 
+              className="w-9 h-9 bg-slate-800 hover:bg-primary text-white flex items-center justify-center rounded-md transition-colors"
+              data-testid="link-linkedin"
+            >
+              <FaLinkedinIn className="w-4 h-4" />
             </a>
-            <a href="https://www.instagram.com/trendnovaworld/#" target="_blank" className="w-9 h-9 bg-[#1e293b] text-white flex items-center justify-center rounded transition-colors hover:bg-[#0072c6]">
-              <FaInstagram />
+            <a 
+              href="https://www.instagram.com/trendnovaworld/#" 
+              target="_blank" 
+              className="w-9 h-9 bg-slate-800 hover:bg-primary text-white flex items-center justify-center rounded-md transition-colors"
+              data-testid="link-instagram"
+            >
+              <FaInstagram className="w-4 h-4" />
             </a>
           </div>
-          <div className="tnw-copyright text-[11px] color-[#64748b]">
+          <div className="text-xs text-slate-500 pt-2">
             &copy; 2026 Dev Global Jobs. All Rights Reserved.
           </div>
         </div>
 
         {/* Widget 2: Trend Nova World Group */}
-        <div className="tnw-widget-container p-2">
-          <h6 className="tnw-heading text-white text-xs uppercase tracking-widest font-bold mb-4">Trend Nova World Group</h6>
-          <ul className="tnw-links space-y-2 mb-6">
-            <li>
-              <a href="https://trendnovaworld.com/" target="_blank" className="flex items-center justify-center gap-2 text-[#94a3b8] hover:text-white hover:pl-1 transition-all">
-                <FaGlobe className="text-[#38bdf8] w-4 text-center" /> Trend Nova World (Main)
-              </a>
-            </li>
-            <li>
-              <a href="https://trendnovaworld.org/" target="_blank" className="flex items-center justify-center gap-2 text-[#94a3b8] hover:text-white hover:pl-1 transition-all">
-                <FaSitemap className="text-[#38bdf8] w-4 text-center" /> Trend Nova World Group
-              </a>
-            </li>
-          </ul>
+        <div className="space-y-6">
+          <div>
+            <h6 className="text-white text-xs uppercase tracking-widest font-bold mb-4 flex items-center justify-center md:justify-start gap-2">
+              <Globe className="w-4 h-4 text-primary" />
+              Trend Nova World Group
+            </h6>
+            <ul className="space-y-2">
+              <li>
+                <a 
+                  href="https://trendnovaworld.com/" 
+                  target="_blank" 
+                  className="flex items-center justify-center md:justify-start gap-2 text-slate-400 hover:text-white transition-colors text-sm"
+                >
+                  <Globe className="w-3.5 h-3.5 text-primary" /> 
+                  Trend Nova World (Main)
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://trendnovaworld.org/" 
+                  target="_blank" 
+                  className="flex items-center justify-center md:justify-start gap-2 text-slate-400 hover:text-white transition-colors text-sm"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-primary" /> 
+                  Trend Nova World Group
+                </a>
+              </li>
+            </ul>
+          </div>
 
-          <h6 className="tnw-heading text-white text-xs uppercase tracking-widest font-bold mb-4">Corporate Divisions</h6>
-          <ul className="tnw-links space-y-2">
-            <li><a href="https://hr.trendnovaworld.com/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Global HR Solutions</a></li>
-            <li><a href="https://logistics.trendnovaworld.com/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Logistics & Supply Chain</a></li>
-            <li><a href="https://realestate.trendnovaworld.com/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Real Estate Investment</a></li>
-            <li><a href="https://fashion.trendnovaworld.com/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Fashion & Retail</a></li>
-            <li><a href="https://education.trendnovaworld.com/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Education & Tech</a></li>
-            <li><a href="https://development.trendnovaworld.com/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Development Sector</a></li>
-          </ul>
+          <div>
+            <h6 className="text-white text-xs uppercase tracking-widest font-bold mb-4 flex items-center justify-center md:justify-start gap-2">
+              <Building2 className="w-4 h-4 text-primary" />
+              Corporate Divisions
+            </h6>
+            <ul className="space-y-2 text-sm">
+              <li><a href="https://hr.trendnovaworld.com/" className="text-slate-400 hover:text-white transition-colors block">Global HR Solutions</a></li>
+              <li><a href="https://logistics.trendnovaworld.com/" className="text-slate-400 hover:text-white transition-colors block">Logistics & Supply Chain</a></li>
+              <li><a href="https://realestate.trendnovaworld.com/" className="text-slate-400 hover:text-white transition-colors block">Real Estate Investment</a></li>
+              <li><a href="https://fashion.trendnovaworld.com/" className="text-slate-400 hover:text-white transition-colors block">Fashion & Retail</a></li>
+              <li><a href="https://education.trendnovaworld.com/" className="text-slate-400 hover:text-white transition-colors block">Education & Tech</a></li>
+              <li><a href="https://development.trendnovaworld.com/" className="text-slate-400 hover:text-white transition-colors block">Development Sector</a></li>
+            </ul>
+          </div>
         </div>
 
         {/* Widget 3: Contact & Legal */}
-        <div className="tnw-widget-container p-2">
-          <div className="tnw-highlight-box bg-[#1e293b] p-4 rounded-md border border-[#334155] mb-4">
-            <h6 className="tnw-heading-small text-white text-[11px] font-bold mb-2 uppercase">For Job Publishing & Inquiries</h6>
-            <div className="tnw-contact-row flex items-center justify-center gap-2 mb-2">
-              <FaEnvelope className="text-[#38bdf8] w-4 text-center" />
-              <a href="mailto:publication@devglobaljobs.com" className="text-[#e2e8f0] hover:underline hover:text-white">publication@devglobaljobs.com</a>
-            </div>
-            <div className="tnw-contact-row flex items-center justify-center gap-2">
-              <FaWhatsapp className="text-[#38bdf8] w-4 text-center" />
-              <a href="https://wa.me/994518673521" target="_blank" className="text-[#e2e8f0] hover:underline hover:text-white">+994 51 867 35 21 (Publications)</a>
-            </div>
-          </div>
-
-          <div className="tnw-general-contact mb-6">
-            <div className="tnw-contact-row flex items-center justify-center gap-2 mb-2">
-              <FaEnvelope className="text-[#38bdf8] w-4 text-center" />
-              <a href="mailto:info@devglobaljobs.com" className="text-[#e2e8f0] hover:underline hover:text-white">info@devglobaljobs.com</a>
-            </div>
-            <div className="tnw-contact-row flex items-center justify-center gap-2">
-              <FaPhoneAlt className="text-[#38bdf8] w-4 text-center" />
-              <a href="tel:+447473863903" className="text-[#e2e8f0] hover:underline hover:text-white">+44 7473 863903 (UK Line)</a>
+        <div className="space-y-6">
+          <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+            <h6 className="text-white text-xs font-bold mb-3 uppercase flex items-center justify-center md:justify-start gap-2">
+              <Mail className="w-4 h-4 text-primary" />
+              For Job Publishing & Inquiries
+            </h6>
+            <div className="space-y-2">
+              <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
+                <Mail className="w-3.5 h-3.5 text-primary" />
+                <a href="mailto:publication@devglobaljobs.com" className="text-slate-300 hover:text-white hover:underline">
+                  publication@devglobaljobs.com
+                </a>
+              </div>
+              <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
+                <FaWhatsapp className="w-3.5 h-3.5 text-primary" />
+                <a href="https://wa.me/994518673521" target="_blank" className="text-slate-300 hover:text-white hover:underline">
+                  +994 51 867 35 21 (Publications)
+                </a>
+              </div>
             </div>
           </div>
 
-          <div className="tnw-legal mt-5">
-            <h6 className="tnw-heading-small text-white text-[11px] font-bold mb-2 uppercase">Legal & Information</h6>
-            <ul className="tnw-links space-y-2">
-              <li><a href="https://devglobaljobs.com/about-us/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">About Us</a></li>
-              <li><a href="https://devglobaljobs.com/contact-us/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Contact Us</a></li>
-              <li><a href="https://devglobaljobs.com/terms-and-conditions/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Terms and Conditions</a></li>
-              <li><a href="https://devglobaljobs.com/privacy-policy/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Privacy Policy</a></li>
-              <li><a href="https://devglobaljobs.com/cookie-policy/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Cookie Policy</a></li>
-              <li><a href="https://devglobaljobs.com/disclaimer/" className="text-[#94a3b8] hover:text-white hover:pl-1 transition-all block text-center">Disclaimer</a></li>
+          <div className="space-y-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
+              <Mail className="w-3.5 h-3.5 text-primary" />
+              <a href="mailto:info@devglobaljobs.com" className="text-slate-300 hover:text-white hover:underline">
+                info@devglobaljobs.com
+              </a>
+            </div>
+            <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
+              <Phone className="w-3.5 h-3.5 text-primary" />
+              <a href="tel:+447473863903" className="text-slate-300 hover:text-white hover:underline">
+                +44 7473 863903 (UK Line)
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h6 className="text-white text-xs font-bold mb-3 uppercase flex items-center justify-center md:justify-start gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              Legal & Information
+            </h6>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="https://devglobaljobs.com/about-us/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                  <Info className="w-3 h-3" /> About Us
+                </a>
+              </li>
+              <li>
+                <a href="https://devglobaljobs.com/contact-us/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                  <Users className="w-3 h-3" /> Contact Us
+                </a>
+              </li>
+              <li>
+                <a href="https://devglobaljobs.com/terms-and-conditions/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                  <FileText className="w-3 h-3" /> Terms and Conditions
+                </a>
+              </li>
+              <li>
+                <a href="https://devglobaljobs.com/privacy-policy/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                  <Shield className="w-3 h-3" /> Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="https://devglobaljobs.com/cookie-policy/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                  <Cookie className="w-3 h-3" /> Cookie Policy
+                </a>
+              </li>
+              <li>
+                <a href="https://devglobaljobs.com/disclaimer/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                  <AlertCircle className="w-3 h-3" /> Disclaimer
+                </a>
+              </li>
             </ul>
           </div>
         </div>

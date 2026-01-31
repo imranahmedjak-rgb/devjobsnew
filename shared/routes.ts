@@ -24,12 +24,32 @@ export const api = {
         404: z.object({ message: z.string() }),
       },
     },
-    // Internal endpoint to trigger sync manually if needed (mostly for debugging)
+    create: {
+      method: "POST" as const,
+      path: "/api/jobs",
+      input: insertJobSchema,
+      responses: {
+        201: z.custom<typeof jobs.$inferSelect>(),
+        400: z.object({ message: z.string() }),
+      },
+    },
     sync: {
       method: "POST" as const,
       path: "/api/jobs/sync",
       responses: {
         200: z.object({ message: z.string(), count: z.number() }),
+      },
+    },
+    stats: {
+      method: "GET" as const,
+      path: "/api/jobs/stats",
+      responses: {
+        200: z.object({
+          totalJobs: z.number(),
+          countriesCount: z.number(),
+          sourcesCount: z.number(),
+          lastUpdated: z.string(),
+        }),
       },
     },
   },
