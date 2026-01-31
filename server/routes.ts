@@ -705,6 +705,249 @@ async function fetchJobsFromAuthenticJobs(): Promise<number> {
   }
 }
 
+// 9. Landing.jobs API (European Tech Jobs)
+async function fetchJobsFromLandingJobs(): Promise<number> {
+  console.log("Fetching jobs from Landing.jobs (European Tech)...");
+  try {
+    const response = await fetch("https://landing.jobs/api/v1/jobs?limit=50", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("Landing.jobs API not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || data || [];
+    console.log(`Fetched ${Array.isArray(jobs) ? jobs.length : 0} jobs from Landing.jobs.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.map((job: any) => ({
+      externalId: `landingjobs-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      title: job.title || "Tech Position",
+      company: job.company?.name || job.company_name || "European Tech Company",
+      location: job.city || job.location || "Europe",
+      description: job.description || `<p>Tech opportunity in Europe</p>`,
+      url: job.url || job.apply_url || "https://landing.jobs",
+      remote: job.remote || false,
+      tags: ["Technology", "Europe", job.category || "Development"].filter(Boolean),
+      salary: job.salary_range || null,
+      source: "Landing.jobs",
+      category: "international",
+      postedAt: job.published_at ? new Date(job.published_at) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from Landing.jobs.`);
+    return result.length;
+  } catch (error) {
+    console.error("Landing.jobs error:", error);
+    return 0;
+  }
+}
+
+// 10. GitHub (Greenhouse-based) major company job boards
+async function fetchJobsFromGreenhouseBoards(): Promise<number> {
+  console.log("Fetching jobs from Greenhouse public boards...");
+  try {
+    // Major companies using Greenhouse with public job boards
+    const boards = [
+      { token: "spotify", name: "Spotify" },
+      { token: "airbnb", name: "Airbnb" },
+      { token: "twitch", name: "Twitch" },
+      { token: "discord", name: "Discord" },
+      { token: "figma", name: "Figma" },
+      { token: "notion", name: "Notion" },
+      { token: "dropbox", name: "Dropbox" },
+      { token: "stripe", name: "Stripe" },
+      { token: "square", name: "Square" },
+      { token: "plaid", name: "Plaid" },
+    ];
+
+    let totalSynced = 0;
+
+    for (const board of boards) {
+      try {
+        const response = await fetch(`https://boards-api.greenhouse.io/v1/boards/${board.token}/jobs`, {
+          headers: { "User-Agent": "DevGlobalJobs/1.0" }
+        });
+        
+        if (!response.ok) continue;
+
+        const data = await response.json();
+        const jobs = data.jobs || [];
+
+        const jobsToInsert: InsertJob[] = jobs.slice(0, 10).map((job: any) => ({
+          externalId: `greenhouse-${board.token}-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+          title: job.title || "Position",
+          company: board.name,
+          location: job.location?.name || "Multiple Locations",
+          description: job.content || `<p>Opportunity at ${board.name}</p>`,
+          url: job.absolute_url || `https://boards.greenhouse.io/${board.token}/jobs/${job.id}`,
+          remote: job.location?.name?.toLowerCase().includes("remote") || false,
+          tags: [board.name, "Technology", job.departments?.[0]?.name || "Engineering"].filter(Boolean),
+          salary: null,
+          source: `${board.name} (Greenhouse)`,
+          category: "international",
+          postedAt: job.updated_at ? new Date(job.updated_at) : new Date(),
+        }));
+
+        const result = await storage.createJobsBatch(jobsToInsert);
+        totalSynced += result.length;
+      } catch (err) {
+        // Skip failed boards silently
+      }
+    }
+
+    console.log(`Synced ${totalSynced} new jobs from Greenhouse boards.`);
+    return totalSynced;
+  } catch (error) {
+    console.error("Greenhouse boards error:", error);
+    return 0;
+  }
+}
+
+// 11. Lever (Another major ATS) public job boards
+async function fetchJobsFromLeverBoards(): Promise<number> {
+  console.log("Fetching jobs from Lever public boards...");
+  try {
+    // Major companies using Lever with public job boards
+    const companies = [
+      { slug: "netflix", name: "Netflix" },
+      { slug: "coinbase", name: "Coinbase" },
+      { slug: "datadog", name: "Datadog" },
+      { slug: "cloudflare", name: "Cloudflare" },
+      { slug: "twilio", name: "Twilio" },
+    ];
+
+    let totalSynced = 0;
+
+    for (const company of companies) {
+      try {
+        const response = await fetch(`https://api.lever.co/v0/postings/${company.slug}?mode=json`, {
+          headers: { "User-Agent": "DevGlobalJobs/1.0" }
+        });
+        
+        if (!response.ok) continue;
+
+        const jobs = await response.json();
+        if (!Array.isArray(jobs)) continue;
+
+        const jobsToInsert: InsertJob[] = jobs.slice(0, 10).map((job: any) => ({
+          externalId: `lever-${company.slug}-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+          title: job.text || "Position",
+          company: company.name,
+          location: job.categories?.location || "Multiple Locations",
+          description: job.descriptionPlain || job.description || `<p>Opportunity at ${company.name}</p>`,
+          url: job.hostedUrl || job.applyUrl || `https://jobs.lever.co/${company.slug}`,
+          remote: job.workplaceType === "remote" || job.categories?.location?.toLowerCase().includes("remote") || false,
+          tags: [company.name, "Technology", job.categories?.team || "Engineering"].filter(Boolean),
+          salary: null,
+          source: `${company.name} (Lever)`,
+          category: "international",
+          postedAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+        }));
+
+        const result = await storage.createJobsBatch(jobsToInsert);
+        totalSynced += result.length;
+      } catch (err) {
+        // Skip failed companies silently
+      }
+    }
+
+    console.log(`Synced ${totalSynced} new jobs from Lever boards.`);
+    return totalSynced;
+  } catch (error) {
+    console.error("Lever boards error:", error);
+    return 0;
+  }
+}
+
+// 12. Crypto.jobs (Blockchain/Crypto Jobs)
+async function fetchJobsFromCryptoJobs(): Promise<number> {
+  console.log("Fetching jobs from Crypto.jobs (Blockchain)...");
+  try {
+    const response = await fetch("https://crypto.jobs/api/jobs", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("Crypto.jobs API not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || data || [];
+    console.log(`Fetched ${Array.isArray(jobs) ? jobs.length : 0} jobs from Crypto.jobs.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.slice(0, 50).map((job: any) => ({
+      externalId: `cryptojobs-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      title: job.title || "Blockchain Position",
+      company: job.company?.name || job.company || "Crypto Company",
+      location: job.location || "Remote",
+      description: job.description || `<p>Blockchain opportunity</p>`,
+      url: job.url || job.apply_url || "https://crypto.jobs",
+      remote: job.remote || true,
+      tags: ["Blockchain", "Crypto", "Web3", job.category || "Development"].filter(Boolean),
+      salary: job.salary || null,
+      source: "Crypto.jobs",
+      category: "international",
+      postedAt: job.published_at ? new Date(job.published_at) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from Crypto.jobs.`);
+    return result.length;
+  } catch (error) {
+    console.error("Crypto.jobs error:", error);
+    return 0;
+  }
+}
+
+// 13. Web3.career (Web3 Jobs)
+async function fetchJobsFromWeb3Career(): Promise<number> {
+  console.log("Fetching jobs from Web3.career...");
+  try {
+    const response = await fetch("https://web3.career/api/v1/jobs?limit=50", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("Web3.career API not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || data || [];
+    console.log(`Fetched ${Array.isArray(jobs) ? jobs.length : 0} jobs from Web3.career.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.slice(0, 50).map((job: any) => ({
+      externalId: `web3career-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      title: job.title || "Web3 Position",
+      company: job.company?.name || job.company || "Web3 Company",
+      location: job.location || "Remote",
+      description: job.description || `<p>Web3 opportunity</p>`,
+      url: job.url || job.apply_url || "https://web3.career",
+      remote: job.remote || true,
+      tags: ["Web3", "Blockchain", "Crypto", job.category || "Development"].filter(Boolean),
+      salary: job.salary || null,
+      source: "Web3.career",
+      category: "international",
+      postedAt: job.published_at ? new Date(job.published_at) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from Web3.career.`);
+    return result.length;
+  } catch (error) {
+    console.error("Web3.career error:", error);
+    return 0;
+  }
+}
+
 // 5-200+: Generate comprehensive international jobs from major companies worldwide
 async function generateInternationalJobs(): Promise<number> {
   console.log("Generating international jobs from 200+ global sources...");
