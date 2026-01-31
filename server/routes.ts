@@ -516,13 +516,16 @@ export async function registerRoutes(
 
   app.post(api.jobs.create.path, async (req, res) => {
     try {
+      if (!req.body.url || !req.body.url.startsWith('http')) {
+        return res.status(400).json({ message: "A valid application URL is required. Please provide the URL where candidates can apply for this position." });
+      }
       const uniqueId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const jobData = {
         ...req.body,
         externalId: req.body.externalId || uniqueId,
         source: req.body.source || "UserPosted",
         postedAt: new Date(),
-        url: req.body.url || `https://devglobaljobs.com/apply/${uniqueId}`,
+        url: req.body.url,
         tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : req.body.tags) : [],
       };
       const validatedData = insertJobSchema.parse(jobData);

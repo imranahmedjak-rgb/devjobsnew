@@ -82,6 +82,14 @@ export default function PostJob() {
       });
       return;
     }
+    if (!formData.url || !formData.url.startsWith('http')) {
+      toast({
+        title: "Application URL Required",
+        description: "Please provide a valid URL where candidates can apply for this position.",
+        variant: "destructive",
+      });
+      return;
+    }
     createJobMutation.mutate(formData);
   };
 
@@ -239,7 +247,7 @@ export default function PostJob() {
                   <div className="space-y-2">
                     <Label htmlFor="url" className="flex items-center gap-2">
                       <Globe className="w-4 h-4" />
-                      Application URL
+                      Application URL *
                     </Label>
                     <Input
                       id="url"
@@ -247,8 +255,12 @@ export default function PostJob() {
                       placeholder="https://yourcompany.com/careers/apply"
                       value={formData.url}
                       onChange={(e) => handleChange("url", e.target.value)}
+                      required
                       data-testid="input-url"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      The URL where candidates can apply for this position
+                    </p>
                   </div>
 
                   <div className="space-y-2">
