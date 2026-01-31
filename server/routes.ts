@@ -332,7 +332,16 @@ export async function registerRoutes(
 
   app.post(api.jobs.create.path, async (req, res) => {
     try {
-      const validatedData = insertJobSchema.parse(req.body);
+      const uniqueId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const jobData = {
+        ...req.body,
+        externalId: req.body.externalId || uniqueId,
+        source: req.body.source || "UserPosted",
+        postedAt: new Date(),
+        url: req.body.url || `https://devglobaljobs.com/apply/${uniqueId}`,
+        tags: req.body.tags ? (typeof req.body.tags === 'string' ? req.body.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : req.body.tags) : [],
+      };
+      const validatedData = insertJobSchema.parse(jobData);
       const job = await storage.createJob(validatedData);
       if (!job) {
         return res.status(400).json({ message: "Job already exists or could not be created" });

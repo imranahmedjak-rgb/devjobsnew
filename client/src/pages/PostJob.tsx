@@ -49,13 +49,10 @@ export default function PostJob() {
         company: data.company,
         location: data.location,
         description: data.description,
-        url: data.url || `https://devglobaljobs.com/jobs/${Date.now()}`,
+        url: data.url || undefined,
         remote: data.remote,
-        tags: data.tags.split(",").map(t => t.trim()).filter(Boolean),
-        salary: data.salary || null,
-        source: "DevGlobalJobs",
-        externalId: `dgj-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        postedAt: new Date().toISOString(),
+        tags: data.tags || undefined,
+        salary: data.salary || undefined,
       });
       return response.json();
     },
