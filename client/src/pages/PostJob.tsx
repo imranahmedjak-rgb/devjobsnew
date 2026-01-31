@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -315,16 +316,18 @@ export default function PostJob() {
 
           <div className="text-center text-sm text-muted-foreground">
             By posting a job, you agree to our{" "}
-            <a href="https://devglobaljobs.com/terms-and-conditions/" className="text-primary hover:underline">
+            <Link href="/terms" className="text-primary hover:underline" data-testid="link-terms">
               Terms and Conditions
-            </a>
+            </Link>
             {" "}and{" "}
-            <a href="https://devglobaljobs.com/privacy-policy/" className="text-primary hover:underline">
+            <Link href="/privacy" className="text-primary hover:underline" data-testid="link-privacy">
               Privacy Policy
-            </a>
+            </Link>
           </div>
         </motion.div>
       </div>
+      
+      <Footer />
     </div>
   );
 }

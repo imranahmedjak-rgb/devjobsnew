@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useJobs, useJobStats } from "@/hooks/use-jobs";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { JobCard } from "@/components/JobCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -335,6 +336,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 }

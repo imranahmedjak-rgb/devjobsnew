@@ -1,28 +1,41 @@
 import { Link } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Home } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900">404 Page Not Found</h1>
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      
+      <main className="flex-1 flex items-center justify-center px-4">
+        <div className="text-center space-y-6 max-w-md">
+          <div className="flex justify-center">
+            <div className="p-4 rounded-full bg-destructive/10">
+              <AlertCircle className="h-12 w-12 text-destructive" />
+            </div>
           </div>
-
-          <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
+          
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold">404</h1>
+            <h2 className="text-xl text-muted-foreground">Page Not Found</h2>
+          </div>
+          
+          <p className="text-muted-foreground">
+            The page you're looking for doesn't exist or has been moved.
           </p>
           
-          <div className="mt-6">
-             <Link href="/" className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                Return Home
-             </Link>
-          </div>
-        </CardContent>
-      </Card>
+          <Link href="/">
+            <Button data-testid="button-return-home">
+              <Home className="w-4 h-4 mr-2" />
+              Return Home
+            </Button>
+          </Link>
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 }

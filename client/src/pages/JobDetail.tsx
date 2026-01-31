@@ -2,6 +2,7 @@ import { useRoute, Link } from "wouter";
 import { useEffect } from "react";
 import { useJob } from "@/hooks/use-jobs";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -275,6 +276,8 @@ export default function JobDetail() {
 
         </div>
       </main>
+      
+      <Footer />
     </div>
   );
 }

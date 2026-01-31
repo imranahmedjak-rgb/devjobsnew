@@ -67,30 +67,30 @@ const COUNTRIES_LIST = [
 ];
 
 const UN_KEYWORDS = [
-  "un ", "united nations", "unicef", "undp", "unhcr", "who", "wfp", "fao", "unesco", 
-  "iom", "unfpa", "unaids", "unido", "unctad", "unep", "un-habitat", "unodc", "unwomen",
-  "unops", "unrwa", "ilo", "itu", "wipo", "wmo", "imf", "world bank", "ifc", "miga",
-  "adb", "afdb", "iadb", "ebrd", "aiib", "ocha", "desa", "ohchr", "dpko", "undss",
-  "unv", "uncdf", "unitar", "unoosa", "unjspf", "icj", "icc", "wto", "iaea"
+  "united nations", "unicef", "undp", "unhcr", "world health organization",
+  "wfp", "fao", "unesco", "iom", "unfpa", "unaids", "unido", "unctad", "unep", 
+  "un-habitat", "unodc", "un women", "unops", "unrwa", "ilo", "itu", "wipo", 
+  "wmo", "imf", "world bank", "ifc", "miga", "asian development bank", "adb",
+  "african development bank", "afdb", "inter-american development bank", "iadb", 
+  "ebrd", "aiib", "ocha", "desa", "ohchr", "dpko", "undss", "unv", "uncdf", 
+  "unitar", "unoosa", "icj", "international court", "wto", "iaea"
 ];
 
 const NGO_KEYWORDS = [
-  "ngo", "nonprofit", "non-profit", "ingo", "humanitarian", "relief", "aid", "charity",
-  "foundation", "social impact", "civil society", "philanthropy", "icrc", "ifrc", 
-  "red cross", "msf", "doctors without borders", "oxfam", "care international", 
-  "save the children", "plan international", "mercy corps", "irc", "nrc", "acted",
-  "world vision", "caritas", "catholic relief", "crs", "concern worldwide", "drc",
+  "ngo", "non-governmental", "nonprofit", "non-profit", "ingo", "humanitarian org",
+  "icrc", "international committee of the red cross", "ifrc", "red cross", "red crescent",
+  "msf", "médecins sans frontières", "doctors without borders", "oxfam", 
+  "care international", "save the children", "plan international", "mercy corps", 
+  "international rescue committee", "norwegian refugee council", "nrc", "acted",
+  "world vision", "caritas", "catholic relief services", "crs", "concern worldwide",
   "danish refugee council", "action against hunger", "acf", "médecins du monde",
-  "handicap international", "humanity & inclusion", "tearfund", "usaid", "giz", "dfid",
-  "echo", "sida", "norad", "danida", "jica", "koica", "afp", "afd", "kfw"
+  "handicap international", "humanity & inclusion", "tearfund", "usaid", "giz",
+  "dfid", "echo", "sida", "norad", "danida", "jica", "koica", "afd", "kfw",
+  "amnesty international", "human rights watch", "greenpeace", "wwf"
 ];
 
 const DEV_SECTOR_KEYWORDS = [
-  ...UN_KEYWORDS, ...NGO_KEYWORDS,
-  "development", "refugee", "crisis", "emergency", "advocacy", "policy",
-  "protection", "gender", "child protection", "food security", "nutrition", 
-  "shelter", "cccm", "wash", "livelihood", "m&e", "monitoring", "evaluation",
-  "programme", "bilateral", "multilateral", "cooperation", "donor", "grant"
+  ...UN_KEYWORDS, ...NGO_KEYWORDS
 ];
 
 function isUNJob(job: { title: string; company: string; description: string; tags?: string[] }): boolean {

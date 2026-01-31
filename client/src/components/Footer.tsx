@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { FaFacebookF, FaLinkedinIn, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { Globe, Building2, Mail, Phone, FileText, Shield, Cookie, AlertCircle, Users, Info } from 'lucide-react';
@@ -52,7 +53,7 @@ export default function Footer() {
             </a>
           </div>
           <div className="text-xs text-slate-500 pt-2">
-            &copy; 2026 Dev Global Jobs. All Rights Reserved.
+            &copy; {new Date().getFullYear()} Dev Global Jobs. All Rights Reserved.
           </div>
         </div>
 
@@ -148,34 +149,34 @@ export default function Footer() {
             </h6>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="https://devglobaljobs.com/about-us/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                <Link href="/about" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2" data-testid="link-about">
                   <Info className="w-3 h-3" /> About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="https://devglobaljobs.com/contact-us/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                <Link href="/contact" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2" data-testid="link-contact">
                   <Users className="w-3 h-3" /> Contact Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="https://devglobaljobs.com/terms-and-conditions/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                <Link href="/terms" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2" data-testid="link-terms">
                   <FileText className="w-3 h-3" /> Terms and Conditions
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="https://devglobaljobs.com/privacy-policy/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                <Link href="/privacy" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2" data-testid="link-privacy">
                   <Shield className="w-3 h-3" /> Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="https://devglobaljobs.com/cookie-policy/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                <Link href="/cookies" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2" data-testid="link-cookies">
                   <Cookie className="w-3 h-3" /> Cookie Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="https://devglobaljobs.com/disclaimer/" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2">
+                <Link href="/disclaimer" className="text-slate-400 hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2" data-testid="link-disclaimer">
                   <AlertCircle className="w-3 h-3" /> Disclaimer
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
