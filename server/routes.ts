@@ -4,6 +4,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { type InsertJob, insertJobSchema } from "@shared/schema";
+import { parseStringPromise } from "xml2js";
 
 // Job API Interfaces
 interface ArbeitnowJob {
@@ -1399,50 +1400,63 @@ async function generateNGOJobs(): Promise<number> {
   return result.length;
 }
 
-// Fetch from ReliefWeb (UN/NGO job source)
+// Fetch from ReliefWeb RSS Feed (UN/NGO job source - no API key required)
 async function fetchJobsFromReliefWeb(): Promise<{ un: number; ngo: number }> {
-  console.log("Fetching jobs from ReliefWeb API...");
+  console.log("Fetching jobs from ReliefWeb RSS Feed...");
+  
   try {
-    const response = await fetch("https://api.reliefweb.int/v1/jobs?appname=devglobaljobs&limit=100&preset=latest", {
+    const response = await fetch("https://reliefweb.int/jobs/rss.xml", {
       headers: { "User-Agent": "DevGlobalJobs/1.0" }
     });
     if (!response.ok) {
-      console.log("ReliefWeb API not accessible, skipping...");
+      console.log("ReliefWeb RSS not accessible, skipping...");
       return { un: 0, ngo: 0 };
     }
 
-    const data = await response.json();
-    const jobs = data.data || [];
-    console.log(`Fetched ${jobs.length} jobs from ReliefWeb.`);
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || [];
+    const jobItems = Array.isArray(items) ? items : [items];
+    console.log(`Fetched ${jobItems.length} jobs from ReliefWeb RSS.`);
 
-    const unKeywords = ["UN", "United Nations", "UNICEF", "UNDP", "UNHCR", "WFP", "WHO", "FAO", "UNESCO", "World Bank", "IMF", "IOM", "OCHA"];
+    const unKeywords = ["UN", "United Nations", "UNICEF", "UNDP", "UNHCR", "WFP", "WHO", "FAO", "UNESCO", "World Bank", "IMF", "IOM", "OCHA", "UNEP", "UNFPA", "UN Women", "UNODC", "ILO", "UNIDO", "UNOPS", "UN-Habitat", "IFAD", "WMO", "ITU", "WIPO", "IAEA", "UNCTAD"];
     
     const unJobs: InsertJob[] = [];
     const ngoJobs: InsertJob[] = [];
     
-    for (const job of jobs) {
-      const fields = job.fields || {};
-      const title = fields.title || "Position";
-      const org = fields.source?.[0]?.name || "Organization";
-      const country = fields.country?.[0]?.name || "Global";
-      const description = fields.body || `<p>Position at ${org}</p>`;
-      const url = fields.url || `https://reliefweb.int/job/${job.id}`;
+    for (const item of jobItems) {
+      const title = item.title || "Position";
+      const link = item.link || "";
+      const description = item.description || "";
+      const pubDate = item.pubDate || new Date().toISOString();
+      
+      // Extract organization and country from description
+      const orgMatch = description.match(/Organization:\s*([^<]+)/i);
+      const countryMatch = description.match(/Country:\s*([^<]+)/i);
+      
+      const org = orgMatch ? orgMatch[1].trim() : "Organization";
+      const country = countryMatch ? countryMatch[1].trim() : "Global";
+      
+      // Extract job ID from URL
+      const jobIdMatch = link.match(/\/job\/(\d+)\//);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
       
       const isUN = unKeywords.some(kw => org.toLowerCase().includes(kw.toLowerCase()) || title.toLowerCase().includes(kw.toLowerCase()));
       
       const jobData: InsertJob = {
-        externalId: `reliefweb-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+        externalId: `reliefweb-rss-${jobId}`,
         title,
         company: org,
         location: country,
-        description,
-        url,
-        remote: fields.theme?.some((t: any) => t.name?.toLowerCase().includes('remote')) || false,
+        description: description,
+        url: link,
+        remote: description.toLowerCase().includes('remote') || title.toLowerCase().includes('remote'),
         tags: [isUN ? "UN" : "NGO", "Humanitarian", "Development", "ReliefWeb"],
         salary: null,
         source: "ReliefWeb",
         category: isUN ? "un" : "ngo",
-        postedAt: fields.date?.created ? new Date(fields.date.created) : new Date(),
+        postedAt: new Date(pubDate),
       };
       
       if (isUN) {
@@ -1455,10 +1469,10 @@ async function fetchJobsFromReliefWeb(): Promise<{ un: number; ngo: number }> {
     const unResult = await storage.createJobsBatch(unJobs);
     const ngoResult = await storage.createJobsBatch(ngoJobs);
     
-    console.log(`Synced ${unResult.length} UN jobs and ${ngoResult.length} NGO jobs from ReliefWeb.`);
+    console.log(`Synced ${unResult.length} UN jobs and ${ngoResult.length} NGO jobs from ReliefWeb RSS.`);
     return { un: unResult.length, ngo: ngoResult.length };
   } catch (error) {
-    console.error("ReliefWeb error:", error);
+    console.error("ReliefWeb RSS error:", error);
     return { un: 0, ngo: 0 };
   }
 }
