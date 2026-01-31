@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useJobs } from "@/hooks/use-jobs";
+import { useJobs, useJobStats } from "@/hooks/use-jobs";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { JobCard } from "@/components/JobCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Search, MapPin, Loader2, Globe } from "lucide-react";
+import { Search, MapPin, Loader2, Globe, Briefcase, Building2, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -14,16 +15,16 @@ export default function Home() {
   const [location, setLocation] = useState("");
   const [remote, setRemote] = useState(false);
   
-  // Debounce could be added here for production, 
-  // currently we'll pass state directly to the hook
   const { data: jobs, isLoading, error } = useJobs({
     search: search || undefined,
     location: location || undefined,
     remote: remote || undefined,
   });
 
+  const { data: stats } = useJobStats();
+
   return (
-    <div className="min-h-screen bg-background font-sans selection:bg-primary/20">
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/20 flex flex-col">
       <Header />
       
       {/* Hero Section */}
@@ -49,9 +50,41 @@ export default function Home() {
             transition={{ delay: 0.1 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
           >
-            Curated opportunities from top companies worldwide. 
-            Updated automatically every hour.
+            Curated opportunities from top organizations across 193 countries. 
+            Development sector, humanitarian, and professional roles worldwide.
           </motion.p>
+
+          {/* Stats */}
+          {stats && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="flex justify-center gap-6 md:gap-12 pt-2"
+            >
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-primary">
+                  <Briefcase className="w-5 h-5" />
+                  <span className="text-2xl md:text-3xl font-bold" data-testid="text-total-jobs">{stats.totalJobs.toLocaleString()}</span>
+                </div>
+                <span className="text-xs md:text-sm text-muted-foreground">Active Jobs</span>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-primary">
+                  <Globe className="w-5 h-5" />
+                  <span className="text-2xl md:text-3xl font-bold" data-testid="text-countries">{stats.countriesCount}</span>
+                </div>
+                <span className="text-xs md:text-sm text-muted-foreground">Countries</span>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-primary">
+                  <Building2 className="w-5 h-5" />
+                  <span className="text-2xl md:text-3xl font-bold" data-testid="text-sources">{stats.sourcesCount}</span>
+                </div>
+                <span className="text-xs md:text-sm text-muted-foreground">Sources</span>
+              </div>
+            </motion.div>
+          )}
 
           {/* Search Bar */}
           <motion.div 
@@ -67,6 +100,7 @@ export default function Home() {
                 className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 bg-transparent text-base"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                data-testid="input-search"
               />
             </div>
             <div className="w-px bg-border my-2 hidden md:block" />
@@ -77,9 +111,10 @@ export default function Home() {
                 className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 bg-transparent text-base"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                data-testid="input-location"
               />
             </div>
-            <Button size="lg" className="h-12 px-8 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30">
+            <Button size="lg" className="h-12 px-8 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" data-testid="button-search">
               Search Jobs
             </Button>
           </motion.div>
@@ -95,6 +130,7 @@ export default function Home() {
                 id="remote-mode" 
                 checked={remote}
                 onCheckedChange={setRemote}
+                data-testid="switch-remote-only"
               />
               <Label htmlFor="remote-mode" className="cursor-pointer font-medium flex items-center gap-2">
                 <Globe className="w-4 h-4 text-primary" />
@@ -106,10 +142,13 @@ export default function Home() {
       </section>
 
       {/* Jobs Grid */}
-      <section className="container mx-auto px-4 pb-20">
+      <section className="container mx-auto px-4 pb-20 flex-1">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold">Latest Openings</h2>
-          <span className="text-sm text-muted-foreground">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-primary" />
+            Latest Openings
+          </h2>
+          <span className="text-sm text-muted-foreground" data-testid="text-jobs-found">
             {jobs ? `${jobs.length} jobs found` : 'Loading...'}
           </span>
         </div>
@@ -139,6 +178,8 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <Footer />
     </div>
   );
 }

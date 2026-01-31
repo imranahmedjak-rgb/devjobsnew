@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,9 +95,9 @@ export default function PostJob() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background font-sans">
+      <div className="min-h-screen bg-background font-sans flex flex-col">
         <Header />
-        <div className="container mx-auto max-w-2xl px-4 py-16">
+        <div className="container mx-auto max-w-2xl px-4 py-16 flex-1">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -120,15 +121,16 @@ export default function PostJob() {
             </div>
           </motion.div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <div className="min-h-screen bg-background font-sans flex flex-col">
       <Header />
       
-      <div className="container mx-auto max-w-3xl px-4 py-8">
+      <div className="container mx-auto max-w-3xl px-4 py-8 flex-1">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -316,6 +318,7 @@ export default function PostJob() {
           </div>
         </motion.div>
       </div>
+      <Footer />
     </div>
   );
 }

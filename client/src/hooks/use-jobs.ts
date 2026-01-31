@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type JobFilter } from "@shared/routes";
 import { Job } from "@shared/schema";
 
-// Helper to build query string for GET requests
 function buildQueryString(params: Record<string, any>) {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
@@ -25,6 +24,20 @@ export function useJobs(filters: JobFilter) {
       if (!res.ok) throw new Error("Failed to fetch jobs");
       return api.jobs.list.responses[200].parse(await res.json());
     },
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000,
+  });
+}
+
+export function useJobStats() {
+  return useQuery({
+    queryKey: [api.jobs.stats.path],
+    queryFn: async () => {
+      const res = await fetch(api.jobs.stats.path);
+      if (!res.ok) throw new Error("Failed to fetch stats");
+      return api.jobs.stats.responses[200].parse(await res.json());
+    },
+    refetchOnWindowFocus: true,
   });
 }
 
