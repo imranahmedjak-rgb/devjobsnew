@@ -531,6 +531,180 @@ async function fetchJobsFromHimalayas(): Promise<number> {
   }
 }
 
+// 5. Remotive API (Remote Jobs - Free with direct links)
+async function fetchJobsFromRemotive(): Promise<number> {
+  console.log("Fetching jobs from Remotive (Remote Jobs)...");
+  try {
+    const response = await fetch("https://remotive.com/api/remote-jobs?limit=100", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("Remotive API not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || [];
+    console.log(`Fetched ${jobs.length} jobs from Remotive.`);
+
+    const jobsToInsert: InsertJob[] = jobs.map((job: any) => ({
+      externalId: `remotive-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+      title: job.title || "Remote Position",
+      company: job.company_name || "Remote Company",
+      location: job.candidate_required_location || "Remote Worldwide",
+      description: job.description || `<p>Remote opportunity at ${job.company_name}</p>`,
+      url: job.url || "https://remotive.com",
+      remote: true,
+      tags: [job.category || "Technology", "Remote", job.job_type || "Full-time"].filter(Boolean),
+      salary: job.salary || null,
+      source: "Remotive",
+      category: "international",
+      postedAt: job.publication_date ? new Date(job.publication_date) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from Remotive.`);
+    return result.length;
+  } catch (error) {
+    console.error("Remotive error:", error);
+    return 0;
+  }
+}
+
+// 6. FindWork.dev API (Developer Jobs with direct links)
+async function fetchJobsFromFindWork(): Promise<number> {
+  console.log("Fetching jobs from FindWork.dev (Developer Jobs)...");
+  try {
+    const response = await fetch("https://findwork.dev/api/jobs/", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("FindWork API not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.results || [];
+    console.log(`Fetched ${jobs.length} jobs from FindWork.`);
+
+    const jobsToInsert: InsertJob[] = jobs.map((job: any) => ({
+      externalId: `findwork-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+      title: job.role || "Developer Position",
+      company: job.company_name || "Tech Company",
+      location: job.location || "Remote",
+      description: job.text || `<p>Developer opportunity at ${job.company_name}</p>`,
+      url: job.url || "https://findwork.dev",
+      remote: job.remote || false,
+      tags: [...(job.keywords || []).slice(0, 5), "Developer", "Technology"].filter(Boolean),
+      salary: null,
+      source: "FindWork",
+      category: "international",
+      postedAt: job.date_posted ? new Date(job.date_posted) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from FindWork.`);
+    return result.length;
+  } catch (error) {
+    console.error("FindWork error:", error);
+    return 0;
+  }
+}
+
+// 7. WWR (We Work Remotely) RSS Feed
+async function fetchJobsFromWWR(): Promise<number> {
+  console.log("Fetching jobs from We Work Remotely...");
+  try {
+    const response = await fetch("https://weworkremotely.com/remote-jobs.rss", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("WWR not accessible, skipping...");
+      return 0;
+    }
+
+    const text = await response.text();
+    // Simple RSS parsing for job links
+    const items = text.match(/<item>[\s\S]*?<\/item>/g) || [];
+    console.log(`Fetched ${items.length} jobs from WWR.`);
+
+    const jobsToInsert: InsertJob[] = items.slice(0, 50).map((item: string, idx: number) => {
+      const title = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] || "Remote Position";
+      const link = item.match(/<link>(.*?)<\/link>/)?.[1] || "https://weworkremotely.com";
+      const description = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/)?.[1] || "";
+      const pubDate = item.match(/<pubDate>(.*?)<\/pubDate>/)?.[1];
+      
+      // Extract company from title (format: "Company: Job Title")
+      const parts = title.split(": ");
+      const company = parts.length > 1 ? parts[0] : "Remote Company";
+      const jobTitle = parts.length > 1 ? parts.slice(1).join(": ") : title;
+
+      return {
+        externalId: `wwr-${idx}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        title: jobTitle,
+        company,
+        location: "Remote Worldwide",
+        description: description || `<p>Remote opportunity</p>`,
+        url: link,
+        remote: true,
+        tags: ["Remote", "International", "WWR"],
+        salary: null,
+        source: "We Work Remotely",
+        category: "international",
+        postedAt: pubDate ? new Date(pubDate) : new Date(),
+      };
+    });
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from WWR.`);
+    return result.length;
+  } catch (error) {
+    console.error("WWR error:", error);
+    return 0;
+  }
+}
+
+// 8. GitHub Jobs Alternative - Authentic Jobs API
+async function fetchJobsFromAuthenticJobs(): Promise<number> {
+  console.log("Fetching jobs from Authentic Jobs...");
+  try {
+    const response = await fetch("https://authenticjobs.com/api/?api_key=free&method=aj.jobs.search&format=json", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("Authentic Jobs not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.listings?.listing || [];
+    console.log(`Fetched ${Array.isArray(jobs) ? jobs.length : 1} jobs from Authentic Jobs.`);
+
+    const jobList = Array.isArray(jobs) ? jobs : [jobs];
+    const jobsToInsert: InsertJob[] = jobList.slice(0, 50).map((job: any) => ({
+      externalId: `authentic-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+      title: job.title || "Design/Dev Position",
+      company: job.company?.name || "Company",
+      location: job.company?.location?.name || "Remote",
+      description: job.description || `<p>Opportunity at ${job.company?.name}</p>`,
+      url: job.url || job.apply_url || "https://authenticjobs.com",
+      remote: job.telecommuting === "1",
+      tags: [job.type?.name || "Full-time", job.category?.name || "Technology", "Design"].filter(Boolean),
+      salary: null,
+      source: "Authentic Jobs",
+      category: "international",
+      postedAt: job.post_date ? new Date(job.post_date) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from Authentic Jobs.`);
+    return result.length;
+  } catch (error) {
+    console.error("Authentic Jobs error:", error);
+    return 0;
+  }
+}
+
 // 5-200+: Generate comprehensive international jobs from major companies worldwide
 async function generateInternationalJobs(): Promise<number> {
   console.log("Generating international jobs from 200+ global sources...");
@@ -1063,6 +1237,10 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromRemoteOK(),
     fetchJobsFromJobicy(),
     fetchJobsFromHimalayas(),
+    fetchJobsFromRemotive(),
+    fetchJobsFromFindWork(),
+    fetchJobsFromWWR(),
+    fetchJobsFromAuthenticJobs(),
   ]);
   
   // Calculate totals
