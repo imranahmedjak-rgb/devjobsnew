@@ -96,3 +96,14 @@ Single table design for jobs:
 - Server syncs new jobs every 5 minutes
 - Client refreshes listings every 15 seconds
 - Window focus triggers immediate refresh
+
+### SEO Optimization
+- **Sitemap**: Dynamic sitemap.xml at `/sitemap.xml` with all job pages
+- **Robots.txt**: Available at `/robots.txt` for search engine crawling
+- **Job Schema Markup**: JSON-LD structured data on job detail pages (Google Jobs compatible)
+- **Meta Tags**: Full Open Graph and Twitter Card meta tags
+- **SEO-Friendly URLs**: Clean `/jobs/:id` URL structure for job pages
+
+### Job Application Links
+- **External API jobs** (Arbeitnow, RemoteOK): Link directly to specific job application pages
+- **Generated jobs** (UN, NGO, IFI): Link to organization's official careers portal where similar positions can be found
