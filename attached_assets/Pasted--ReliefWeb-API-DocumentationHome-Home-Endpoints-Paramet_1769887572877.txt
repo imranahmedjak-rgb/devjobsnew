@@ -1,0 +1,135 @@
+
+ReliefWeb API DocumentationHome
+Home
+Endpoints
+Parameters
+Fields Tables
+Results
+Presets
+Publishing API
+FAQ
+All about the ReliefWeb API
+TL/DR: To jump straight in, read the Quickstart section. For more complex requests, most of the information is on the parameters page. Find an example request that resembles the one you'd like to make, edit it in place and check the results from the API (requires javascript).
+
+Jump to sections:
+
+Introduction
+Quickstart
+Versions
+Using the API
+Using the documentation
+Terms of service
+Quotas
+Introduction
+The ReliefWeb API was originally built to power a mobile/ low-bandwidth version of the ReliefWeb website. Enhancements and a public release provided access to ReliefWeb's curated and continuously updated data archive. It's now used to serve much of the main site, content on other OCHA sites, and third party apps.
+
+All the content of ReliefWeb is available through its API. The API aligns with current API best-practices, and is intended to be friendly to developers, as well as machines. It is publicly accessible using HTTP requests and returns JSON data.
+
+Understanding the structure of ReliefWeb's content will help in understanding how the API works. For clarification or to suggest improvements, please contact us.
+
+The ReliefWeb Publishing API is now in testing. If your organization is listed on https://reliefweb.int/organizations, please contact us to obtain an API key.
+
+Back to TOC
+Quickstart
+api-query
+As the listings pages (updates, disasters, jobs, etc.) use the API too, they are the quickest way to get started with queries and filters.
+
+Use the filters and the search bar to refine the query.
+
+At the end of the page, below the pager, the API link will launch the search converter tool to transform the url into an API query, showing both the GET URL and the JSON and PHP payloads for a POST request.
+
+Back to TOC
+Versions
+The current version is V2.
+
+The previous version, V1, is deprecated and should no longer be used.
+
+The V2 version is fully compatible with the V1 version.
+
+Both versions now require the appname parameter. From 1 November 2025, you need to use a pre-approved appname.
+
+Back to TOC
+Using the API
+The API is read-only. It is called using an HTTP URL. The query is handled differently for GET and POST requests, the scheme, host and path are the same for both:
+
+Scheme:
+"https://"
+Host:
+"api.reliefweb.int"
+Path:
+"/v2/" <content type> [ "/" <content id> ] "?appname=" <your-app-name>
+Parameters:
+Parameters can be passed in the query of a GET request:
+
+https://api.reliefweb.int/v2/reports?appname=REPLACE-WITH-A-DOMAIN-OR-APP-NAME&limit=2
+Try it out
+or as a body to a POST request:
+
+https://api.reliefweb.int/v2/reports?appname=REPLACE-WITH-A-DOMAIN-OR-APP-NAME
+{
+  "limit": 2
+}
+Try it out
+Please use the appname parameter. At some stage we may make this obligatory, so do start using now. Please use a domain name or an app name.
+
+There are very simple client libraries for PHP and Golang. Please use them!
+
+GET requests can be made directly in a browser. In Firefox the resulting JSON should be presented clearly, there is a browser extension for Brave, Chromium, etc.
+
+Post requests can be made via the editable textboxes in this documentation, or, from a command line, with a tool like curl:
+
+curl -POST 'https://api.reliefweb.int/v2/reports?appname=REPLACE-WITH-A-DOMAIN-OR-APP-NAME' -d '{"limit": 2}'
+When dealing with JSON format for the post requests, a misplaced comma can be difficult to spot. To troubleshoot the error Invalid request body. It must be a valid json object., validators like JSONlint can save a lot of time.
+
+Back to TOC
+Using the documentation
+All examples in this documentation can be edited in place and tested against the API using the 'Try it out' button.
+
+The API was also documented in line with version 3.1 of the OpenAPI Specification. The definition is at https://rwint-api-local.test/v2/swagger/api?appname=test.
+
+There is also a forum for questions and discussion at groups.google.com
+
+Back to TOC
+Terms of service
+Anyone can use the ReliefWeb API. Reports, Jobs and Training data available via ReliefWeb API is contributed by information partners and may contain copyrighted material owned by the original source. You should respect the intellectual property rights of the original source when using content retrieved through the API.
+
+To improve its service, ReliefWeb may log your API calls and analyze usage patterns. Please, use the appname parameter in your calls, so we can track the usage of the API for statistical and performance purposes.
+
+Back to TOC
+Quotas
+In order to ensure optimum performance for everyone, the API is restricted in two ways:
+
+The maximum number of entries returned per call is 1000.
+The maximum number of calls allowed per day is 1000.
+We feel that these limitations are reasonable and should not interfere with most applications. If they cause significant problems for your use case, please let us know and we will review on a case-by-case basis.
+
+ReliefWeb does not guarantee the accuracy of its data and is not responsible for any damages resulting from the use of API. There are no fees associated with the use of ReliefWeb API.
+
+Changes to the Terms of Service will be announced on the API support forum.
+
+Back to TOC
+Main SiteView the ReliefWeb main site. BlogReliefWeb blog AboutReliefWebLearn more about ReliefWeb, leading online source for reliable and timely humanitarian information on global crises and disasters since 1996. PrivacyReliefWeb's privacy notice. TermsReliefWeb's terms & Conditions. Terms of use
+OCHA Services
+Related Platforms
+
+Humanitarian Action
+Central Emergency Response Fund
+Other OCHA Services
+
+Financial Tracking Service
+Humanitarian Data Exchange
+ReliefWeb Response
+ 
+
+Inter-Agency Standing Committee
+OCHA website
+ReliefWeb
+Virtual OSOCC
+ 
+
+More OCHA Services Opens in a new window
+Service provided by
+UN-OCHA
+OCHA coordinates the global emergency response to save lives and protect people in humanitarian crises. We advocate for effective and principled humanitarian action by all, for all.
+Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution 4.0 International license.
+Creative Commons BY 4.0
