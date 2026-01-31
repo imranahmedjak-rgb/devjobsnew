@@ -1,11 +1,12 @@
 
 import { z } from "zod";
-import { insertJobSchema, jobs } from "./schema";
+import { insertJobSchema, jobs, jobCategories } from "./schema";
 
 export type JobFilter = {
   search?: string;
   location?: string;
   remote?: boolean;
+  category?: "development" | "international";
 };
 
 export const api = {
@@ -17,6 +18,7 @@ export const api = {
         search: z.string().optional(),
         location: z.string().optional(),
         remote: z.preprocess((val) => val === 'true', z.boolean()).optional(),
+        category: z.enum(jobCategories).optional(),
       }).optional(),
       responses: {
         200: z.array(z.custom<typeof jobs.$inferSelect>()),

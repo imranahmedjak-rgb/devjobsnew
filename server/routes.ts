@@ -118,6 +118,7 @@ async function fetchJobsFromArbeitnow(): Promise<number> {
       tags: [...(apiJob.tags || []), "Development Sector"],
       salary: null,
       source: "Arbeitnow",
+      category: "development",
       postedAt: new Date(apiJob.created_at * 1000),
     }));
 
@@ -192,6 +193,7 @@ async function fetchJobsFromReliefWeb(): Promise<number> {
         tags: ["Development Sector", "Humanitarian", "NGO", "ReliefWeb"],
         salary: null,
         source: "ReliefWeb",
+        category: "development",
         postedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
       };
     });
@@ -247,6 +249,7 @@ async function fetchJobsFromRemoteOK(): Promise<number> {
       tags: [...(apiJob.tags || []), "Development Sector", "Remote"],
       salary: apiJob.salary_min && apiJob.salary_max ? `$${apiJob.salary_min} - $${apiJob.salary_max}` : null,
       source: "RemoteOK",
+      category: "development",
       postedAt: apiJob.date ? new Date(apiJob.date) : new Date(),
     }));
 
@@ -255,6 +258,101 @@ async function fetchJobsFromRemoteOK(): Promise<number> {
     return result.length;
   } catch (error) {
     console.error("Error fetching jobs from RemoteOK:", error);
+    return 0;
+  }
+}
+
+async function fetchInternationalJobsFromArbeitnow(): Promise<number> {
+  console.log("Fetching international jobs from Arbeitnow...");
+  try {
+    const response = await fetch("https://www.arbeitnow.com/api/job-board-api");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch jobs: ${response.statusText}`);
+    }
+
+    const data = await response.json() as ArbeitnowResponse;
+    const allJobs = data.data;
+    console.log(`Fetched ${allJobs.length} total international jobs from Arbeitnow.`);
+    
+    const nonDevJobs = allJobs.filter(job => 
+      !isDevSectorJob({ title: job.title, company: job.company_name, description: job.description, tags: job.tags })
+    );
+    console.log(`Filtered to ${nonDevJobs.length} non-dev sector international jobs.`);
+
+    if (nonDevJobs.length === 0) return 0;
+
+    const jobsToInsert: InsertJob[] = nonDevJobs.map((apiJob) => ({
+      externalId: `arbeitnow-intl-${apiJob.slug}`,
+      title: apiJob.title,
+      company: apiJob.company_name,
+      location: apiJob.location,
+      description: apiJob.description,
+      url: apiJob.url,
+      remote: apiJob.remote,
+      tags: [...(apiJob.tags || []), "International"],
+      salary: null,
+      source: "Arbeitnow",
+      category: "international",
+      postedAt: new Date(apiJob.created_at * 1000),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new international jobs from Arbeitnow.`);
+    return result.length;
+  } catch (error) {
+    console.error("Error fetching international jobs from Arbeitnow:", error);
+    return 0;
+  }
+}
+
+async function fetchInternationalJobsFromRemoteOK(): Promise<number> {
+  console.log("Fetching international remote jobs from RemoteOK...");
+  try {
+    const response = await fetch("https://remoteok.com/api", {
+      headers: {
+        "User-Agent": "DevGlobalJobs/1.0 (https://devglobaljobs.com)"
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch jobs: ${response.statusText}`);
+    }
+
+    const data = await response.json() as RemoteOKJob[];
+    const allJobs = data.filter(job => job.id && job.position);
+    console.log(`Fetched ${allJobs.length} total remote jobs from RemoteOK.`);
+
+    const nonDevJobs = allJobs.filter(job => 
+      !isDevSectorJob({ 
+        title: job.position, 
+        company: job.company || "", 
+        description: job.description || "", 
+        tags: job.tags 
+      })
+    );
+    console.log(`Filtered to ${nonDevJobs.length} non-dev sector international remote jobs.`);
+
+    if (nonDevJobs.length === 0) return 0;
+
+    const jobsToInsert: InsertJob[] = nonDevJobs.slice(0, 100).map((apiJob) => ({
+      externalId: `remoteok-intl-${apiJob.id}`,
+      title: apiJob.position,
+      company: apiJob.company || "Remote Company",
+      location: apiJob.location || "Remote Worldwide",
+      description: apiJob.description || `<p>Remote position at ${apiJob.company}</p>`,
+      url: apiJob.url || `https://remoteok.com/remote-jobs/${apiJob.id}`,
+      remote: true,
+      tags: [...(apiJob.tags || []), "International", "Remote"],
+      salary: apiJob.salary_min && apiJob.salary_max ? `$${apiJob.salary_min} - $${apiJob.salary_max}` : null,
+      source: "RemoteOK",
+      category: "international",
+      postedAt: apiJob.date ? new Date(apiJob.date) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new international remote jobs from RemoteOK.`);
+    return result.length;
+  } catch (error) {
+    console.error("Error fetching international jobs from RemoteOK:", error);
     return 0;
   }
 }
@@ -540,19 +638,29 @@ async function generateDevelopmentBankJobs(): Promise<number> {
 }
 
 async function syncAllJobs(): Promise<number> {
-  console.log("Starting global job sync for development sector jobs...");
-  // Fetch from multiple sources, filtering for development sector jobs:
-  // - Arbeitnow: European/global jobs (filtered for dev sector keywords)
-  // - RemoteOK: Remote jobs worldwide (filtered for dev sector keywords)
-  // - ReliefWeb: Humanitarian jobs (requires approved appname - may fail)
-  // All sources provide direct job application links
-  const counts = await Promise.all([
+  console.log("Starting global job sync...");
+  
+  // Fetch Development Sector jobs
+  console.log("=== Syncing Development Sector Jobs ===");
+  const devCounts = await Promise.all([
     fetchJobsFromArbeitnow(),
     fetchJobsFromRemoteOK(),
     fetchJobsFromReliefWeb(),
   ]);
-  const total = counts.reduce((acc: number, count: number) => acc + count, 0);
-  console.log(`Global sync complete. Total new development sector jobs added: ${total}`);
+  const devTotal = devCounts.reduce((acc: number, count: number) => acc + count, 0);
+  console.log(`Development sector sync complete: ${devTotal} jobs added`);
+  
+  // Fetch International Jobs (non-dev sector)
+  console.log("=== Syncing International Jobs ===");
+  const intlCounts = await Promise.all([
+    fetchInternationalJobsFromArbeitnow(),
+    fetchInternationalJobsFromRemoteOK(),
+  ]);
+  const intlTotal = intlCounts.reduce((acc: number, count: number) => acc + count, 0);
+  console.log(`International jobs sync complete: ${intlTotal} jobs added`);
+  
+  const total = devTotal + intlTotal;
+  console.log(`Global sync complete. Total new jobs added: ${total}`);
   return total;
 }
 
@@ -683,6 +791,7 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
         search: req.query.search as string,
         location: req.query.location as string,
         remote: req.query.remote === 'true',
+        category: req.query.category as "development" | "international" | undefined,
       };
       const jobs = await storage.getJobs(filters);
       res.json(jobs);

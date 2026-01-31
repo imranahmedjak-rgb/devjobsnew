@@ -35,10 +35,14 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(jobs.remote, true));
     }
 
+    if (filters?.category) {
+      conditions.push(eq(jobs.category, filters.category));
+    }
+
     return await db
       .select()
       .from(jobs)
-      .where(and(...conditions))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(jobs.postedAt));
   }
 
