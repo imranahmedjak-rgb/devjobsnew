@@ -457,14 +457,12 @@ async function generateDevelopmentBankJobs(): Promise<number> {
 
 async function syncAllJobs(): Promise<number> {
   console.log("Starting global job sync...");
+  // Only fetch from external APIs that provide direct job application links
   const counts = await Promise.all([
     fetchJobsFromArbeitnow(),
     fetchJobsFromReliefWeb(),
     fetchJobsFromRemoteOK(),
     fetchJobsFromUSAJobs(),
-    generateUNJobs(),
-    generateNGOJobs(),
-    generateDevelopmentBankJobs(),
   ]);
   const total = counts.reduce((acc: number, count: number) => acc + count, 0);
   console.log(`Global sync complete. Total new jobs added: ${total}`);
