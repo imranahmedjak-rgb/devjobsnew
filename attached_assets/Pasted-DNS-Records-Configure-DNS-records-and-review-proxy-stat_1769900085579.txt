@@ -1,0 +1,175 @@
+DNS
+
+Records
+Configure DNS records and review proxy status of your hostnames.
+
+
+Recommended steps to complete zone set-up
+Hide
+Add an MX record for your root domain so that mail can reach @devglobaljobs.com addresses or set up restrictive SPF, DKIM, and DMARC records to prevent email spoofing.
+DNS management for devglobaljobs.com
+Review, add, and edit DNS records. Edits will go into effect once saved.
+DNS Setup: Full
+
+
+Import and Export
+
+
+Dashboard Display Settings
+Search DNS Records
+Your search yielded 17 results
+
+Type
+
+Name
+
+Content
+
+Proxy status
+
+TTL
+
+Actions
+
+A
+devglobaljobs.com
+34.111.179.208
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issue globalsign.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issue comodoca.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issue pki.goog
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issuewild letsencrypt.org
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issue sectigo.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issue digicert.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issuewild digicert.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issuewild pki.goog
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issue letsencrypt.org
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issuewild sectigo.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issuewild comodoca.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CAA
+devglobaljobs.com
+0 issuewild globalsign.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+CNAME
+www
+devglobaljobs.com
+
+Proxied
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+NS
+devglobaljobs.com
+ns2.dns-parking.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+NS
+devglobaljobs.com
+ns1.dns-parking.com
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+
+TXT
+devglobaljobs.com
+"replit-verify=7ad18b0b-e9e7-4ce9-a92a-e6043b78435e"
+DNS only
+
+Auto
+EditWhen toggled open, an additional table row will be added below this row to enable editing DNS records.
+Cloudflare Nameservers
+Every DNS zone on Cloudflare is assigned a set of Cloudflare-branded nameservers.
+Type	Value
+NS	gloria.ns.cloudflare.com
+NS	jerome.ns.cloudflare.com
