@@ -1717,7 +1717,8 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
   // SEO: Dynamic Sitemap.xml
   app.get("/sitemap.xml", async (req, res) => {
     try {
-      const allJobs = await storage.getJobs({});
+      const allJobsResult = await storage.getJobs({});
+      const allJobs = allJobsResult.jobs || [];
       const baseUrl = "https://devglobaljobs.com";
       const today = new Date().toISOString().split('T')[0];
       
