@@ -1712,13 +1712,20 @@ export async function registerRoutes(
   });
 
   // Clear old mock data and sync fresh from real APIs
-  console.log('Clearing old data and starting fresh sync from real APIs...');
-  storage.clearAllJobs().then(() => {
-    syncAllJobs();
-  }).catch(err => {
-    console.error('Error clearing jobs:', err);
-    syncAllJobs();
-  });
+  (async () => {
+    try {
+      console.log('Clearing old data and starting fresh sync from real APIs...');
+      await storage.clearAllJobs();
+      console.log('Database cleared. Starting job sync...');
+      // Small delay to ensure database is ready
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await syncAllJobs();
+      console.log('Initial sync complete.');
+    } catch (err) {
+      console.error('Error during startup sync:', err);
+      await syncAllJobs();
+    }
+  })();
 
   // Sync every 2 minutes for frequent updates (respects API rate limits)
   setInterval(syncAllJobs, 2 * 60 * 1000);
