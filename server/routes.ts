@@ -1697,13 +1697,16 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Add no-cache headers to all API responses
-  app.use('/api', (req, res, next) => {
+  // Add no-cache headers to ALL responses (API and HTML)
+  app.use((req, res, next) => {
     res.set({
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
       'Pragma': 'no-cache',
       'Expires': '0',
-      'Surrogate-Control': 'no-store'
+      'Surrogate-Control': 'no-store',
+      'CDN-Cache-Control': 'no-store',
+      'Cloudflare-CDN-Cache-Control': 'no-store',
+      'Vary': '*'
     });
     next();
   });
