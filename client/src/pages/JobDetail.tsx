@@ -1,4 +1,5 @@
 import { useRoute, Link } from "wouter";
+import { useEffect } from "react";
 import { useJob } from "@/hooks/use-jobs";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,89 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
+
+function JobSchemaScript({ job }: { job: any }) {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'job-schema';
+    
+    const schema = {
+      "@context": "https://schema.org/",
+      "@type": "JobPosting",
+      "title": job.title,
+      "description": job.description?.replace(/<[^>]*>/g, '') || job.title,
+      "datePosted": new Date(job.postedAt).toISOString(),
+      "validThrough": new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      "employmentType": job.remote ? "REMOTE" : "FULL_TIME",
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": job.company,
+        "sameAs": job.url
+      },
+      "jobLocation": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": job.location
+        }
+      },
+      "jobLocationType": job.remote ? "TELECOMMUTE" : undefined,
+      "directApply": true,
+      "url": `https://devglobaljobs.com/jobs/${job.id}`,
+      "identifier": {
+        "@type": "PropertyValue",
+        "name": job.source || "DevGlobalJobs",
+        "value": job.externalId
+      }
+    };
+    
+    script.textContent = JSON.stringify(schema);
+    
+    // Remove any existing schema
+    const existing = document.getElementById('job-schema');
+    if (existing) existing.remove();
+    
+    document.head.appendChild(script);
+    
+    // Update page title and meta for SEO
+    document.title = `${job.title} at ${job.company} | Dev Global Jobs`;
+    
+    // Update meta description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', `Apply for ${job.title} position at ${job.company} in ${job.location}. ${job.remote ? 'Remote work available.' : ''} View job details and apply now on Dev Global Jobs.`);
+    
+    // Update Open Graph tags
+    const ogTags = [
+      { property: 'og:title', content: `${job.title} at ${job.company}` },
+      { property: 'og:description', content: `Apply for ${job.title} at ${job.company} in ${job.location}` },
+      { property: 'og:url', content: `https://devglobaljobs.com/jobs/${job.id}` },
+      { property: 'og:type', content: 'website' }
+    ];
+    
+    ogTags.forEach(tag => {
+      let el = document.querySelector(`meta[property="${tag.property}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute('property', tag.property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', tag.content);
+    });
+    
+    return () => {
+      const toRemove = document.getElementById('job-schema');
+      if (toRemove) toRemove.remove();
+    };
+  }, [job]);
+  
+  return null;
+}
 
 export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
@@ -59,6 +143,7 @@ export default function JobDetail() {
 
   return (
     <div className="min-h-screen bg-background font-sans flex flex-col">
+      <JobSchemaScript job={job} />
       <Header />
       
       {/* Back Button */}

@@ -479,6 +479,119 @@ export async function registerRoutes(
 
   setInterval(syncAllJobs, 5 * 60 * 1000);
 
+  // SEO: Robots.txt
+  app.get("/robots.txt", (req, res) => {
+    const robotsTxt = `User-agent: *
+Allow: /
+Allow: /jobs/
+Disallow: /api/
+
+Sitemap: https://devglobaljobs.com/sitemap.xml
+`;
+    res.type("text/plain").send(robotsTxt);
+  });
+
+  // SEO: Dynamic Sitemap.xml
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const allJobs = await storage.getJobs({});
+      const baseUrl = "https://devglobaljobs.com";
+      const today = new Date().toISOString().split('T')[0];
+      
+      let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/post-job</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+`;
+      
+      for (const job of allJobs) {
+        const jobDate = job.postedAt ? new Date(job.postedAt).toISOString().split('T')[0] : today;
+        sitemap += `  <url>
+    <loc>${baseUrl}/jobs/${job.id}</loc>
+    <lastmod>${jobDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+`;
+      }
+      
+      sitemap += `</urlset>`;
+      res.type("application/xml").send(sitemap);
+    } catch (error) {
+      console.error("Error generating sitemap:", error);
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+
+  // SEO: Job Schema JSON-LD endpoint for individual jobs
+  app.get("/api/jobs/:id/schema", async (req, res) => {
+    try {
+      const job = await storage.getJob(Number(req.params.id));
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+      
+      const schema = {
+        "@context": "https://schema.org/",
+        "@type": "JobPosting",
+        "title": job.title,
+        "description": job.description?.replace(/<[^>]*>/g, '') || job.title,
+        "datePosted": job.postedAt ? new Date(job.postedAt).toISOString() : new Date().toISOString(),
+        "validThrough": new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+        "employmentType": job.remote ? "REMOTE" : "FULL_TIME",
+        "hiringOrganization": {
+          "@type": "Organization",
+          "name": job.company,
+          "sameAs": job.url
+        },
+        "jobLocation": {
+          "@type": "Place",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": job.location
+          }
+        },
+        "jobLocationType": job.remote ? "TELECOMMUTE" : undefined,
+        "directApply": true,
+        "url": `https://devglobaljobs.com/jobs/${job.id}`,
+        "identifier": {
+          "@type": "PropertyValue",
+          "name": job.source || "DevGlobalJobs",
+          "value": job.externalId
+        }
+      };
+      
+      if (job.salary) {
+        const salaryMatch = job.salary.match(/\$?([\d,]+)/);
+        if (salaryMatch) {
+          (schema as any).baseSalary = {
+            "@type": "MonetaryAmount",
+            "currency": "USD",
+            "value": {
+              "@type": "QuantitativeValue",
+              "value": parseInt(salaryMatch[1].replace(/,/g, '')),
+              "unitText": "YEAR"
+            }
+          };
+        }
+      }
+      
+      res.json(schema);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate schema" });
+    }
+  });
+
   app.get(api.jobs.list.path, async (req, res) => {
     try {
       const filters = {
