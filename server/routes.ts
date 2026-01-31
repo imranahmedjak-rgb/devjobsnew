@@ -6,6 +6,36 @@ import { api } from "@shared/routes";
 import { type InsertJob, insertJobSchema } from "@shared/schema";
 import { parseStringPromise } from "xml2js";
 
+// Helper function to validate job URLs - reject homepage-only links
+function isValidJobUrl(url: string): boolean {
+  if (!url || !url.startsWith('http')) return false;
+  
+  // Patterns that indicate homepage-only (not direct job link)
+  const homepagePatterns = [
+    /^https?:\/\/[^\/]+\/?$/, // Root domain only (e.g., https://example.com/)
+    /^https?:\/\/[^\/]+\/careers\/?$/, // Just /careers
+    /^https?:\/\/[^\/]+\/jobs\/?$/, // Just /jobs
+    /^https?:\/\/[^\/]+\/careers\/?\?.*$/, // /careers with only query params
+    /^https?:\/\/[^\/]+\/jobs\/?\?.*$/, // /jobs with only query params
+  ];
+  
+  for (const pattern of homepagePatterns) {
+    if (pattern.test(url)) return false;
+  }
+  
+  // Valid job URL should have a path with specific job identifier
+  try {
+    const urlObj = new URL(url);
+    const path = urlObj.pathname;
+    // Must have meaningful path (more than just /, /jobs, /careers)
+    return path.length > 10 || path.includes('/job/') || path.includes('/position/') || 
+           path.includes('/opening/') || path.includes('/vacancy/') || 
+           urlObj.search.includes('id=') || urlObj.search.includes('jobId=');
+  } catch {
+    return false;
+  }
+}
+
 // Job API Interfaces
 interface ArbeitnowJob {
   slug: string;
@@ -388,7 +418,11 @@ async function fetchJobsFromArbeitnow(): Promise<number> {
     const data = await response.json() as ArbeitnowResponse;
     console.log(`Fetched ${data.data.length} jobs from Arbeitnow.`);
 
-    const jobsToInsert: InsertJob[] = data.data.map((apiJob) => ({
+    // Filter only jobs with valid direct application URLs
+    const validJobs = data.data.filter((apiJob) => isValidJobUrl(apiJob.url));
+    console.log(`${validJobs.length} jobs have valid direct application links.`);
+
+    const jobsToInsert: InsertJob[] = validJobs.map((apiJob) => ({
       externalId: `arbeitnow-${apiJob.slug}`,
       title: apiJob.title,
       company: apiJob.company_name,
@@ -425,7 +459,14 @@ async function fetchJobsFromRemoteOK(): Promise<number> {
     const allJobs = data.filter(job => job.id && job.position);
     console.log(`Fetched ${allJobs.length} jobs from RemoteOK.`);
 
-    const jobsToInsert: InsertJob[] = allJobs.slice(0, 150).map((apiJob) => ({
+    // Filter only jobs with valid direct application URLs
+    const validJobs = allJobs.filter((apiJob) => {
+      const url = apiJob.url || `https://remoteok.com/remote-jobs/${apiJob.id}`;
+      return isValidJobUrl(url);
+    });
+    console.log(`${validJobs.length} jobs have valid direct application links.`);
+
+    const jobsToInsert: InsertJob[] = validJobs.slice(0, 150).map((apiJob) => ({
       externalId: `remoteok-${apiJob.id}`,
       title: apiJob.position,
       company: apiJob.company || "Remote Company",
@@ -465,7 +506,11 @@ async function fetchJobsFromJobicy(): Promise<number> {
     const jobs = data.jobs || [];
     console.log(`Fetched ${jobs.length} jobs from Jobicy.`);
 
-    const jobsToInsert: InsertJob[] = jobs.map((job: any) => {
+    // Filter only jobs with valid direct application URLs
+    const validJobs = jobs.filter((job: any) => isValidJobUrl(job.url));
+    console.log(`${validJobs.length} jobs have valid direct application links.`);
+
+    const jobsToInsert: InsertJob[] = validJobs.map((job: any) => {
       const industry = typeof job.jobIndustry === 'string' ? job.jobIndustry : "Technology";
       return {
         externalId: `jobicy-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
@@ -473,7 +518,7 @@ async function fetchJobsFromJobicy(): Promise<number> {
         company: job.companyName || "Remote Company",
         location: job.jobGeo || "Remote Worldwide",
         description: job.jobDescription || `<p>${job.jobExcerpt || "Remote opportunity"}</p>`,
-        url: job.url || "https://jobicy.com",
+        url: job.url,
         remote: true,
         tags: [industry, "Remote", "International"],
         salary: job.annualSalaryMin && job.annualSalaryMax ? `$${job.annualSalaryMin} - $${job.annualSalaryMax}` : null,
@@ -1477,15 +1522,139 @@ async function fetchJobsFromReliefWeb(): Promise<{ un: number; ngo: number }> {
   }
 }
 
+// Fetch from UN Careers Job Feed (https://careers.un.org/jobfeed)
+async function fetchJobsFromUNCareers(): Promise<number> {
+  console.log("Fetching jobs from UN Careers (careers.un.org)...");
+  
+  try {
+    const response = await fetch("https://careers.un.org/jobfeed", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("UN Careers feed not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || result?.feed?.entry || [];
+    const jobItems = Array.isArray(items) ? items : [items];
+    console.log(`Fetched ${jobItems.length} jobs from UN Careers.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const item of jobItems) {
+      const title = item.title?._text || item.title || "UN Position";
+      const link = item.link?.href || item.link?._text || item.link || "";
+      const description = item.description?._text || item.description || item.summary?._text || item.summary || "";
+      const pubDate = item.pubDate || item.published || item.updated || new Date().toISOString();
+      
+      // Skip if no valid job link
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      // Extract job ID from URL
+      const jobIdMatch = link.match(/\/(\d+)/);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
+      
+      unJobs.push({
+        externalId: `un-careers-${jobId}`,
+        title,
+        company: "United Nations",
+        location: "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "United Nations", "International Organization"],
+        salary: null,
+        source: "UN Careers",
+        category: "un",
+        postedAt: new Date(pubDate),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from UN Careers.`);
+    return result2.length;
+  } catch (error) {
+    console.error("UN Careers error:", error);
+    return 0;
+  }
+}
+
+// Fetch from UNDP Jobs RSS Feed
+async function fetchJobsFromUNDP(): Promise<number> {
+  console.log("Fetching jobs from UNDP (jobs.undp.org)...");
+  
+  try {
+    const response = await fetch("https://jobs.undp.org/cj_rss_feed.cfm", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("UNDP RSS not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rdf?.item || result?.rss?.channel?.item || [];
+    const jobItems = Array.isArray(items) ? items : [items];
+    console.log(`Fetched ${jobItems.length} jobs from UNDP.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const item of jobItems) {
+      const title = item.title || "UNDP Position";
+      const link = item.link || "";
+      const description = item.description || "";
+      const pubDate = item['dc:date'] || item.pubDate || new Date().toISOString();
+      
+      // Skip if no valid job link
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      // Extract job ID from URL
+      const jobIdMatch = link.match(/job_id=(\d+)/i) || link.match(/(\d+)/);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
+      
+      unJobs.push({
+        externalId: `undp-${jobId}`,
+        title,
+        company: "United Nations Development Programme (UNDP)",
+        location: "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "UNDP", "Development", "International Organization"],
+        salary: null,
+        source: "UNDP",
+        category: "un",
+        postedAt: new Date(pubDate),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from UNDP.`);
+    return result2.length;
+  } catch (error) {
+    console.error("UNDP RSS error:", error);
+    return 0;
+  }
+}
+
 // ================== MAIN SYNC FUNCTION ==================
 
 async function syncAllJobs(): Promise<number> {
   console.log("Starting job sync from real APIs only (direct application links)...");
   console.log("=== Syncing All Job Categories ===");
   
-  // 1. Fetch UN/NGO jobs from ReliefWeb (real API with direct links)
-  console.log("\n--- UN & NGO Jobs (ReliefWeb API) ---");
-  const reliefWebCounts = await fetchJobsFromReliefWeb();
+  // 1. Fetch UN/NGO jobs from ReliefWeb + UN Careers + UNDP (real APIs with direct links)
+  console.log("\n--- UN & NGO Jobs (ReliefWeb + UN Careers + UNDP) ---");
+  const [reliefWebCounts, unCareersCounts, undpCounts] = await Promise.all([
+    fetchJobsFromReliefWeb(),
+    fetchJobsFromUNCareers(),
+    fetchJobsFromUNDP(),
+  ]);
   
   // 2. Fetch International jobs from real APIs (all have direct job links)
   console.log("\n--- International Jobs (Real APIs with Direct Links) ---");
@@ -1506,17 +1675,17 @@ async function syncAllJobs(): Promise<number> {
   ]);
   
   // Calculate totals
-  const unTotal = reliefWebCounts.un;
+  const unTotal = reliefWebCounts.un + unCareersCounts + undpCounts;
   const ngoTotal = reliefWebCounts.ngo;
   const intlTotal = apiCounts.reduce((acc, count) => acc + count, 0);
   const total = unTotal + ngoTotal + intlTotal;
   
   console.log(`\n=== Sync Complete ===`);
-  console.log(`UN jobs added: ${unTotal}`);
+  console.log(`UN jobs added: ${unTotal} (ReliefWeb: ${reliefWebCounts.un}, UN Careers: ${unCareersCounts}, UNDP: ${undpCounts})`);
   console.log(`NGO jobs added: ${ngoTotal}`);
   console.log(`International jobs: ${intlTotal}`);
   console.log(`Total new jobs added: ${total}`);
-  console.log(`All jobs have direct application links!`);
+  console.log(`All jobs have direct application links only!`);
   
   return total;
 }
