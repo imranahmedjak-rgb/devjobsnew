@@ -1484,6 +1484,11 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromFindWork(),
     fetchJobsFromWWR(),
     fetchJobsFromAuthenticJobs(),
+    fetchJobsFromLandingJobs(),
+    fetchJobsFromGreenhouseBoards(),
+    fetchJobsFromLeverBoards(),
+    fetchJobsFromCryptoJobs(),
+    fetchJobsFromWeb3Career(),
   ]);
   
   // Calculate totals
