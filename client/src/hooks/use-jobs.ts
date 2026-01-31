@@ -25,7 +25,7 @@ export function useJobs(filters: JobFilter) {
       return api.jobs.list.responses[200].parse(await res.json());
     },
     refetchOnWindowFocus: true,
-    refetchInterval: 60000,
+    refetchInterval: 15000,
   });
 }
 
@@ -38,6 +38,7 @@ export function useJobStats() {
       return api.jobs.stats.responses[200].parse(await res.json());
     },
     refetchOnWindowFocus: true,
+    refetchInterval: 15000,
   });
 }
 

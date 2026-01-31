@@ -1,8 +1,8 @@
-# GlobalJobs - Job Board Application
+# Dev Global Jobs - International Job Board Platform
 
 ## Overview
 
-GlobalJobs is a job aggregation platform that fetches job listings from multiple external APIs (Arbeitnow, ReliefWeb) and presents them in a modern, searchable interface. The application allows users to browse, filter, and view detailed job postings from various sources worldwide.
+Dev Global Jobs is an international-level job aggregation platform by Trend Nova World Ltd. that aggregates development sector, humanitarian, and professional job listings from worldwide sources covering all 193 UN countries. The platform features jobs from United Nations agencies, INGOs, NGOs, Development Banks, and international organizations.
 
 ## User Preferences
 
@@ -17,6 +17,7 @@ Preferred communication style: Simple, everyday language.
 - **Styling**: Tailwind CSS with shadcn/ui component library (New York style variant)
 - **Animations**: Framer Motion for smooth list and interaction animations
 - **Build Tool**: Vite with custom development plugins for Replit integration
+- **Auto-Refresh**: Client refreshes job listings every 15 seconds
 
 The frontend follows a pages-based structure with reusable components. API contracts are defined in `shared/routes.ts` using Zod schemas, ensuring type safety between client and server.
 
@@ -24,6 +25,7 @@ The frontend follows a pages-based structure with reusable components. API contr
 - **Framework**: Express 5 on Node.js with TypeScript
 - **API Design**: RESTful endpoints defined in `shared/routes.ts` for consistency
 - **Database ORM**: Drizzle ORM with PostgreSQL dialect
+- **Job Sync**: Background job sync runs every 5 minutes to fetch new listings
 - **Build Process**: esbuild for production bundling with selective dependency bundling to optimize cold start times
 
 The server implements a storage pattern (`IStorage` interface) for database operations, making it easy to swap implementations if needed.
@@ -36,18 +38,32 @@ Single table design for jobs:
 ### Key Design Patterns
 1. **Shared Schema**: Database schema and API routes defined in `shared/` directory for full-stack type safety
 2. **Storage Abstraction**: `DatabaseStorage` class implements `IStorage` interface for clean data access
-3. **API Aggregation**: Background sync fetches jobs from multiple external APIs and stores them locally
+3. **API Aggregation**: Background sync fetches jobs from multiple external APIs and generates development sector jobs
 4. **Query-based Filtering**: Search, location, and remote filters handled via SQL queries with Drizzle ORM
+
+## Job Sources
+
+### External APIs
+- **Arbeitnow API**: Tech and professional job listings (Europe-focused)
+- **ReliefWeb API**: Humanitarian and development sector jobs
+- **RemoteOK API**: Remote work opportunities worldwide
+
+### Generated Job Categories
+- **UN Careers**: Jobs from 20+ United Nations agencies (UNDP, UNICEF, WHO, FAO, WFP, UNHCR, etc.)
+- **NGO/INGO Jobs**: Positions from 30+ international NGOs (Save the Children, Oxfam, CARE, IRC, MSF, etc.)
+- **IFI Jobs**: Development bank and international financial institution positions (World Bank, IMF, ADB, AfDB, etc.)
+
+### Coverage
+- 193 UN member countries
+- Development sector, humanitarian, and professional roles
+- Remote and on-site positions
+- Multiple job levels (P-2 to D-2 for UN, various grades for other orgs)
 
 ## External Dependencies
 
 ### Database
 - **PostgreSQL**: Primary database accessed via `DATABASE_URL` environment variable
 - **Drizzle Kit**: Database migrations stored in `./migrations` directory
-
-### External Job APIs
-- **Arbeitnow API** (`https://www.arbeitnow.com/api/job-board-api`): Tech job listings
-- **ReliefWeb API**: Humanitarian job listings
 
 ### Key NPM Packages
 - `@tanstack/react-query`: Client-side data fetching and caching
@@ -61,3 +77,22 @@ Single table design for jobs:
 - `@replit/vite-plugin-runtime-error-modal`: Development error overlay
 - `@replit/vite-plugin-cartographer`: Replit-specific tooling
 - `tsx`: TypeScript execution for development server
+
+## Key Features
+
+### Post a Job
+- Full form validation for job submissions
+- Auto-generated external ID and timestamps
+- Server-side validation with Zod schemas
+- Success confirmation flow
+
+### Job Statistics
+- Total jobs count
+- Countries covered
+- Number of sources
+- Real-time updates
+
+### Auto-Refresh System
+- Server syncs new jobs every 5 minutes
+- Client refreshes listings every 15 seconds
+- Window focus triggers immediate refresh

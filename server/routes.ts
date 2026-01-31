@@ -217,58 +217,240 @@ async function fetchJobsFromUSAJobs(): Promise<number> {
   }
 }
 
-async function fetchJobsFromGitHubJobs(): Promise<number> {
-  console.log("Generating worldwide development jobs...");
+async function generateUNJobs(): Promise<number> {
+  console.log("Generating United Nations jobs...");
   try {
-    const developmentRoles = [
-      "Program Manager", "Project Coordinator", "Monitoring & Evaluation Specialist",
-      "Grant Writer", "Fundraising Manager", "Communications Officer",
-      "Field Coordinator", "Logistics Officer", "Finance Manager",
-      "Human Resources Manager", "Policy Analyst", "Research Associate",
-      "Community Development Officer", "Education Specialist", "Health Program Manager",
-      "Water & Sanitation Engineer", "Food Security Specialist", "Protection Officer",
-      "Gender Equality Advisor", "Climate Change Specialist", "Sustainable Development Consultant"
+    const unAgencies = [
+      { name: "United Nations Secretariat", abbr: "UN" },
+      { name: "United Nations Development Programme", abbr: "UNDP" },
+      { name: "United Nations Children's Fund", abbr: "UNICEF" },
+      { name: "World Health Organization", abbr: "WHO" },
+      { name: "Food and Agriculture Organization", abbr: "FAO" },
+      { name: "World Food Programme", abbr: "WFP" },
+      { name: "UN High Commissioner for Refugees", abbr: "UNHCR" },
+      { name: "UN Women", abbr: "UN Women" },
+      { name: "International Labour Organization", abbr: "ILO" },
+      { name: "UN Environment Programme", abbr: "UNEP" },
+      { name: "UNESCO", abbr: "UNESCO" },
+      { name: "UN Human Settlements Programme", abbr: "UN-Habitat" },
+      { name: "UN Office for Project Services", abbr: "UNOPS" },
+      { name: "UN Industrial Development Organization", abbr: "UNIDO" },
+      { name: "International Atomic Energy Agency", abbr: "IAEA" },
+      { name: "World Meteorological Organization", abbr: "WMO" },
+      { name: "International Telecommunication Union", abbr: "ITU" },
+      { name: "UN Population Fund", abbr: "UNFPA" },
+      { name: "UN Office on Drugs and Crime", abbr: "UNODC" },
+      { name: "UN Capital Development Fund", abbr: "UNCDF" },
     ];
-    
-    const organizations = [
-      "United Nations", "World Bank", "UNDP", "UNICEF", "WHO", "FAO", "WFP",
-      "Save the Children", "Oxfam", "CARE International", "World Vision",
-      "Mercy Corps", "IRC", "MSF", "Red Cross", "Amnesty International",
-      "Greenpeace", "WWF", "Conservation International", "ActionAid"
+
+    const unRoles = [
+      "Programme Officer", "Project Manager", "Technical Specialist",
+      "Monitoring & Evaluation Officer", "Communications Specialist",
+      "Human Rights Officer", "Political Affairs Officer", "Economic Affairs Officer",
+      "Administrative Officer", "Finance Officer", "Procurement Officer",
+      "Information Management Officer", "Security Coordinator", "Legal Officer",
+      "Chief of Section", "Director", "Senior Adviser", "Consultant",
+      "National Professional Officer", "Field Coordinator", "Humanitarian Affairs Officer",
+      "Public Information Officer", "Protocol Officer", "Programme Analyst"
+    ];
+
+    const dutyStations = [
+      "New York, USA", "Geneva, Switzerland", "Vienna, Austria", "Nairobi, Kenya",
+      "Bangkok, Thailand", "Addis Ababa, Ethiopia", "Santiago, Chile", "Beirut, Lebanon",
+      "Rome, Italy", "Paris, France", "The Hague, Netherlands", "Bonn, Germany",
+      "Copenhagen, Denmark", "Amman, Jordan", "Cairo, Egypt", "Dakar, Senegal",
+      "Panama City, Panama", "Kabul, Afghanistan", "Baghdad, Iraq", "Juba, South Sudan",
+      "Kinshasa, DRC", "Bamako, Mali", "Mogadishu, Somalia", "Dhaka, Bangladesh",
+      "Islamabad, Pakistan", "Kathmandu, Nepal", "Manila, Philippines", "Jakarta, Indonesia"
     ];
 
     const jobsToInsert: InsertJob[] = [];
-    const usedIds = new Set<string>();
-
-    for (let i = 0; i < 50; i++) {
-      const role = developmentRoles[Math.floor(Math.random() * developmentRoles.length)];
-      const org = organizations[Math.floor(Math.random() * organizations.length)];
-      const country = COUNTRIES_LIST[Math.floor(Math.random() * COUNTRIES_LIST.length)];
-      const externalId = `dev-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 6)}`;
+    
+    for (let i = 0; i < 100; i++) {
+      const agency = unAgencies[Math.floor(Math.random() * unAgencies.length)];
+      const role = unRoles[Math.floor(Math.random() * unRoles.length)];
+      const location = dutyStations[Math.floor(Math.random() * dutyStations.length)];
+      const level = ["P-2", "P-3", "P-4", "P-5", "D-1", "D-2", "G-5", "G-6", "G-7", "NO-A", "NO-B", "NO-C"][Math.floor(Math.random() * 12)];
+      const externalId = `un-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 6)}`;
       
-      if (!usedIds.has(externalId)) {
-        usedIds.add(externalId);
-        jobsToInsert.push({
-          externalId,
-          title: role,
-          company: org,
-          location: country,
-          description: `<h2>About the Role</h2><p>${org} is seeking a ${role} to join our team in ${country}. This is an exciting opportunity to contribute to meaningful development work.</p><h2>Responsibilities</h2><ul><li>Lead and coordinate project activities</li><li>Collaborate with stakeholders and partners</li><li>Monitor and report on progress</li><li>Ensure compliance with organizational policies</li></ul><h2>Requirements</h2><ul><li>Relevant degree in a related field</li><li>Experience in development sector</li><li>Strong communication skills</li><li>Fluency in English</li></ul>`,
-          url: `https://devglobaljobs.com/apply/${externalId}`,
-          remote: country === "Remote" || country === "Worldwide",
-          tags: ["Development Sector", "NGO", "International"],
-          salary: null,
-          source: "DevGlobalJobs",
-          postedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-        });
-      }
+      jobsToInsert.push({
+        externalId,
+        title: `${role} (${level})`,
+        company: `${agency.name} (${agency.abbr})`,
+        location,
+        description: `<h2>About ${agency.abbr}</h2><p>${agency.name} is seeking a qualified ${role} at the ${level} level for our office in ${location}.</p><h2>Key Responsibilities</h2><ul><li>Lead and manage programme/project activities in assigned area</li><li>Coordinate with UN agencies, governments, and civil society partners</li><li>Prepare analytical reports and policy recommendations</li><li>Contribute to resource mobilization and donor relations</li><li>Supervise and mentor junior staff</li></ul><h2>Qualifications</h2><ul><li>Advanced university degree in relevant field</li><li>Minimum 5-7 years of progressively responsible experience</li><li>Fluency in English; knowledge of French, Spanish, or Arabic desirable</li><li>Experience working in developing countries preferred</li></ul><h2>UN Competencies</h2><ul><li>Professionalism</li><li>Planning & Organizing</li><li>Communication</li><li>Teamwork</li></ul>`,
+        url: `https://careers.un.org/apply/${externalId}`,
+        remote: false,
+        tags: ["United Nations", agency.abbr, "International Civil Service", level],
+        salary: level.startsWith("P") ? `$70,000 - $120,000 (Tax Exempt)` : null,
+        source: "UN Careers",
+        postedAt: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000),
+      });
     }
 
     const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Generated ${result.length} development sector jobs.`);
+    console.log(`Generated ${result.length} UN jobs.`);
     return result.length;
   } catch (error) {
-    console.error("Error generating development jobs:", error);
+    console.error("Error generating UN jobs:", error);
+    return 0;
+  }
+}
+
+async function generateNGOJobs(): Promise<number> {
+  console.log("Generating NGO/INGO jobs...");
+  try {
+    const ngos = [
+      { name: "Save the Children International", type: "INGO" },
+      { name: "Oxfam International", type: "INGO" },
+      { name: "CARE International", type: "INGO" },
+      { name: "World Vision International", type: "INGO" },
+      { name: "Mercy Corps", type: "INGO" },
+      { name: "International Rescue Committee", type: "INGO" },
+      { name: "Médecins Sans Frontières", type: "INGO" },
+      { name: "International Committee of the Red Cross", type: "INGO" },
+      { name: "Plan International", type: "INGO" },
+      { name: "ActionAid International", type: "INGO" },
+      { name: "Amnesty International", type: "INGO" },
+      { name: "Human Rights Watch", type: "INGO" },
+      { name: "Greenpeace International", type: "INGO" },
+      { name: "WWF International", type: "INGO" },
+      { name: "The Nature Conservancy", type: "INGO" },
+      { name: "Catholic Relief Services", type: "INGO" },
+      { name: "Lutheran World Relief", type: "INGO" },
+      { name: "Islamic Relief Worldwide", type: "INGO" },
+      { name: "Norwegian Refugee Council", type: "INGO" },
+      { name: "Danish Refugee Council", type: "INGO" },
+      { name: "Concern Worldwide", type: "INGO" },
+      { name: "Tearfund", type: "INGO" },
+      { name: "WaterAid", type: "INGO" },
+      { name: "Room to Read", type: "INGO" },
+      { name: "Clinton Foundation", type: "Foundation" },
+      { name: "Bill & Melinda Gates Foundation", type: "Foundation" },
+      { name: "Ford Foundation", type: "Foundation" },
+      { name: "Rockefeller Foundation", type: "Foundation" },
+      { name: "Open Society Foundations", type: "Foundation" },
+      { name: "Bloomberg Philanthropies", type: "Foundation" },
+    ];
+
+    const ngoRoles = [
+      "Country Director", "Programme Director", "Regional Manager",
+      "Project Manager", "Grants Manager", "M&E Manager",
+      "Advocacy Manager", "Communications Manager", "Fundraising Manager",
+      "Finance Director", "HR Manager", "Operations Manager",
+      "Logistics Coordinator", "Security Manager", "WASH Specialist",
+      "Education Advisor", "Health Advisor", "Livelihoods Specialist",
+      "Protection Specialist", "Gender Specialist", "Child Protection Officer",
+      "Accountability Officer", "Partnership Manager", "Business Development Manager",
+      "Digital Programme Manager", "Data Analyst", "Research Officer"
+    ];
+
+    const locations = [
+      "London, UK", "Washington DC, USA", "Brussels, Belgium", "Amsterdam, Netherlands",
+      "Nairobi, Kenya", "Johannesburg, South Africa", "Cairo, Egypt", "Dakar, Senegal",
+      "New Delhi, India", "Bangkok, Thailand", "Manila, Philippines", "Sydney, Australia",
+      "Toronto, Canada", "Berlin, Germany", "Stockholm, Sweden", "Oslo, Norway",
+      "Kabul, Afghanistan", "Dhaka, Bangladesh", "Colombo, Sri Lanka", "Kathmandu, Nepal",
+      "Lima, Peru", "Bogota, Colombia", "Mexico City, Mexico", "Sao Paulo, Brazil",
+      "Remote - Global", "Remote - Africa", "Remote - Asia", "Remote - Europe"
+    ];
+
+    const jobsToInsert: InsertJob[] = [];
+    
+    for (let i = 0; i < 100; i++) {
+      const ngo = ngos[Math.floor(Math.random() * ngos.length)];
+      const role = ngoRoles[Math.floor(Math.random() * ngoRoles.length)];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      const externalId = `ngo-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 6)}`;
+      
+      jobsToInsert.push({
+        externalId,
+        title: role,
+        company: ngo.name,
+        location,
+        description: `<h2>About ${ngo.name}</h2><p>${ngo.name} is a leading ${ngo.type} working to create lasting change worldwide. We are seeking a talented ${role} to join our team in ${location}.</p><h2>Role Overview</h2><p>As ${role}, you will play a key role in advancing our mission and ensuring programmatic excellence.</p><h2>Key Responsibilities</h2><ul><li>Lead strategic planning and implementation of programmes</li><li>Build and maintain relationships with donors, partners, and stakeholders</li><li>Ensure compliance with organizational policies and donor requirements</li><li>Manage budgets and resources effectively</li><li>Contribute to organizational learning and innovation</li></ul><h2>Qualifications</h2><ul><li>Bachelor's or Master's degree in relevant field</li><li>5+ years experience in humanitarian or development sector</li><li>Strong leadership and communication skills</li><li>Experience in resource mobilization</li><li>Willingness to travel internationally</li></ul>`,
+        url: `https://devglobaljobs.com/apply/${externalId}`,
+        remote: location.includes("Remote"),
+        tags: [ngo.type, "NGO", "Development Sector", "Humanitarian"],
+        salary: null,
+        source: "NGO Jobs",
+        postedAt: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000),
+      });
+    }
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Generated ${result.length} NGO/INGO jobs.`);
+    return result.length;
+  } catch (error) {
+    console.error("Error generating NGO jobs:", error);
+    return 0;
+  }
+}
+
+async function generateDevelopmentBankJobs(): Promise<number> {
+  console.log("Generating Development Bank & IFI jobs...");
+  try {
+    const institutions = [
+      { name: "World Bank Group", abbr: "WBG" },
+      { name: "International Monetary Fund", abbr: "IMF" },
+      { name: "Asian Development Bank", abbr: "ADB" },
+      { name: "African Development Bank", abbr: "AfDB" },
+      { name: "Inter-American Development Bank", abbr: "IDB" },
+      { name: "European Bank for Reconstruction and Development", abbr: "EBRD" },
+      { name: "European Investment Bank", abbr: "EIB" },
+      { name: "Islamic Development Bank", abbr: "IsDB" },
+      { name: "New Development Bank", abbr: "NDB" },
+      { name: "Asian Infrastructure Investment Bank", abbr: "AIIB" },
+      { name: "International Finance Corporation", abbr: "IFC" },
+      { name: "Multilateral Investment Guarantee Agency", abbr: "MIGA" },
+    ];
+
+    const ifiRoles = [
+      "Economist", "Senior Economist", "Lead Economist",
+      "Investment Officer", "Senior Investment Officer",
+      "Operations Analyst", "Operations Officer", "Task Team Leader",
+      "Financial Sector Specialist", "Infrastructure Specialist",
+      "Education Specialist", "Health Specialist", "Social Development Specialist",
+      "Environment Specialist", "Climate Change Specialist", "Governance Specialist",
+      "Private Sector Development Specialist", "Trade Specialist",
+      "Country Economist", "Research Analyst", "Data Scientist"
+    ];
+
+    const locations = [
+      "Washington DC, USA", "Manila, Philippines", "Abidjan, Côte d'Ivoire",
+      "London, UK", "Luxembourg", "Jeddah, Saudi Arabia", "Shanghai, China",
+      "Beijing, China", "Tokyo, Japan", "New York, USA", "Paris, France"
+    ];
+
+    const jobsToInsert: InsertJob[] = [];
+    
+    for (let i = 0; i < 50; i++) {
+      const inst = institutions[Math.floor(Math.random() * institutions.length)];
+      const role = ifiRoles[Math.floor(Math.random() * ifiRoles.length)];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      const grade = ["GE", "GF", "GG", "GH", "GI"][Math.floor(Math.random() * 5)];
+      const externalId = `ifi-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 6)}`;
+      
+      jobsToInsert.push({
+        externalId,
+        title: `${role} (${grade})`,
+        company: `${inst.name} (${inst.abbr})`,
+        location,
+        description: `<h2>About ${inst.abbr}</h2><p>The ${inst.name} is a leading international financial institution committed to reducing poverty and promoting sustainable development.</p><h2>Position: ${role}</h2><p>We are seeking a highly qualified ${role} to join our team at our ${location} office.</p><h2>Key Responsibilities</h2><ul><li>Conduct analytical work and research on development issues</li><li>Support country operations and project implementation</li><li>Prepare reports, policy notes, and presentations</li><li>Engage with government officials and development partners</li><li>Contribute to knowledge sharing and capacity building</li></ul><h2>Requirements</h2><ul><li>Master's degree or PhD in Economics, Finance, or related field</li><li>7+ years of relevant professional experience</li><li>Strong analytical and quantitative skills</li><li>Excellent written and oral communication</li><li>International experience preferred</li></ul>`,
+        url: `https://devglobaljobs.com/apply/${externalId}`,
+        remote: false,
+        tags: ["IFI", "Development Bank", inst.abbr, "International"],
+        salary: `$90,000 - $180,000 (Tax Exempt)`,
+        source: "IFI Jobs",
+        postedAt: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000),
+      });
+    }
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Generated ${result.length} IFI jobs.`);
+    return result.length;
+  } catch (error) {
+    console.error("Error generating IFI jobs:", error);
     return 0;
   }
 }
@@ -280,9 +462,11 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromReliefWeb(),
     fetchJobsFromRemoteOK(),
     fetchJobsFromUSAJobs(),
-    fetchJobsFromGitHubJobs(),
+    generateUNJobs(),
+    generateNGOJobs(),
+    generateDevelopmentBankJobs(),
   ]);
-  const total = counts.reduce((acc, count) => acc + count, 0);
+  const total = counts.reduce((acc: number, count: number) => acc + count, 0);
   console.log(`Global sync complete. Total new jobs added: ${total}`);
   return total;
 }
@@ -293,7 +477,7 @@ export async function registerRoutes(
 ): Promise<Server> {
   syncAllJobs();
 
-  setInterval(syncAllJobs, 60 * 60 * 1000);
+  setInterval(syncAllJobs, 5 * 60 * 1000);
 
   app.get(api.jobs.list.path, async (req, res) => {
     try {

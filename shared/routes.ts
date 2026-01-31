@@ -2,6 +2,12 @@
 import { z } from "zod";
 import { insertJobSchema, jobs } from "./schema";
 
+export type JobFilter = {
+  search?: string;
+  location?: string;
+  remote?: boolean;
+};
+
 export const api = {
   jobs: {
     list: {
