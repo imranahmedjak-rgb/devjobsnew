@@ -3,8 +3,16 @@ import { db } from "./db";
 import { jobs, type InsertJob, type Job, type JobFilter } from "@shared/schema";
 import { eq, ilike, and, desc, or, sql, count, countDistinct } from "drizzle-orm";
 
+export interface PaginatedJobs {
+  jobs: Job[];
+  total: number;
+  page: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 export interface IStorage {
-  getJobs(filters?: JobFilter): Promise<Job[]>;
+  getJobs(filters?: JobFilter, page?: number, limit?: number): Promise<PaginatedJobs>;
   getJob(id: number): Promise<Job | undefined>;
   getJobByExternalId(externalId: string): Promise<Job | undefined>;
   createJob(job: InsertJob): Promise<Job>;
@@ -13,7 +21,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getJobs(filters?: JobFilter): Promise<Job[]> {
+  async getJobs(filters?: JobFilter, page: number = 1, limit: number = 30): Promise<PaginatedJobs> {
     const conditions = [];
 
     if (filters?.search) {
@@ -39,11 +47,34 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(jobs.category, filters.category));
     }
 
-    return await db
+    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    // Get total count
+    const [countResult] = await db
+      .select({ count: count() })
+      .from(jobs)
+      .where(whereCondition);
+    
+    const total = countResult?.count || 0;
+    const totalPages = Math.ceil(total / limit);
+    const offset = (page - 1) * limit;
+    
+    // Get paginated jobs
+    const jobsList = await db
       .select()
       .from(jobs)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(jobs.postedAt));
+      .where(whereCondition)
+      .orderBy(desc(jobs.postedAt))
+      .limit(limit)
+      .offset(offset);
+
+    return {
+      jobs: jobsList,
+      total,
+      page,
+      totalPages,
+      hasMore: page < totalPages,
+    };
   }
 
   async getJob(id: number): Promise<Job | undefined> {

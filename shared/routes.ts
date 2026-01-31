@@ -19,9 +19,17 @@ export const api = {
         location: z.string().optional(),
         remote: z.preprocess((val) => val === 'true', z.boolean()).optional(),
         category: z.enum(jobCategories).optional(),
+        page: z.preprocess((val) => parseInt(val as string) || 1, z.number()).optional(),
+        limit: z.preprocess((val) => parseInt(val as string) || 30, z.number()).optional(),
       }).optional(),
       responses: {
-        200: z.array(z.custom<typeof jobs.$inferSelect>()),
+        200: z.object({
+          jobs: z.array(z.custom<typeof jobs.$inferSelect>()),
+          total: z.number(),
+          page: z.number(),
+          totalPages: z.number(),
+          hasMore: z.boolean(),
+        }),
       },
     },
     get: {

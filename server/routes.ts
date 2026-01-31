@@ -1641,8 +1641,10 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
         remote: req.query.remote === 'true',
         category: req.query.category as "un" | "ngo" | "international" | undefined,
       };
-      const jobs = await storage.getJobs(filters);
-      res.json(jobs);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 30;
+      const result = await storage.getJobs(filters, page, limit);
+      res.json(result);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch jobs" });
     }

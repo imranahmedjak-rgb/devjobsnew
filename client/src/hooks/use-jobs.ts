@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { api, type JobFilter } from "@shared/routes";
 import { Job } from "@shared/schema";
 
@@ -12,20 +12,38 @@ function buildQueryString(params: Record<string, any>) {
   return searchParams.toString();
 }
 
-export function useJobs(filters: JobFilter) {
-  const queryString = buildQueryString(filters);
-  const queryKey = [api.jobs.list.path, queryString];
+export interface PaginatedJobsResponse {
+  jobs: Job[];
+  total: number;
+  page: number;
+  totalPages: number;
+  hasMore: boolean;
+}
 
-  return useQuery({
+export function useJobs(filters: JobFilter) {
+  const baseQueryString = buildQueryString(filters);
+  const queryKey = [api.jobs.list.path, baseQueryString];
+
+  return useInfiniteQuery({
     queryKey,
-    queryFn: async () => {
-      const url = `${api.jobs.list.path}?${queryString}`;
+    queryFn: async ({ pageParam = 1 }) => {
+      const params = new URLSearchParams(baseQueryString);
+      params.set('page', String(pageParam));
+      params.set('limit', '30');
+      const url = `${api.jobs.list.path}?${params.toString()}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch jobs");
-      return api.jobs.list.responses[200].parse(await res.json());
+      return await res.json() as PaginatedJobsResponse;
     },
-    refetchOnWindowFocus: true,
-    refetchInterval: 15000,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.hasMore) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    refetchOnWindowFocus: false,
+    staleTime: 30000,
   });
 }
 
@@ -38,7 +56,7 @@ export function useJobStats() {
       return api.jobs.stats.responses[200].parse(await res.json());
     },
     refetchOnWindowFocus: true,
-    refetchInterval: 15000,
+    refetchInterval: 30000,
   });
 }
 
@@ -46,7 +64,6 @@ export function useJob(id: number) {
   return useQuery({
     queryKey: [api.jobs.get.path, id],
     queryFn: async () => {
-      // Manual URL construction since we don't have a buildUrl helper in context
       const url = api.jobs.get.path.replace(":id", String(id));
       const res = await fetch(url);
       if (res.status === 404) return null;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useJobs, useJobStats } from "@/hooks/use-jobs";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, CheckCircle } from "lucide-react";
+import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, CheckCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -19,12 +19,25 @@ export default function Home() {
   const [remote, setRemote] = useState(false);
   const [category, setCategory] = useState<JobCategory>("international");
   
-  const { data: jobs, isLoading, error } = useJobs({
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage 
+  } = useJobs({
     search: search || undefined,
     location: location || undefined,
     remote: remote || undefined,
     category,
   });
+
+  const jobs = useMemo(() => {
+    return data?.pages.flatMap(page => page.jobs) ?? [];
+  }, [data]);
+
+  const totalJobs = data?.pages[0]?.total ?? 0;
 
   const { data: stats } = useJobStats();
 
@@ -291,7 +304,7 @@ export default function Home() {
             {getCategoryTitle()}
           </h2>
           <span className="text-sm text-muted-foreground" data-testid="text-jobs-found">
-            {jobs ? `${jobs.length} jobs found` : 'Loading...'}
+            {isLoading ? 'Loading...' : `Showing ${jobs.length} of ${totalJobs.toLocaleString()} jobs`}
           </span>
         </div>
 
@@ -319,7 +332,7 @@ export default function Home() {
               <h3 className="text-lg font-semibold text-destructive">Failed to load jobs</h3>
               <p className="text-muted-foreground">Please try refreshing the page.</p>
             </motion.div>
-          ) : jobs?.length === 0 ? (
+          ) : jobs.length === 0 ? (
             <motion.div 
               key="empty"
               initial={{ opacity: 0 }}
@@ -337,18 +350,42 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="space-y-8"
             >
-              {jobs?.map((job, index) => (
-                <motion.div
-                  key={job.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                >
-                  <JobCard job={job} />
-                </motion.div>
-              ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {jobs.map((job, index) => (
+                  <motion.div
+                    key={job.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(index * 0.03, 0.5) }}
+                  >
+                    <JobCard job={job} />
+                  </motion.div>
+                ))}
+              </div>
+              
+              {hasNextPage && (
+                <div className="flex justify-center pt-4">
+                  <Button
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    size="lg"
+                    variant="outline"
+                    className="px-8"
+                    data-testid="button-load-more"
+                  >
+                    {isFetchingNextPage ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      `Load More Jobs`
+                    )}
+                  </Button>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
