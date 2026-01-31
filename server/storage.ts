@@ -113,6 +113,11 @@ export class DatabaseStorage implements IStorage {
       lastUpdated: latestJob?.createdAt?.toISOString() || new Date().toISOString(),
     };
   }
+
+  async clearAllJobs(): Promise<void> {
+    await db.delete(jobs);
+    console.log('Cleared all jobs from database');
+  }
 }
 
 export const storage = new DatabaseStorage();

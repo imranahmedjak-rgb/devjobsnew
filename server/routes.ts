@@ -1711,8 +1711,14 @@ export async function registerRoutes(
     next();
   });
 
-  // Initial sync
-  syncAllJobs();
+  // Clear old mock data and sync fresh from real APIs
+  console.log('Clearing old data and starting fresh sync from real APIs...');
+  storage.clearAllJobs().then(() => {
+    syncAllJobs();
+  }).catch(err => {
+    console.error('Error clearing jobs:', err);
+    syncAllJobs();
+  });
 
   // Sync every 2 minutes for frequent updates (respects API rate limits)
   setInterval(syncAllJobs, 2 * 60 * 1000);
