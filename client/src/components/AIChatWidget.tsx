@@ -143,19 +143,19 @@ export default function AIChatWidget() {
         <Button
           data-testid="button-open-chat"
           onClick={() => setIsOpen(true)}
-          size="lg"
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50"
+          size="icon"
+          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5" />
         </Button>
       )}
 
       {isOpen && (
         <Card className="fixed bottom-6 right-6 w-96 h-[500px] flex flex-col shadow-xl z-50">
           <CardHeader className="flex flex-row items-center justify-between gap-2 py-3 border-b">
-            <div className="flex items-center gap-2">
+            <div data-testid="chat-header" className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">Job Search Assistant</CardTitle>
+              <CardTitle data-testid="text-chat-title" className="text-base">Job Search Assistant</CardTitle>
             </div>
             <div className="flex items-center gap-1">
               <Button
@@ -163,7 +163,6 @@ export default function AIChatWidget() {
                 variant="ghost"
                 size="sm"
                 onClick={startNewChat}
-                className="text-xs"
               >
                 New Chat
               </Button>
@@ -181,7 +180,7 @@ export default function AIChatWidget() {
           <CardContent className="flex-1 p-0 overflow-hidden">
             <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <div data-testid="text-welcome-message" className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                   <Bot className="h-12 w-12 mb-4 opacity-50" />
                   <p className="text-sm">
                     Hi! I'm your AI job search assistant. Ask me anything about
