@@ -18,7 +18,7 @@ export const jobs = pgTable("jobs", {
   tags: text("tags").array(),
   salary: text("salary"),
   source: text("source").notNull(),
-  category: text("category").default("development"),
+  category: text("category").default("international"),
   postedAt: timestamp("posted_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

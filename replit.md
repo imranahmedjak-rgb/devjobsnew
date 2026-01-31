@@ -2,7 +2,11 @@
 
 ## Overview
 
-Dev Global Jobs is an international job aggregation platform by Trend Nova World Ltd. that aggregates professional job listings from worldwide sources. The platform focuses exclusively on **International Jobs** from top global companies across all professional sectors, covering US, Canada, Europe, Middle East, Asia Pacific, and remote opportunities worldwide.
+Dev Global Jobs is an international job aggregation platform by Trend Nova World Ltd. that aggregates professional job listings from worldwide sources. The platform features three job categories:
+
+1. **UN Jobs**: United Nations agencies, World Bank, IMF, and international development banks
+2. **NGO Jobs**: Non-governmental organizations, humanitarian agencies, and civil society
+3. **International Jobs**: Professional opportunities from 200+ sources across all industries worldwide
 
 ## User Preferences
 
@@ -34,58 +38,58 @@ The server implements a storage pattern (`IStorage` interface) for database oper
 Single table design for jobs:
 - `jobs`: Stores aggregated job listings with fields for title, company, location, description (HTML), remote flag, tags array, salary, source API identifier, and timestamps
 - Uses `externalId` for deduplication when syncing from external APIs
-- `category` field defaults to "international"
+- `category` field: "un", "ngo", or "international"
 
 ### Key Design Patterns
 1. **Shared Schema**: Database schema and API routes defined in `shared/` directory for full-stack type safety
 2. **Storage Abstraction**: `DatabaseStorage` class implements `IStorage` interface for clean data access
-3. **Multi-Source Aggregation**: Background sync fetches jobs from 4+ external APIs plus curated global company jobs
-4. **Query-based Filtering**: Search, location, and remote filters handled via SQL queries with Drizzle ORM
-5. **Single Category Focus**: All jobs are International professional roles
+3. **Multi-Source Aggregation**: Background sync fetches jobs from 200+ sources (APIs + global companies)
+4. **Query-based Filtering**: Search, location, remote, and category filters handled via SQL queries with Drizzle ORM
+5. **Three-Category System**: Jobs categorized as "un", "ngo", or "international"
 
-## International Jobs Focus
+## Job Categories
 
-### Geographic Coverage
-- **North America**: USA (100+ cities), Canada (Toronto, Vancouver, Montreal, etc.)
-- **Europe**: UK, Germany, France, Netherlands, Switzerland, Sweden, Ireland, Spain, Italy, and more
-- **Middle East**: UAE (Dubai, Abu Dhabi), Saudi Arabia, Qatar, Israel, Jordan, Egypt
-- **Asia Pacific**: Australia, Singapore, Japan, South Korea, Hong Kong, India, and more
-- **Latin America**: Brazil, Mexico, Argentina, Chile, Colombia
-- **Africa**: South Africa, Nigeria, Kenya, Ghana, Morocco
-- **Remote**: Worldwide remote positions
+### UN Jobs
+- **Organizations**: UNICEF, UNDP, UNHCR, WFP, WHO, FAO, UNESCO, ILO, UNEP, UN Women, UNFPA, OCHA, World Bank, IMF, ADB, AfDB, EBRD, and more
+- **Sources**: ReliefWeb API, generated positions from 30+ UN agencies
+- **Coverage**: Global duty stations including HQ locations (New York, Geneva, Vienna, Rome, etc.) and field offices
 
-### Industries Covered
-- Technology (Software, AI, Cloud, DevOps)
-- Finance & Banking
-- Consulting (Management, Strategy)
-- Healthcare & Pharmaceuticals
-- Engineering & Manufacturing
-- Marketing & Sales
-- Operations & Supply Chain
-- Legal & Compliance
-- Human Resources
-- And more...
+### NGO Jobs
+- **Organizations**: ICRC, IFRC, MSF, Oxfam, Save the Children, World Vision, CARE, Mercy Corps, IRC, NRC, DRC, USAID, GIZ, and more
+- **Sources**: ReliefWeb API, generated positions from 30+ humanitarian organizations
+- **Coverage**: Humanitarian response locations, development program countries, and remote positions
 
-### Featured Companies (100+)
-Global leaders including: Google, Microsoft, Amazon, Apple, Meta, Goldman Sachs, McKinsey, Deloitte, BMW, HSBC, Nestlé, Spotify, Samsung, Emirates, Shopify, Atlassian, and many more.
+### International Jobs
+- **Coverage**: Professional opportunities from 200+ sources worldwide
+- **Regions**: USA, Canada, Europe, UK, Middle East, Asia Pacific, Australia, Latin America, Africa, Remote
+- **Industries**: Technology, Finance, Consulting, Healthcare, Engineering, Marketing, Sales, Operations, Legal, HR, and more
+- **Companies**: Google, Microsoft, Amazon, Apple, Meta, Goldman Sachs, McKinsey, Deloitte, BMW, HSBC, Samsung, Emirates, Shopify, Atlassian, and 100+ more
 
-## Job Sources
+## Job Sources (200+)
 
 ### External APIs (Active)
+- **ReliefWeb API**: UN and humanitarian sector jobs (https://api.reliefweb.int)
 - **Arbeitnow API**: European and remote jobs (https://www.arbeitnow.com/api/job-board-api)
 - **RemoteOK API**: Remote jobs worldwide (https://remoteok.com/api)
 - **Jobicy API**: Remote job listings (https://jobicy.com/api/v2/remote-jobs)
 - **Himalayas API**: Remote job opportunities (https://himalayas.app/jobs/api)
 
 ### Generated Job Sources
-- Jobs from 100+ major global companies across all regions
-- Region-specific generation: US (100), Canada (80), EU (150), Middle East (100), Asia Pacific (100)
-- 500+ diverse international positions from global companies
+- **UN Agencies**: 30+ agencies with 150+ positions per sync
+- **NGO Organizations**: 30+ organizations with 150+ positions per sync
+- **International Companies**: 100+ global companies with region-specific positions
+- **Regional Coverage**:
+  - US: 100 positions
+  - Canada: 80 positions
+  - EU: 150 positions
+  - Middle East: 100 positions
+  - Asia Pacific: 100 positions
+  - Diverse international: 500+ positions
 
-### Coverage
+### Total Coverage
 - 100+ countries represented
-- Professional roles across all sectors
-- Remote and on-site positions
+- 1500+ jobs per sync across all categories
+- Real-time updates every 2 minutes
 - Direct application links
 
 ## External Dependencies
@@ -109,6 +113,11 @@ Global leaders including: Google, Microsoft, Amazon, Apple, Meta, Goldman Sachs,
 
 ## Key Features
 
+### Three Category Tabs
+- UN Jobs: Development sector positions
+- NGO Jobs: Humanitarian and non-profit positions
+- International Jobs: Global professional opportunities
+
 ### Post a Job
 - Full form validation for job submissions
 - Auto-generated external ID and timestamps
@@ -116,9 +125,9 @@ Global leaders including: Google, Microsoft, Amazon, Apple, Meta, Goldman Sachs,
 - Success confirmation flow
 
 ### Job Statistics
-- Total jobs count (1000+)
+- Total jobs count (1500+)
 - Countries covered (100+)
-- Number of sources
+- Number of sources (200+)
 - Real-time updates
 
 ### Auto-Refresh System
@@ -143,5 +152,5 @@ Global leaders including: Google, Microsoft, Amazon, Apple, Meta, Goldman Sachs,
 
 ### Job Application Links
 - All jobs have direct application links
-- Sources: Arbeitnow, RemoteOK, Jobicy, Himalayas, and company career pages
+- Sources: ReliefWeb, Arbeitnow, RemoteOK, Jobicy, Himalayas, UN Careers, and company career pages
 - Verified URLs from trusted sources

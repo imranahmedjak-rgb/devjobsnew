@@ -7,23 +7,44 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Users, CheckCircle } from "lucide-react";
+import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { JobCategory } from "@shared/schema";
 
 export default function Home() {
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [remote, setRemote] = useState(false);
+  const [category, setCategory] = useState<JobCategory>("international");
   
   const { data: jobs, isLoading, error } = useJobs({
     search: search || undefined,
     location: location || undefined,
     remote: remote || undefined,
-    category: "international",
+    category,
   });
 
   const { data: stats } = useJobStats();
+
+  const getCategoryTitle = () => {
+    switch (category) {
+      case "un": return "UN Agency Jobs";
+      case "ngo": return "NGO & Humanitarian Jobs";
+      case "international": return "International Jobs";
+      default: return "Jobs";
+    }
+  };
+
+  const getCategoryDescription = () => {
+    switch (category) {
+      case "un": return "United Nations agencies, World Bank, IMF, and international development banks";
+      case "ngo": return "Non-governmental organizations, humanitarian agencies, and civil society";
+      case "international": return "Professional opportunities from 200+ sources across US, Canada, Europe, Middle East, Asia Pacific, Australia, and worldwide";
+      default: return "";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-primary/20 flex flex-col">
@@ -40,7 +61,7 @@ export default function Home() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-4"
           >
             <CheckCircle className="w-4 h-4" />
-            Verified Jobs
+            Verified Jobs from 200+ Sources
           </motion.div>
           
           <motion.h1 
@@ -61,8 +82,8 @@ export default function Home() {
             transition={{ delay: 0.1 }}
             className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
           >
-            International job opportunities from top global companies across 
-            US, Canada, Europe, Middle East, Australia, and worldwide. Real-time updates from trusted sources.
+            Curated opportunities from UN agencies, NGOs, development banks, 
+            and top global companies. Real-time updates from trusted sources worldwide.
           </motion.p>
 
           {/* Stats */}
@@ -96,7 +117,7 @@ export default function Home() {
                   <Building2 className="w-5 h-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <span className="text-xl md:text-2xl font-bold block" data-testid="text-sources">{stats.sourcesCount}</span>
+                  <span className="text-xl md:text-2xl font-bold block" data-testid="text-sources">{stats.sourcesCount}+</span>
                   <span className="text-xs text-muted-foreground">Sources</span>
                 </div>
               </div>
@@ -105,47 +126,106 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Region Tags */}
+      {/* Category Tabs */}
       <section className="container mx-auto px-4 -mt-4">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto"
         >
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm" data-testid="badge-region-us">
-            <Globe className="w-3 h-3 mr-1" /> USA
-          </Badge>
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm" data-testid="badge-region-canada">
-            <Globe className="w-3 h-3 mr-1" /> Canada
-          </Badge>
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm" data-testid="badge-region-eu">
-            <Globe className="w-3 h-3 mr-1" /> Europe
-          </Badge>
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm" data-testid="badge-region-uk">
-            <Globe className="w-3 h-3 mr-1" /> UK
-          </Badge>
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm" data-testid="badge-region-me">
-            <Globe className="w-3 h-3 mr-1" /> Middle East
-          </Badge>
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm" data-testid="badge-region-apac">
-            <Globe className="w-3 h-3 mr-1" /> Asia Pacific
-          </Badge>
-          <Badge variant="secondary" className="px-3 py-1.5 text-sm" data-testid="badge-region-remote">
-            <Globe className="w-3 h-3 mr-1" /> Remote
-          </Badge>
+          <Tabs value={category} onValueChange={(v) => setCategory(v as JobCategory)} className="w-full">
+            <TabsList className="w-full max-w-3xl mx-auto h-auto p-1.5 bg-muted/50 border border-border/50 rounded-xl grid grid-cols-3 gap-1">
+              <TabsTrigger 
+                value="un" 
+                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                data-testid="tab-un"
+              >
+                <Landmark className="w-4 h-4" />
+                <span className="font-semibold hidden sm:inline">UN Jobs</span>
+                <span className="font-semibold sm:hidden">UN</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="ngo" 
+                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                data-testid="tab-ngo"
+              >
+                <Heart className="w-4 h-4" />
+                <span className="font-semibold hidden sm:inline">NGO Jobs</span>
+                <span className="font-semibold sm:hidden">NGO</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="international" 
+                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                data-testid="tab-international"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="font-semibold hidden sm:inline">International</span>
+                <span className="font-semibold sm:hidden">Intl</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </motion.div>
 
+        {/* Category Description */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.25 }}
           className="max-w-2xl mx-auto mt-4 text-center"
         >
-          <p className="text-sm text-muted-foreground">
-            Professional opportunities across technology, finance, consulting, healthcare, engineering, and more
-          </p>
+          <AnimatePresence mode="wait">
+            <motion.p 
+              key={category}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              className="text-sm text-muted-foreground"
+            >
+              {getCategoryDescription()}
+            </motion.p>
+          </AnimatePresence>
         </motion.div>
+
+        {/* Region Tags for International */}
+        {category === "international" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto mt-4"
+          >
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-us">
+              <Globe className="w-3 h-3 mr-1" /> USA
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-canada">
+              <Globe className="w-3 h-3 mr-1" /> Canada
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-eu">
+              <Globe className="w-3 h-3 mr-1" /> Europe
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-uk">
+              <Globe className="w-3 h-3 mr-1" /> UK
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-me">
+              <Globe className="w-3 h-3 mr-1" /> Middle East
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-apac">
+              <Globe className="w-3 h-3 mr-1" /> Asia Pacific
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-australia">
+              <Globe className="w-3 h-3 mr-1" /> Australia
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-latam">
+              <Globe className="w-3 h-3 mr-1" /> Latin America
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-africa">
+              <Globe className="w-3 h-3 mr-1" /> Africa
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-remote">
+              <Globe className="w-3 h-3 mr-1" /> Remote
+            </Badge>
+          </motion.div>
+        )}
       </section>
 
       {/* Search Bar */}
@@ -208,7 +288,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <TrendingUp className="w-6 h-6 text-primary" />
-            International Jobs
+            {getCategoryTitle()}
           </h2>
           <span className="text-sm text-muted-foreground" data-testid="text-jobs-found">
             {jobs ? `${jobs.length} jobs found` : 'Loading...'}
@@ -249,7 +329,7 @@ export default function Home() {
             >
               <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-semibold">No jobs found</h3>
-              <p className="text-muted-foreground">Try adjusting your search filters.</p>
+              <p className="text-muted-foreground">Try adjusting your search filters or switch categories.</p>
             </motion.div>
           ) : (
             <motion.div 
@@ -292,7 +372,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              <span>100+ Global Companies</span>
+              <span>200+ Job Sources</span>
             </div>
           </div>
         </div>

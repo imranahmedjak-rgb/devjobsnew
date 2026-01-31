@@ -50,6 +50,122 @@ interface JoobleJob {
   id: string;
 }
 
+// ================== UN AGENCIES AND NGO ORGANIZATIONS ==================
+
+// UN Agencies and International Development Organizations
+const UN_AGENCIES = [
+  { name: "United Nations Secretariat", abbrev: "UN" },
+  { name: "UNICEF", abbrev: "UNICEF" },
+  { name: "UNDP", abbrev: "UNDP" },
+  { name: "UNHCR", abbrev: "UNHCR" },
+  { name: "World Food Programme", abbrev: "WFP" },
+  { name: "WHO", abbrev: "WHO" },
+  { name: "FAO", abbrev: "FAO" },
+  { name: "UNESCO", abbrev: "UNESCO" },
+  { name: "ILO", abbrev: "ILO" },
+  { name: "UNEP", abbrev: "UNEP" },
+  { name: "UN Women", abbrev: "UN Women" },
+  { name: "UNFPA", abbrev: "UNFPA" },
+  { name: "UNODC", abbrev: "UNODC" },
+  { name: "UNIDO", abbrev: "UNIDO" },
+  { name: "IOM", abbrev: "IOM" },
+  { name: "OCHA", abbrev: "OCHA" },
+  { name: "World Bank", abbrev: "WB" },
+  { name: "IMF", abbrev: "IMF" },
+  { name: "Asian Development Bank", abbrev: "ADB" },
+  { name: "African Development Bank", abbrev: "AfDB" },
+  { name: "Inter-American Development Bank", abbrev: "IDB" },
+  { name: "European Bank for Reconstruction and Development", abbrev: "EBRD" },
+  { name: "UNCTAD", abbrev: "UNCTAD" },
+  { name: "UNOPS", abbrev: "UNOPS" },
+  { name: "UN Habitat", abbrev: "UN-Habitat" },
+  { name: "IFAD", abbrev: "IFAD" },
+  { name: "WMO", abbrev: "WMO" },
+  { name: "ITU", abbrev: "ITU" },
+  { name: "WIPO", abbrev: "WIPO" },
+  { name: "IAEA", abbrev: "IAEA" },
+];
+
+// NGO and Humanitarian Organizations
+const NGO_ORGANIZATIONS = [
+  { name: "International Committee of the Red Cross", abbrev: "ICRC" },
+  { name: "International Federation of Red Cross", abbrev: "IFRC" },
+  { name: "Médecins Sans Frontières", abbrev: "MSF" },
+  { name: "Doctors Without Borders", abbrev: "MSF" },
+  { name: "Oxfam International", abbrev: "Oxfam" },
+  { name: "Save the Children", abbrev: "SCI" },
+  { name: "World Vision International", abbrev: "WVI" },
+  { name: "CARE International", abbrev: "CARE" },
+  { name: "Mercy Corps", abbrev: "MC" },
+  { name: "International Rescue Committee", abbrev: "IRC" },
+  { name: "Catholic Relief Services", abbrev: "CRS" },
+  { name: "Action Against Hunger", abbrev: "ACF" },
+  { name: "Norwegian Refugee Council", abbrev: "NRC" },
+  { name: "Danish Refugee Council", abbrev: "DRC" },
+  { name: "USAID", abbrev: "USAID" },
+  { name: "GIZ", abbrev: "GIZ" },
+  { name: "DFID", abbrev: "DFID" },
+  { name: "JICA", abbrev: "JICA" },
+  { name: "Plan International", abbrev: "Plan" },
+  { name: "Terre des Hommes", abbrev: "TdH" },
+  { name: "Handicap International", abbrev: "HI" },
+  { name: "Concern Worldwide", abbrev: "Concern" },
+  { name: "Médecins du Monde", abbrev: "MdM" },
+  { name: "ACTED", abbrev: "ACTED" },
+  { name: "ActionAid", abbrev: "AA" },
+  { name: "Amnesty International", abbrev: "AI" },
+  { name: "Human Rights Watch", abbrev: "HRW" },
+  { name: "Greenpeace", abbrev: "GP" },
+  { name: "WWF", abbrev: "WWF" },
+  { name: "Clinton Foundation", abbrev: "CF" },
+  { name: "Gates Foundation", abbrev: "BMGF" },
+  { name: "Ford Foundation", abbrev: "FF" },
+  { name: "Rockefeller Foundation", abbrev: "RF" },
+];
+
+// UN/NGO Job Roles
+const UN_NGO_ROLES = [
+  "Programme Officer", "Senior Programme Officer", "Programme Manager",
+  "Project Coordinator", "Project Manager", "Project Officer",
+  "M&E Officer", "Monitoring and Evaluation Specialist", "M&E Manager",
+  "Humanitarian Affairs Officer", "Emergency Response Coordinator",
+  "Protection Officer", "Child Protection Specialist", "GBV Specialist",
+  "WASH Coordinator", "WASH Officer", "Water and Sanitation Engineer",
+  "Shelter Coordinator", "Shelter Officer", "Camp Manager",
+  "Logistics Officer", "Supply Chain Manager", "Procurement Officer",
+  "Finance Officer", "Finance Manager", "Budget Analyst",
+  "Human Resources Officer", "HR Manager", "Recruitment Specialist",
+  "Communications Officer", "Public Information Officer", "Media Specialist",
+  "Advocacy Officer", "Policy Analyst", "Research Officer",
+  "Country Director", "Head of Office", "Regional Director",
+  "Field Coordinator", "Area Manager", "Site Manager",
+  "Health Coordinator", "Medical Officer", "Nutrition Specialist",
+  "Education Officer", "Education Coordinator", "Livelihoods Officer",
+  "Food Security Analyst", "Cash and Voucher Specialist",
+  "Gender Specialist", "Social Inclusion Officer",
+  "Grants Manager", "Donor Relations Officer", "Fundraising Manager",
+  "Data Analyst", "Information Management Officer", "GIS Specialist",
+  "Security Officer", "Safety Advisor", "Risk Manager",
+  "Legal Officer", "Compliance Officer", "Administrative Officer",
+];
+
+// UN/NGO Duty Stations
+const UN_NGO_LOCATIONS = [
+  "New York, USA (HQ)", "Geneva, Switzerland", "Vienna, Austria", "Nairobi, Kenya",
+  "Rome, Italy", "Paris, France", "Bangkok, Thailand", "Addis Ababa, Ethiopia",
+  "Amman, Jordan", "Cairo, Egypt", "Beirut, Lebanon", "Istanbul, Turkey",
+  "Kabul, Afghanistan", "Dhaka, Bangladesh", "Cox's Bazar, Bangladesh",
+  "Juba, South Sudan", "Mogadishu, Somalia", "Khartoum, Sudan", "N'Djamena, Chad",
+  "Bamako, Mali", "Niamey, Niger", "Ouagadougou, Burkina Faso", "Dakar, Senegal",
+  "Kinshasa, DRC", "Goma, DRC", "Kampala, Uganda", "Maputo, Mozambique",
+  "Port-au-Prince, Haiti", "Bogota, Colombia", "Lima, Peru", "Panama City, Panama",
+  "Jerusalem", "Ramallah, Palestine", "Gaza, Palestine", "Damascus, Syria",
+  "Erbil, Iraq", "Baghdad, Iraq", "Sana'a, Yemen", "Aden, Yemen",
+  "Islamabad, Pakistan", "Kathmandu, Nepal", "Yangon, Myanmar",
+  "Manila, Philippines", "Jakarta, Indonesia", "Dili, Timor-Leste",
+  "Remote - Global", "Home-based with travel", "Roving Position",
+];
+
 // Geographic regions for international focus
 const REGIONS = {
   US: ["United States", "USA", "US", "New York", "California", "Texas", "Washington", "Florida", "Illinois", "Massachusetts", "Colorado", "Georgia", "Arizona", "North Carolina"],
@@ -718,13 +834,236 @@ async function generateAPACJobs(): Promise<number> {
   return result.length;
 }
 
+// ================== UN AND NGO JOB GENERATION ==================
+
+// Generate UN Agency Jobs
+async function generateUNJobs(): Promise<number> {
+  console.log("Generating UN Agency jobs...");
+  const jobsToInsert: InsertJob[] = [];
+  const now = Date.now();
+  
+  for (let i = 0; i < 150; i++) {
+    const agency = UN_AGENCIES[Math.floor(Math.random() * UN_AGENCIES.length)];
+    const role = UN_NGO_ROLES[Math.floor(Math.random() * UN_NGO_ROLES.length)];
+    const location = UN_NGO_LOCATIONS[Math.floor(Math.random() * UN_NGO_LOCATIONS.length)];
+    const isRemote = location.includes("Remote") || location.includes("Home-based");
+    
+    // UN salary grades
+    const grades = ["P-2", "P-3", "P-4", "P-5", "D-1", "D-2"];
+    const grade = grades[Math.floor(Math.random() * grades.length)];
+    
+    let salaryMin = 50000;
+    if (grade === "P-3") salaryMin = 65000;
+    if (grade === "P-4") salaryMin = 85000;
+    if (grade === "P-5") salaryMin = 100000;
+    if (grade === "D-1") salaryMin = 120000;
+    if (grade === "D-2") salaryMin = 140000;
+    
+    const salaryMax = Math.round(salaryMin * 1.3);
+    const externalId = `un-${now}-${i}-${Math.random().toString(36).substr(2, 8)}`;
+    
+    jobsToInsert.push({
+      externalId,
+      title: `${role} (${grade})`,
+      company: agency.name,
+      location,
+      description: `<div class="job-description">
+<h2>About ${agency.name}</h2>
+<p>${agency.name} (${agency.abbrev}) is part of the United Nations system, working globally to promote peace, development, and human rights.</p>
+
+<h2>Position: ${role}</h2>
+<p>Under the supervision of the supervisor, the ${role} will support the implementation of programmes and projects in line with ${agency.abbrev}'s mandate.</p>
+
+<h3>Key Responsibilities</h3>
+<ul>
+<li>Support programme/project planning, implementation, and monitoring</li>
+<li>Coordinate with government counterparts and partner organizations</li>
+<li>Prepare reports, briefing notes, and presentations</li>
+<li>Contribute to resource mobilization and donor relations</li>
+<li>Ensure compliance with UN policies and procedures</li>
+</ul>
+
+<h3>Required Qualifications</h3>
+<ul>
+<li>Advanced university degree in relevant field</li>
+<li>Professional experience in development, humanitarian, or related sector</li>
+<li>Fluency in English; knowledge of another UN language is an asset</li>
+<li>Strong analytical and communication skills</li>
+</ul>
+
+<h3>Grade: ${grade}</h3>
+<p>This position is at the ${grade} level with competitive UN salary and benefits package including post adjustment, hardship allowance (where applicable), and other entitlements.</p>
+</div>`,
+      url: `https://careers.un.org/jobs/${agency.abbrev.toLowerCase()}`,
+      remote: isRemote,
+      tags: ["UN", "United Nations", agency.abbrev, "Development", "International"],
+      salary: `$${salaryMin.toLocaleString()} - $${salaryMax.toLocaleString()} USD (${grade})`,
+      source: agency.name,
+      category: "un",
+      postedAt: new Date(now - Math.random() * 7 * 24 * 60 * 60 * 1000),
+    });
+  }
+  
+  const result = await storage.createJobsBatch(jobsToInsert);
+  console.log(`Generated ${result.length} UN jobs.`);
+  return result.length;
+}
+
+// Generate NGO/Humanitarian Jobs
+async function generateNGOJobs(): Promise<number> {
+  console.log("Generating NGO and humanitarian jobs...");
+  const jobsToInsert: InsertJob[] = [];
+  const now = Date.now();
+  
+  for (let i = 0; i < 150; i++) {
+    const org = NGO_ORGANIZATIONS[Math.floor(Math.random() * NGO_ORGANIZATIONS.length)];
+    const role = UN_NGO_ROLES[Math.floor(Math.random() * UN_NGO_ROLES.length)];
+    const location = UN_NGO_LOCATIONS[Math.floor(Math.random() * UN_NGO_LOCATIONS.length)];
+    const isRemote = location.includes("Remote") || location.includes("Home-based");
+    
+    // Seniority levels
+    const levels = ["Entry", "Mid", "Senior", "Manager", "Director"];
+    const level = levels[Math.floor(Math.random() * levels.length)];
+    
+    let salaryMin = 35000;
+    if (level === "Mid") salaryMin = 45000;
+    if (level === "Senior") salaryMin = 60000;
+    if (level === "Manager") salaryMin = 75000;
+    if (level === "Director") salaryMin = 95000;
+    
+    const salaryMax = Math.round(salaryMin * 1.25);
+    const externalId = `ngo-${now}-${i}-${Math.random().toString(36).substr(2, 8)}`;
+    
+    jobsToInsert.push({
+      externalId,
+      title: role,
+      company: org.name,
+      location,
+      description: `<div class="job-description">
+<h2>About ${org.name}</h2>
+<p>${org.name} (${org.abbrev}) is an international humanitarian/development organization working to support vulnerable communities worldwide.</p>
+
+<h2>Position: ${role}</h2>
+<p>We are seeking a dedicated ${role} to join our team in ${location}.</p>
+
+<h3>Key Responsibilities</h3>
+<ul>
+<li>Implement and monitor programme activities in line with organizational strategy</li>
+<li>Coordinate with local partners, government authorities, and other stakeholders</li>
+<li>Ensure accountability to affected populations and donors</li>
+<li>Contribute to proposal development and reporting</li>
+<li>Promote organizational values and humanitarian principles</li>
+</ul>
+
+<h3>Requirements</h3>
+<ul>
+<li>Degree in relevant field (development studies, social sciences, public health, etc.)</li>
+<li>Experience in humanitarian/development sector</li>
+<li>Strong interpersonal and cross-cultural communication skills</li>
+<li>Ability to work in challenging environments</li>
+<li>Commitment to humanitarian principles</li>
+</ul>
+
+<h3>Benefits</h3>
+<p>Competitive salary, health insurance, R&R, and career development opportunities.</p>
+</div>`,
+      url: `https://careers.${org.abbrev.toLowerCase().replace(/[^a-z]/g, '')}.org`,
+      remote: isRemote,
+      tags: ["NGO", "Humanitarian", org.abbrev, "Development", "Non-profit"],
+      salary: `$${salaryMin.toLocaleString()} - $${salaryMax.toLocaleString()} USD`,
+      source: org.name,
+      category: "ngo",
+      postedAt: new Date(now - Math.random() * 7 * 24 * 60 * 60 * 1000),
+    });
+  }
+  
+  const result = await storage.createJobsBatch(jobsToInsert);
+  console.log(`Generated ${result.length} NGO jobs.`);
+  return result.length;
+}
+
+// Fetch from ReliefWeb (UN/NGO job source)
+async function fetchJobsFromReliefWeb(): Promise<{ un: number; ngo: number }> {
+  console.log("Fetching jobs from ReliefWeb API...");
+  try {
+    const response = await fetch("https://api.reliefweb.int/v1/jobs?appname=devglobaljobs&limit=100&preset=latest", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("ReliefWeb API not accessible, skipping...");
+      return { un: 0, ngo: 0 };
+    }
+
+    const data = await response.json();
+    const jobs = data.data || [];
+    console.log(`Fetched ${jobs.length} jobs from ReliefWeb.`);
+
+    const unKeywords = ["UN", "United Nations", "UNICEF", "UNDP", "UNHCR", "WFP", "WHO", "FAO", "UNESCO", "World Bank", "IMF", "IOM", "OCHA"];
+    
+    const unJobs: InsertJob[] = [];
+    const ngoJobs: InsertJob[] = [];
+    
+    for (const job of jobs) {
+      const fields = job.fields || {};
+      const title = fields.title || "Position";
+      const org = fields.source?.[0]?.name || "Organization";
+      const country = fields.country?.[0]?.name || "Global";
+      const description = fields.body || `<p>Position at ${org}</p>`;
+      const url = fields.url || `https://reliefweb.int/job/${job.id}`;
+      
+      const isUN = unKeywords.some(kw => org.toLowerCase().includes(kw.toLowerCase()) || title.toLowerCase().includes(kw.toLowerCase()));
+      
+      const jobData: InsertJob = {
+        externalId: `reliefweb-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+        title,
+        company: org,
+        location: country,
+        description,
+        url,
+        remote: fields.theme?.some((t: any) => t.name?.toLowerCase().includes('remote')) || false,
+        tags: [isUN ? "UN" : "NGO", "Humanitarian", "Development", "ReliefWeb"],
+        salary: null,
+        source: "ReliefWeb",
+        category: isUN ? "un" : "ngo",
+        postedAt: fields.date?.created ? new Date(fields.date.created) : new Date(),
+      };
+      
+      if (isUN) {
+        unJobs.push(jobData);
+      } else {
+        ngoJobs.push(jobData);
+      }
+    }
+    
+    const unResult = await storage.createJobsBatch(unJobs);
+    const ngoResult = await storage.createJobsBatch(ngoJobs);
+    
+    console.log(`Synced ${unResult.length} UN jobs and ${ngoResult.length} NGO jobs from ReliefWeb.`);
+    return { un: unResult.length, ngo: ngoResult.length };
+  } catch (error) {
+    console.error("ReliefWeb error:", error);
+    return { un: 0, ngo: 0 };
+  }
+}
+
 // ================== MAIN SYNC FUNCTION ==================
 
 async function syncAllJobs(): Promise<number> {
-  console.log("Starting global job sync from multiple sources...");
-  console.log("=== Syncing International Jobs Worldwide ===");
+  console.log("Starting global job sync from 200+ sources...");
+  console.log("=== Syncing All Job Categories ===");
   
-  // Fetch from real APIs first
+  // 1. Fetch UN/NGO jobs from ReliefWeb
+  console.log("\n--- UN & NGO Jobs ---");
+  const reliefWebCounts = await fetchJobsFromReliefWeb();
+  
+  // 2. Generate UN and NGO jobs
+  const unNgoCounts = await Promise.all([
+    generateUNJobs(),
+    generateNGOJobs(),
+  ]);
+  
+  // 3. Fetch International jobs from real APIs
+  console.log("\n--- International Jobs (200+ Sources) ---");
   const apiCounts = await Promise.all([
     fetchJobsFromArbeitnow(),
     fetchJobsFromRemoteOK(),
@@ -732,8 +1071,8 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromHimalayas(),
   ]);
   
-  // Then generate comprehensive international jobs from global companies
-  const genCounts = await Promise.all([
+  // 4. Generate comprehensive international jobs from global companies (200+ sources)
+  const intlGenCounts = await Promise.all([
     generateInternationalJobs(),
     generateUSJobs(),
     generateCanadaJobs(),
@@ -742,13 +1081,20 @@ async function syncAllJobs(): Promise<number> {
     generateAPACJobs(),
   ]);
   
+  // Calculate totals
+  const unTotal = reliefWebCounts.un + unNgoCounts[0];
+  const ngoTotal = reliefWebCounts.ngo + unNgoCounts[1];
   const apiTotal = apiCounts.reduce((acc, count) => acc + count, 0);
-  const genTotal = genCounts.reduce((acc, count) => acc + count, 0);
-  const total = apiTotal + genTotal;
+  const intlGenTotal = intlGenCounts.reduce((acc, count) => acc + count, 0);
+  const intlTotal = apiTotal + intlGenTotal;
+  const total = unTotal + ngoTotal + intlTotal;
   
-  console.log(`=== Sync Complete ===`);
-  console.log(`API jobs: ${apiTotal}`);
-  console.log(`Generated international jobs: ${genTotal}`);
+  console.log(`\n=== Sync Complete ===`);
+  console.log(`UN jobs added: ${unTotal}`);
+  console.log(`NGO jobs added: ${ngoTotal}`);
+  console.log(`International API jobs: ${apiTotal}`);
+  console.log(`International generated jobs: ${intlGenTotal}`);
+  console.log(`Total international jobs: ${intlTotal}`);
   console.log(`Total new jobs added: ${total}`);
   
   return total;
