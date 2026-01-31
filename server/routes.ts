@@ -1922,5 +1922,29 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
     }
   });
 
+  // Admin endpoint to force clear database and resync all jobs
+  app.post("/api/admin/force-sync", async (req, res) => {
+    try {
+      console.log("=== ADMIN FORCE SYNC: Clearing all jobs and resyncing ===");
+      await storage.clearAllJobs();
+      console.log("Database cleared. Starting fresh sync...");
+      
+      // Wait a moment for database to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const count = await syncAllJobs();
+      console.log(`Force sync complete. Added ${count} jobs.`);
+      
+      res.json({ 
+        message: "Force sync complete - database cleared and resynced", 
+        count,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Force sync failed:", error);
+      res.status(500).json({ message: "Failed to force sync jobs" });
+    }
+  });
+
   return httpServer;
 }
