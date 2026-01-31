@@ -66,27 +66,56 @@ const COUNTRIES_LIST = [
   "Latin America", "Middle East", "North America"
 ];
 
-const DEV_SECTOR_KEYWORDS = [
-  "ngo", "nonprofit", "non-profit", "humanitarian", "development", "un ", "united nations",
-  "unicef", "undp", "unhcr", "who", "wfp", "fao", "unesco", "iom", "unfpa", "unaids",
-  "world bank", "imf", "adb", "afdb", "international", "relief", "aid", "charity",
-  "foundation", "social impact", "sustainability", "climate", "environment", "health",
-  "education", "poverty", "refugee", "crisis", "emergency", "advocacy", "policy",
-  "global", "mission", "community", "civil society", "philanthropy", "grant",
-  "ingo", "donor", "bilateral", "multilateral", "cooperation", "programme", "program manager",
-  "monitoring", "evaluation", "m&e", "wash", "livelihood", "protection", "gender",
-  "child protection", "food security", "nutrition", "shelter", "cccm", "giz", "usaid",
-  "dfid", "echo", "ocha", "icrc", "ifrc", "red cross", "msf", "oxfam", "care",
-  "save the children", "plan international", "mercy corps", "irc", "nrc", "acted"
+const UN_KEYWORDS = [
+  "un ", "united nations", "unicef", "undp", "unhcr", "who", "wfp", "fao", "unesco", 
+  "iom", "unfpa", "unaids", "unido", "unctad", "unep", "un-habitat", "unodc", "unwomen",
+  "unops", "unrwa", "ilo", "itu", "wipo", "wmo", "imf", "world bank", "ifc", "miga",
+  "adb", "afdb", "iadb", "ebrd", "aiib", "ocha", "desa", "ohchr", "dpko", "undss",
+  "unv", "uncdf", "unitar", "unoosa", "unjspf", "icj", "icc", "wto", "iaea"
 ];
 
-function isDevSectorJob(job: { title: string; company: string; description: string; tags?: string[] }): boolean {
+const NGO_KEYWORDS = [
+  "ngo", "nonprofit", "non-profit", "ingo", "humanitarian", "relief", "aid", "charity",
+  "foundation", "social impact", "civil society", "philanthropy", "icrc", "ifrc", 
+  "red cross", "msf", "doctors without borders", "oxfam", "care international", 
+  "save the children", "plan international", "mercy corps", "irc", "nrc", "acted",
+  "world vision", "caritas", "catholic relief", "crs", "concern worldwide", "drc",
+  "danish refugee council", "action against hunger", "acf", "médecins du monde",
+  "handicap international", "humanity & inclusion", "tearfund", "usaid", "giz", "dfid",
+  "echo", "sida", "norad", "danida", "jica", "koica", "afp", "afd", "kfw"
+];
+
+const DEV_SECTOR_KEYWORDS = [
+  ...UN_KEYWORDS, ...NGO_KEYWORDS,
+  "development", "refugee", "crisis", "emergency", "advocacy", "policy",
+  "protection", "gender", "child protection", "food security", "nutrition", 
+  "shelter", "cccm", "wash", "livelihood", "m&e", "monitoring", "evaluation",
+  "programme", "bilateral", "multilateral", "cooperation", "donor", "grant"
+];
+
+function isUNJob(job: { title: string; company: string; description: string; tags?: string[] }): boolean {
   const searchText = `${job.title} ${job.company} ${job.description} ${(job.tags || []).join(" ")}`.toLowerCase();
-  return DEV_SECTOR_KEYWORDS.some(keyword => searchText.includes(keyword.toLowerCase()));
+  return UN_KEYWORDS.some(keyword => searchText.includes(keyword.toLowerCase()));
+}
+
+function isNGOJob(job: { title: string; company: string; description: string; tags?: string[] }): boolean {
+  const searchText = `${job.title} ${job.company} ${job.description} ${(job.tags || []).join(" ")}`.toLowerCase();
+  if (isUNJob(job)) return false;
+  return NGO_KEYWORDS.some(keyword => searchText.includes(keyword.toLowerCase()));
+}
+
+function isDevSectorJob(job: { title: string; company: string; description: string; tags?: string[] }): boolean {
+  return isUNJob(job) || isNGOJob(job);
+}
+
+function getJobCategory(job: { title: string; company: string; description: string; tags?: string[] }): "un" | "ngo" | "international" {
+  if (isUNJob(job)) return "un";
+  if (isNGOJob(job)) return "ngo";
+  return "international";
 }
 
 async function fetchJobsFromArbeitnow(): Promise<number> {
-  console.log("Fetching jobs from Arbeitnow (filtering for development sector)...");
+  console.log("Fetching jobs from Arbeitnow...");
   try {
     const response = await fetch("https://www.arbeitnow.com/api/job-board-api");
     if (!response.ok) {
@@ -96,34 +125,34 @@ async function fetchJobsFromArbeitnow(): Promise<number> {
     const data = await response.json() as ArbeitnowResponse;
     const allJobs = data.data;
     console.log(`Fetched ${allJobs.length} total jobs from Arbeitnow.`);
-    
-    const devSectorJobs = allJobs.filter(job => 
-      isDevSectorJob({ title: job.title, company: job.company_name, description: job.description, tags: job.tags })
-    );
-    console.log(`Filtered to ${devSectorJobs.length} development sector jobs.`);
 
-    if (devSectorJobs.length === 0) {
-      console.log("No development sector jobs found in current Arbeitnow listings.");
-      return 0;
-    }
-
-    const jobsToInsert: InsertJob[] = devSectorJobs.map((apiJob) => ({
-      externalId: `arbeitnow-${apiJob.slug}`,
-      title: apiJob.title,
-      company: apiJob.company_name,
-      location: apiJob.location,
-      description: apiJob.description,
-      url: apiJob.url,
-      remote: apiJob.remote,
-      tags: [...(apiJob.tags || []), "Development Sector"],
-      salary: null,
-      source: "Arbeitnow",
-      category: "development",
-      postedAt: new Date(apiJob.created_at * 1000),
-    }));
+    const jobsToInsert: InsertJob[] = allJobs.map((apiJob) => {
+      const jobData = { title: apiJob.title, company: apiJob.company_name, description: apiJob.description, tags: apiJob.tags };
+      const category = getJobCategory(jobData);
+      const categoryLabel = category === "un" ? "UN Agency" : category === "ngo" ? "NGO" : "International";
+      
+      return {
+        externalId: `arbeitnow-${apiJob.slug}`,
+        title: apiJob.title,
+        company: apiJob.company_name,
+        location: apiJob.location,
+        description: apiJob.description,
+        url: apiJob.url,
+        remote: apiJob.remote,
+        tags: [...(apiJob.tags || []), categoryLabel],
+        salary: null,
+        source: "Arbeitnow",
+        category,
+        postedAt: new Date(apiJob.created_at * 1000),
+      };
+    });
 
     const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Synced ${result.length} new development sector jobs from Arbeitnow.`);
+    const unCount = jobsToInsert.filter(j => j.category === "un").length;
+    const ngoCount = jobsToInsert.filter(j => j.category === "ngo").length;
+    const intlCount = jobsToInsert.filter(j => j.category === "international").length;
+    console.log(`Arbeitnow categories: ${unCount} UN, ${ngoCount} NGO, ${intlCount} International`);
+    console.log(`Synced ${result.length} new jobs from Arbeitnow.`);
     return result.length;
   } catch (error) {
     console.error("Error fetching jobs from Arbeitnow:", error);
@@ -151,7 +180,7 @@ function parseRssXml(xml: string): Array<{title: string, link: string, descripti
 }
 
 async function fetchJobsFromReliefWeb(): Promise<number> {
-  console.log("Fetching jobs from ReliefWeb RSS feed (Development Sector)...");
+  console.log("Fetching jobs from ReliefWeb RSS feed...");
   try {
     const response = await fetch("https://reliefweb.int/jobs/rss.xml", {
       headers: {
@@ -182,6 +211,10 @@ async function fetchJobsFromReliefWeb(): Promise<number> {
       
       const jobId = item.link.match(/\/job\/(\d+)\//)?.[1] || Date.now().toString();
       
+      const jobData = { title: item.title, company: organization, description: descHtml };
+      const category = isUNJob(jobData) ? "un" : "ngo";
+      const categoryLabel = category === "un" ? "UN Agency" : "NGO";
+      
       return {
         externalId: `reliefweb-${jobId}`,
         title: item.title,
@@ -190,15 +223,18 @@ async function fetchJobsFromReliefWeb(): Promise<number> {
         description: descHtml,
         url: item.link,
         remote: item.title.toLowerCase().includes("remote") || country.toLowerCase().includes("remote"),
-        tags: ["Development Sector", "Humanitarian", "NGO", "ReliefWeb"],
+        tags: [categoryLabel, "Humanitarian", "ReliefWeb"],
         salary: null,
         source: "ReliefWeb",
-        category: "development",
+        category,
         postedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
       };
     });
 
     const result = await storage.createJobsBatch(jobsToInsert);
+    const unCount = jobsToInsert.filter(j => j.category === "un").length;
+    const ngoCount = jobsToInsert.filter(j => j.category === "ngo").length;
+    console.log(`ReliefWeb categories: ${unCount} UN, ${ngoCount} NGO`);
     console.log(`Synced ${result.length} new jobs from ReliefWeb RSS.`);
     return result.length;
   } catch (error) {
@@ -208,7 +244,7 @@ async function fetchJobsFromReliefWeb(): Promise<number> {
 }
 
 async function fetchJobsFromRemoteOK(): Promise<number> {
-  console.log("Fetching jobs from RemoteOK (filtering for development sector)...");
+  console.log("Fetching jobs from RemoteOK...");
   try {
     const response = await fetch("https://remoteok.com/api", {
       headers: {
@@ -223,38 +259,38 @@ async function fetchJobsFromRemoteOK(): Promise<number> {
     const allJobs = data.filter(job => job.id && job.position);
     console.log(`Fetched ${allJobs.length} total jobs from RemoteOK.`);
 
-    const devSectorJobs = allJobs.filter(job => 
-      isDevSectorJob({ 
-        title: job.position, 
-        company: job.company || "", 
-        description: job.description || "", 
-        tags: job.tags 
-      })
-    );
-    console.log(`Filtered to ${devSectorJobs.length} development sector jobs.`);
-
-    if (devSectorJobs.length === 0) {
-      console.log("No development sector jobs found in current RemoteOK listings.");
-      return 0;
-    }
-
-    const jobsToInsert: InsertJob[] = devSectorJobs.slice(0, 100).map((apiJob) => ({
-      externalId: `remoteok-${apiJob.id}`,
-      title: apiJob.position,
-      company: apiJob.company || "Remote Organization",
-      location: apiJob.location || "Remote Worldwide",
-      description: apiJob.description || `<p>Remote position at ${apiJob.company}</p>`,
-      url: apiJob.url || `https://remoteok.com/remote-jobs/${apiJob.id}`,
-      remote: true,
-      tags: [...(apiJob.tags || []), "Development Sector", "Remote"],
-      salary: apiJob.salary_min && apiJob.salary_max ? `$${apiJob.salary_min} - $${apiJob.salary_max}` : null,
-      source: "RemoteOK",
-      category: "development",
-      postedAt: apiJob.date ? new Date(apiJob.date) : new Date(),
-    }));
+    const jobsToInsert: InsertJob[] = allJobs.slice(0, 100).map((apiJob) => {
+      const jobData = { 
+        title: apiJob.position, 
+        company: apiJob.company || "", 
+        description: apiJob.description || "", 
+        tags: apiJob.tags 
+      };
+      const category = getJobCategory(jobData);
+      const categoryLabel = category === "un" ? "UN Agency" : category === "ngo" ? "NGO" : "International";
+      
+      return {
+        externalId: `remoteok-${apiJob.id}`,
+        title: apiJob.position,
+        company: apiJob.company || "Remote Organization",
+        location: apiJob.location || "Remote Worldwide",
+        description: apiJob.description || `<p>Remote position at ${apiJob.company}</p>`,
+        url: apiJob.url || `https://remoteok.com/remote-jobs/${apiJob.id}`,
+        remote: true,
+        tags: [...(apiJob.tags || []), categoryLabel, "Remote"],
+        salary: apiJob.salary_min && apiJob.salary_max ? `$${apiJob.salary_min} - $${apiJob.salary_max}` : null,
+        source: "RemoteOK",
+        category,
+        postedAt: apiJob.date ? new Date(apiJob.date) : new Date(),
+      };
+    });
 
     const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Synced ${result.length} new development sector jobs from RemoteOK.`);
+    const unCount = jobsToInsert.filter(j => j.category === "un").length;
+    const ngoCount = jobsToInsert.filter(j => j.category === "ngo").length;
+    const intlCount = jobsToInsert.filter(j => j.category === "international").length;
+    console.log(`RemoteOK categories: ${unCount} UN, ${ngoCount} NGO, ${intlCount} International`);
+    console.log(`Synced ${result.length} new jobs from RemoteOK.`);
     return result.length;
   } catch (error) {
     console.error("Error fetching jobs from RemoteOK:", error);
@@ -262,100 +298,6 @@ async function fetchJobsFromRemoteOK(): Promise<number> {
   }
 }
 
-async function fetchInternationalJobsFromArbeitnow(): Promise<number> {
-  console.log("Fetching international jobs from Arbeitnow...");
-  try {
-    const response = await fetch("https://www.arbeitnow.com/api/job-board-api");
-    if (!response.ok) {
-      throw new Error(`Failed to fetch jobs: ${response.statusText}`);
-    }
-
-    const data = await response.json() as ArbeitnowResponse;
-    const allJobs = data.data;
-    console.log(`Fetched ${allJobs.length} total international jobs from Arbeitnow.`);
-    
-    const nonDevJobs = allJobs.filter(job => 
-      !isDevSectorJob({ title: job.title, company: job.company_name, description: job.description, tags: job.tags })
-    );
-    console.log(`Filtered to ${nonDevJobs.length} non-dev sector international jobs.`);
-
-    if (nonDevJobs.length === 0) return 0;
-
-    const jobsToInsert: InsertJob[] = nonDevJobs.map((apiJob) => ({
-      externalId: `arbeitnow-intl-${apiJob.slug}`,
-      title: apiJob.title,
-      company: apiJob.company_name,
-      location: apiJob.location,
-      description: apiJob.description,
-      url: apiJob.url,
-      remote: apiJob.remote,
-      tags: [...(apiJob.tags || []), "International"],
-      salary: null,
-      source: "Arbeitnow",
-      category: "international",
-      postedAt: new Date(apiJob.created_at * 1000),
-    }));
-
-    const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Synced ${result.length} new international jobs from Arbeitnow.`);
-    return result.length;
-  } catch (error) {
-    console.error("Error fetching international jobs from Arbeitnow:", error);
-    return 0;
-  }
-}
-
-async function fetchInternationalJobsFromRemoteOK(): Promise<number> {
-  console.log("Fetching international remote jobs from RemoteOK...");
-  try {
-    const response = await fetch("https://remoteok.com/api", {
-      headers: {
-        "User-Agent": "DevGlobalJobs/1.0 (https://devglobaljobs.com)"
-      }
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to fetch jobs: ${response.statusText}`);
-    }
-
-    const data = await response.json() as RemoteOKJob[];
-    const allJobs = data.filter(job => job.id && job.position);
-    console.log(`Fetched ${allJobs.length} total remote jobs from RemoteOK.`);
-
-    const nonDevJobs = allJobs.filter(job => 
-      !isDevSectorJob({ 
-        title: job.position, 
-        company: job.company || "", 
-        description: job.description || "", 
-        tags: job.tags 
-      })
-    );
-    console.log(`Filtered to ${nonDevJobs.length} non-dev sector international remote jobs.`);
-
-    if (nonDevJobs.length === 0) return 0;
-
-    const jobsToInsert: InsertJob[] = nonDevJobs.slice(0, 100).map((apiJob) => ({
-      externalId: `remoteok-intl-${apiJob.id}`,
-      title: apiJob.position,
-      company: apiJob.company || "Remote Company",
-      location: apiJob.location || "Remote Worldwide",
-      description: apiJob.description || `<p>Remote position at ${apiJob.company}</p>`,
-      url: apiJob.url || `https://remoteok.com/remote-jobs/${apiJob.id}`,
-      remote: true,
-      tags: [...(apiJob.tags || []), "International", "Remote"],
-      salary: apiJob.salary_min && apiJob.salary_max ? `$${apiJob.salary_min} - $${apiJob.salary_max}` : null,
-      source: "RemoteOK",
-      category: "international",
-      postedAt: apiJob.date ? new Date(apiJob.date) : new Date(),
-    }));
-
-    const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Synced ${result.length} new international remote jobs from RemoteOK.`);
-    return result.length;
-  } catch (error) {
-    console.error("Error fetching international jobs from RemoteOK:", error);
-    return 0;
-  }
-}
 
 async function fetchJobsFromUSAJobs(): Promise<number> {
   console.log("Fetching jobs from USAJobs (US Government)...");
@@ -639,27 +581,15 @@ async function generateDevelopmentBankJobs(): Promise<number> {
 
 async function syncAllJobs(): Promise<number> {
   console.log("Starting global job sync...");
+  console.log("=== Syncing Jobs (UN, NGO, International) ===");
   
-  // Fetch Development Sector jobs
-  console.log("=== Syncing Development Sector Jobs ===");
-  const devCounts = await Promise.all([
+  const counts = await Promise.all([
     fetchJobsFromArbeitnow(),
     fetchJobsFromRemoteOK(),
     fetchJobsFromReliefWeb(),
   ]);
-  const devTotal = devCounts.reduce((acc: number, count: number) => acc + count, 0);
-  console.log(`Development sector sync complete: ${devTotal} jobs added`);
   
-  // Fetch International Jobs (non-dev sector)
-  console.log("=== Syncing International Jobs ===");
-  const intlCounts = await Promise.all([
-    fetchInternationalJobsFromArbeitnow(),
-    fetchInternationalJobsFromRemoteOK(),
-  ]);
-  const intlTotal = intlCounts.reduce((acc: number, count: number) => acc + count, 0);
-  console.log(`International jobs sync complete: ${intlTotal} jobs added`);
-  
-  const total = devTotal + intlTotal;
+  const total = counts.reduce((acc: number, count: number) => acc + count, 0);
   console.log(`Global sync complete. Total new jobs added: ${total}`);
   return total;
 }

@@ -40,19 +40,24 @@ Single table design for jobs:
 2. **Storage Abstraction**: `DatabaseStorage` class implements `IStorage` interface for clean data access
 3. **API Aggregation**: Background sync fetches jobs from multiple external APIs for both categories
 4. **Query-based Filtering**: Search, location, remote, and category filters handled via SQL queries with Drizzle ORM
-5. **Dual-Category System**: Jobs are categorized as "development" (UN/NGO sector) or "international" (global professional roles)
+5. **Three-Category System**: Jobs are categorized as "un" (UN agencies), "ngo" (NGOs/humanitarian), or "international" (global professional roles)
 
 ## Job Categories
 
-### Development Sector
-- Humanitarian, UN agencies, NGOs, INGOs, development banks, and social impact organizations
-- Filtered using 50+ keywords: NGO, nonprofit, humanitarian, UNICEF, UNDP, UNHCR, WHO, World Bank, climate, sustainability, refugee, etc.
-- Sources: ReliefWeb RSS, Arbeitnow (filtered), RemoteOK (filtered)
+### UN Jobs
+- United Nations agencies, World Bank, IMF, and international development banks
+- Keywords: UNICEF, UNDP, UNHCR, WHO, WFP, FAO, UNESCO, IOM, World Bank, IMF, ADB, OCHA, etc.
+- Sources: ReliefWeb RSS, Arbeitnow, RemoteOK
+
+### NGO Jobs
+- Non-governmental organizations, humanitarian agencies, and civil society
+- Keywords: NGO, nonprofit, ICRC, IFRC, Red Cross, MSF, Oxfam, Save the Children, USAID, GIZ, etc.
+- Sources: ReliefWeb RSS, Arbeitnow, RemoteOK
 
 ### International Jobs
 - Professional opportunities across technology, finance, consulting, and global enterprises
-- Non-development-sector jobs from the same sources (inverse filtering)
-- Sources: Arbeitnow (non-dev sector), RemoteOK (non-dev sector)
+- Non-UN/NGO jobs from the same sources (inverse filtering)
+- Sources: Arbeitnow, RemoteOK
 
 ## Job Sources
 

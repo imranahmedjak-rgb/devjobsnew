@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Loader2, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, Shield } from "lucide-react";
+import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, Shield, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -16,7 +16,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [remote, setRemote] = useState(false);
-  const [category, setCategory] = useState<JobCategory>("development");
+  const [category, setCategory] = useState<JobCategory>("un");
   
   const { data: jobs, isLoading, error } = useJobs({
     search: search || undefined,
@@ -26,6 +26,24 @@ export default function Home() {
   });
 
   const { data: stats } = useJobStats();
+
+  const getCategoryTitle = () => {
+    switch (category) {
+      case "un": return "UN Agency Jobs";
+      case "ngo": return "NGO Jobs";
+      case "international": return "International Jobs";
+      default: return "Jobs";
+    }
+  };
+
+  const getCategoryDescription = () => {
+    switch (category) {
+      case "un": return "United Nations agencies, World Bank, IMF, and international development banks";
+      case "ngo": return "Non-governmental organizations, humanitarian agencies, and civil society";
+      case "international": return "Professional opportunities across technology, finance, consulting, and global enterprises";
+      default: return "";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-primary/20 flex flex-col">
@@ -41,8 +59,8 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-4"
           >
-            <Shield className="w-4 h-4" />
-            Verified Direct Application Links Only
+            <CheckCircle className="w-4 h-4" />
+            Verified Jobs
           </motion.div>
           
           <motion.h1 
@@ -115,28 +133,33 @@ export default function Home() {
           transition={{ delay: 0.2 }}
         >
           <Tabs value={category} onValueChange={(v) => setCategory(v as JobCategory)} className="w-full">
-            <TabsList className="w-full max-w-2xl mx-auto h-auto p-1.5 bg-muted/50 border border-border/50 rounded-xl grid grid-cols-2 gap-2">
+            <TabsList className="w-full max-w-3xl mx-auto h-auto p-1.5 bg-muted/50 border border-border/50 rounded-xl grid grid-cols-3 gap-1">
               <TabsTrigger 
-                value="development" 
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
-                data-testid="tab-development"
+                value="un" 
+                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                data-testid="tab-un"
+              >
+                <Landmark className="w-4 h-4" />
+                <span className="font-semibold hidden sm:inline">UN Jobs</span>
+                <span className="font-semibold sm:hidden">UN</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="ngo" 
+                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                data-testid="tab-ngo"
               >
                 <Heart className="w-4 h-4" />
-                <span className="font-semibold">Development Sector</span>
-                <Badge variant="secondary" className="ml-1 text-xs px-2 py-0 data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground">
-                  UN/NGO
-                </Badge>
+                <span className="font-semibold hidden sm:inline">NGO Jobs</span>
+                <span className="font-semibold sm:hidden">NGO</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="international" 
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
+                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
                 data-testid="tab-international"
               >
-                <Landmark className="w-4 h-4" />
-                <span className="font-semibold">International Jobs</span>
-                <Badge variant="secondary" className="ml-1 text-xs px-2 py-0 data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground">
-                  Global
-                </Badge>
+                <Globe className="w-4 h-4" />
+                <span className="font-semibold hidden sm:inline">International</span>
+                <span className="font-semibold sm:hidden">Intl</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -150,29 +173,15 @@ export default function Home() {
           className="max-w-2xl mx-auto mt-4 text-center"
         >
           <AnimatePresence mode="wait">
-            {category === "development" ? (
-              <motion.p 
-                key="dev"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="text-sm text-muted-foreground"
-              >
-                <Users className="w-4 h-4 inline mr-1" />
-                Humanitarian, UN agencies, NGOs, INGOs, development banks, and social impact organizations
-              </motion.p>
-            ) : (
-              <motion.p 
-                key="intl"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="text-sm text-muted-foreground"
-              >
-                <Globe className="w-4 h-4 inline mr-1" />
-                Professional opportunities across technology, finance, consulting, and global enterprises
-              </motion.p>
-            )}
+            <motion.p 
+              key={category}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              className="text-sm text-muted-foreground"
+            >
+              {getCategoryDescription()}
+            </motion.p>
           </AnimatePresence>
         </motion.div>
       </section>
@@ -237,7 +246,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <TrendingUp className="w-6 h-6 text-primary" />
-            {category === "development" ? "Development Sector Jobs" : "International Opportunities"}
+            {getCategoryTitle()}
           </h2>
           <span className="text-sm text-muted-foreground" data-testid="text-jobs-found">
             {jobs ? `${jobs.length} jobs found` : 'Loading...'}
@@ -308,8 +317,8 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" />
-              <span>Verified Links Only</span>
+              <CheckCircle className="w-4 h-4 text-primary" />
+              <span>Verified Jobs</span>
             </div>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" />

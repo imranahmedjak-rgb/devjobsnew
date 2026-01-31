@@ -3,7 +3,7 @@ import { pgTable, text, serial, boolean, timestamp, jsonb } from "drizzle-orm/pg
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const jobCategories = ["development", "international"] as const;
+export const jobCategories = ["un", "ngo", "international"] as const;
 export type JobCategory = typeof jobCategories[number];
 
 export const jobs = pgTable("jobs", {
