@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -118,7 +117,6 @@ export default function PostJob() {
             </div>
           </motion.div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -315,7 +313,6 @@ export default function PostJob() {
           </div>
         </motion.div>
       </div>
-      <Footer />
     </div>
   );
 }
