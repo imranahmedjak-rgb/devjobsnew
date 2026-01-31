@@ -1,0 +1,36 @@
+
+import { z } from "zod";
+import { insertJobSchema, jobs } from "./schema";
+
+export const api = {
+  jobs: {
+    list: {
+      method: "GET" as const,
+      path: "/api/jobs",
+      input: z.object({
+        search: z.string().optional(),
+        location: z.string().optional(),
+        remote: z.preprocess((val) => val === 'true', z.boolean()).optional(),
+      }).optional(),
+      responses: {
+        200: z.array(z.custom<typeof jobs.$inferSelect>()),
+      },
+    },
+    get: {
+      method: "GET" as const,
+      path: "/api/jobs/:id",
+      responses: {
+        200: z.custom<typeof jobs.$inferSelect>(),
+        404: z.object({ message: z.string() }),
+      },
+    },
+    // Internal endpoint to trigger sync manually if needed (mostly for debugging)
+    sync: {
+      method: "POST" as const,
+      path: "/api/jobs/sync",
+      responses: {
+        200: z.object({ message: z.string(), count: z.number() }),
+      },
+    },
+  },
+};
