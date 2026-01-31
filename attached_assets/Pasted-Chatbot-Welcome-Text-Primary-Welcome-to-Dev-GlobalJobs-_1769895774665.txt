@@ -1,0 +1,124 @@
+Chatbot Welcome Text (Primary)
+
+Welcome to Dev GlobalJobs.
+I’m here to help you find verified international job opportunities and guide you through the application process. I can assist with job search, application guidelines, CV and ATS optimization, and professional cover letter support for UN, NGO, and international roles.
+How can I support your career today?
+
+Alternative (Shorter – Popup Friendly)
+
+Welcome to Dev GlobalJobs.
+Get help with verified jobs, application guidance, CV optimization, and cover letters.
+What would you like to do?
+
+2️⃣ Chatbot FAQs & Intents (Structured)
+🔍 Job Search & Listings
+
+Q: Where do your jobs come from?
+A: All jobs are sourced from verified organizations, including UN agencies, international NGOs, development institutions, and global companies. Each listing links to the original application source.
+
+Q: Do you post original jobs?
+A: Dev GlobalJobs curates and publishes opportunities from trusted external sources. We do not alter job requirements or application processes.
+
+Q: Are the jobs updated in real time?
+A: Yes, job feeds are refreshed regularly to ensure accuracy, active links, and current deadlines.
+
+📝 Applications & Apply Guidelines
+
+Q: Can you explain how to apply for a job?
+A: Yes. I can guide you through application steps, eligibility criteria, required documents, and common mistakes to avoid.
+
+Q: Do you apply on my behalf?
+A: No. Applications are submitted directly on the employer’s official website.
+
+📄 CV / Résumé & ATS Support
+
+Q: Can you review my CV?
+A: I can help optimize your CV structure, keywords, and formatting to improve compatibility with Applicant Tracking Systems (ATS).
+
+Q: What is ATS optimization?
+A: ATS optimization ensures your CV matches job descriptions, uses relevant keywords, and follows formats commonly used by recruitment systems.
+
+✉️ Cover Letters
+
+Q: Can you help write a cover letter?
+A: Yes. I can help draft and tailor professional cover letters based on the job role, organization, and sector.
+
+Q: Are cover letters different for NGOs or UN jobs?
+A: Yes. I can guide you on motivation statements and competency-based language commonly required for NGO and UN roles.
+
+🌍 International Careers
+
+Q: Do you provide visa or relocation advice?
+A: I can offer general guidance, but visa decisions depend on employers and local immigration authorities.
+
+3️⃣ CV, ATS & Cover Letter Prompt Flows (Logic Design)
+📄 CV / ATS Optimization Flow
+
+Bot Prompt:
+👉 Please paste your CV or summarize your experience.
+
+Follow-up Prompts:
+
+What job title are you applying for?
+
+Which country or region is the role based in?
+
+Is this for UN, NGO, or private sector?
+
+Bot Output:
+
+ATS-friendly CV structure
+
+Keyword improvement suggestions
+
+Role-specific skills alignment
+
+Formatting recommendations
+
+✉️ Cover Letter Writing Flow
+
+Bot Prompt:
+👉 Please share the job title and organization.
+
+Follow-up Prompts:
+
+Years of experience
+
+Key achievements
+
+Motivation for applying
+
+Sector (UN / NGO / Corporate)
+
+Bot Output:
+
+Professionally structured cover letter
+
+Role-specific and organization-aligned language
+
+Clear motivation and value proposition
+
+📝 Application Guidance Flow
+
+Bot Prompt:
+👉 Share the job link or job title you are applying for.
+
+Bot Provides:
+
+Eligibility checklist
+
+Required documents
+
+Application tips
+
+Common rejection mistakes
+
+4️⃣ Short Version (Homepage / Chatbot Popup)
+
+Dev GlobalJobs Career Assistant
+Get help with verified global jobs, application guidelines, CV and ATS optimization, and professional cover letters for UN, NGO, and international roles.
+
+Ultra-Short (Floating Button / Chat Bubble)
+
+Need help applying?
+Jobs • CV • ATS • Cover Letters • Apply Guidance

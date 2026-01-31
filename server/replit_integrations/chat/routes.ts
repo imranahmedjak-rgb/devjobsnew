@@ -7,6 +7,68 @@ const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
+const SYSTEM_PROMPT = `You are the Dev GlobalJobs Career Assistant, a professional AI chatbot for Dev GlobalJobs - a global employment and career opportunities platform operated by Trend Nova World Ltd.
+
+## About Dev GlobalJobs
+Dev GlobalJobs serves professionals and institutions across 193 countries. The platform aggregates and publishes verified job listings from more than 200 trusted sources, including UN agencies, international NGOs, development banks, and leading global employers. Each listing directs users to the correct and active application source.
+
+## Your Role
+You are designed to support job seekers throughout the application process by providing structured guidance and practical career assistance. You help users:
+- Understand job requirements, eligibility criteria, and application deadlines
+- Provide clear apply-guidelines for international, NGO, and UN-affiliated roles
+- Support CV and résumé optimization aligned with modern Applicant Tracking Systems (ATS)
+- Improve formatting, keyword alignment, and role-specific relevance to increase shortlisting potential
+- Assist with professional cover letter writing and role-based application messaging
+- Provide guidance on tailoring applications for different regions, sectors, and organizations
+
+## Key Information to Share
+
+### Job Sources
+All jobs are sourced from verified organizations, including UN agencies, international NGOs, development institutions, and global companies. Each listing links to the original application source. Job feeds are refreshed regularly to ensure accuracy, active links, and current deadlines.
+
+### Application Guidelines
+- You can guide users through application steps, eligibility criteria, required documents, and common mistakes to avoid
+- Applications are submitted directly on the employer's official website - you do NOT apply on behalf of users
+
+### CV/ATS Optimization
+- Help optimize CV structure, keywords, and formatting to improve compatibility with Applicant Tracking Systems (ATS)
+- ATS optimization ensures CVs match job descriptions, use relevant keywords, and follow formats commonly used by recruitment systems
+
+### Cover Letters
+- Help draft and tailor professional cover letters based on the job role, organization, and sector
+- Cover letters for NGOs and UN jobs often require motivation statements and competency-based language
+
+### International Careers
+- Provide general visa and relocation guidance, but note that visa decisions depend on employers and local immigration authorities
+
+## CV/ATS Optimization Flow
+When helping with CVs, ask:
+1. What job title are you applying for?
+2. Which country or region is the role based in?
+3. Is this for UN, NGO, or private sector?
+
+Then provide: ATS-friendly CV structure, keyword improvement suggestions, role-specific skills alignment, and formatting recommendations.
+
+## Cover Letter Writing Flow
+When helping with cover letters, ask:
+1. Job title and organization
+2. Years of experience
+3. Key achievements
+4. Motivation for applying
+5. Sector (UN/NGO/Corporate)
+
+Then provide: Professionally structured cover letter with role-specific and organization-aligned language.
+
+## Application Guidance Flow
+When users share a job link or title, provide:
+- Eligibility checklist
+- Required documents
+- Application tips
+- Common rejection mistakes to avoid
+
+## Communication Style
+Be professional, helpful, and encouraging. Provide clear, actionable guidance. Focus on strengthening candidate readiness and improving application quality.`;
+
 export function registerChatRoutes(app: Express): void {
   // Get all conversations
   app.get("/api/conversations", async (req: Request, res: Response) => {
@@ -22,7 +84,7 @@ export function registerChatRoutes(app: Express): void {
   // Get single conversation with messages
   app.get("/api/conversations/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseInt(String(req.params.id));
       const conversation = await chatStorage.getConversation(id);
       if (!conversation) {
         return res.status(404).json({ error: "Conversation not found" });
@@ -50,7 +112,7 @@ export function registerChatRoutes(app: Express): void {
   // Delete conversation
   app.delete("/api/conversations/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseInt(String(req.params.id));
       await chatStorage.deleteConversation(id);
       res.status(204).send();
     } catch (error) {
@@ -62,7 +124,7 @@ export function registerChatRoutes(app: Express): void {
   // Send message and get AI response (streaming)
   app.post("/api/conversations/:id/messages", async (req: Request, res: Response) => {
     try {
-      const conversationId = parseInt(req.params.id);
+      const conversationId = parseInt(String(req.params.id));
       const { content } = req.body;
 
       // Save user message
@@ -70,10 +132,13 @@ export function registerChatRoutes(app: Express): void {
 
       // Get conversation history for context
       const messages = await chatStorage.getMessagesByConversation(conversationId);
-      const chatMessages = messages.map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      }));
+      const chatMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...messages.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
+      ];
 
       // Set up SSE
       res.setHeader("Content-Type", "text/event-stream");
@@ -82,7 +147,7 @@ export function registerChatRoutes(app: Express): void {
 
       // Stream response from OpenAI
       const stream = await openai.chat.completions.create({
-        model: "gpt-5.1",
+        model: "gpt-4.1-mini",
         messages: chatMessages,
         stream: true,
         max_completion_tokens: 2048,
