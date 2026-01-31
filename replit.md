@@ -38,18 +38,31 @@ Single table design for jobs:
 ### Key Design Patterns
 1. **Shared Schema**: Database schema and API routes defined in `shared/` directory for full-stack type safety
 2. **Storage Abstraction**: `DatabaseStorage` class implements `IStorage` interface for clean data access
-3. **API Aggregation**: Background sync fetches jobs from multiple external APIs and generates development sector jobs
-4. **Query-based Filtering**: Search, location, and remote filters handled via SQL queries with Drizzle ORM
+3. **API Aggregation**: Background sync fetches jobs from multiple external APIs for both categories
+4. **Query-based Filtering**: Search, location, remote, and category filters handled via SQL queries with Drizzle ORM
+5. **Dual-Category System**: Jobs are categorized as "development" (UN/NGO sector) or "international" (global professional roles)
+
+## Job Categories
+
+### Development Sector
+- Humanitarian, UN agencies, NGOs, INGOs, development banks, and social impact organizations
+- Filtered using 50+ keywords: NGO, nonprofit, humanitarian, UNICEF, UNDP, UNHCR, WHO, World Bank, climate, sustainability, refugee, etc.
+- Sources: ReliefWeb RSS, Arbeitnow (filtered), RemoteOK (filtered)
+
+### International Jobs
+- Professional opportunities across technology, finance, consulting, and global enterprises
+- Non-development-sector jobs from the same sources (inverse filtering)
+- Sources: Arbeitnow (non-dev sector), RemoteOK (non-dev sector)
 
 ## Job Sources
 
 ### External APIs (Active)
 - **ReliefWeb RSS Feed**: Humanitarian and development sector jobs from UN agencies, INGOs, NGOs (reliefweb.int/jobs/rss.xml)
-- **Arbeitnow API**: European/global jobs filtered for development sector keywords
-- **RemoteOK API**: Remote jobs worldwide filtered for development sector keywords
+- **Arbeitnow API**: European/global jobs - split between development sector and international
+- **RemoteOK API**: Remote jobs worldwide - split between development sector and international
 
-### Development Sector Filtering
-All jobs are filtered using keywords including: NGO, nonprofit, humanitarian, UNICEF, UNDP, UNHCR, WHO, World Bank, climate, sustainability, refugee, and 50+ other development sector terms.
+### Job Categorization Logic
+Development sector jobs are identified using keywords. International jobs are non-dev-sector jobs from the same sources.
 
 ### Coverage
 - 100+ countries represented
