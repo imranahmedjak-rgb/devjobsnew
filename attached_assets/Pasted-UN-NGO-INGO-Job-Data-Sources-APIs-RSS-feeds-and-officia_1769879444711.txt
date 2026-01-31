@@ -1,0 +1,185 @@
+UN, NGO & INGO Job Data Sources
+
+(APIs, RSS feeds, and official aggregators)
+
+🌐 United Nations & Multilateral Organizations
+
+UN Careers
+
+UNICEF Careers
+
+UNDP Jobs
+
+WHO Careers
+
+WFP Careers
+
+UNHCR Careers
+
+UNESCO Careers
+
+FAO Jobs
+
+IOM Careers
+
+UN Women Careers
+
+UNOPS Jobs
+
+IFAD Careers
+
+ICAO Jobs
+
+ILO Jobs
+
+UNEP Careers
+
+UNIDO Careers
+
+UNFPA Careers
+
+OHCHR Jobs
+
+UN Secretariat Vacancies
+
+World Bank Jobs
+
+IMF Careers
+
+Asian Development Bank Jobs
+
+African Development Bank Jobs
+
+Inter-American Development Bank Jobs
+
+European Bank for Reconstruction and Development Jobs
+
+🌍 Major NGO & INGO Job Platforms
+
+ReliefWeb Jobs
+
+Impactpool
+
+Devex Jobs
+
+Idealist.org
+
+CharityJob
+
+GlobalJobs.org
+
+EuroBrussels
+
+Jobs.guardian.co.uk (NGO section)
+
+Bond NGO Jobs
+
+NGOjobboard.org
+
+DevelopmentAid Jobs
+
+UNjobnet
+
+UNJobsApp
+
+UNjobs.org
+
+EthicalJobs
+
+🧩 NGO & INGO Organizations (Direct Sources)
+
+Save the Children Careers
+
+Oxfam Jobs
+
+CARE International Jobs
+
+Mercy Corps Careers
+
+NRC (Norwegian Refugee Council) Jobs
+
+IRC (International Rescue Committee) Jobs
+
+ACTED Jobs
+
+Plan International Careers
+
+World Vision Careers
+
+Danish Refugee Council Jobs
+
+Concern Worldwide Careers
+
+Médecins Sans Frontières (MSF) Jobs
+
+International Medical Corps Careers
+
+Handicap International Jobs
+
+Islamic Relief Careers
+
+📰 Government & Public Sector (International)
+
+EURES (EU Jobs Portal)
+
+USAJOBS
+
+UK Civil Service Jobs
+
+EU Institutions Careers (EPSO)
+
+OECD Careers
+
+Council of Europe Jobs
+
+OSCE Careers
+
+NATO Civilian Jobs
+
+🔌 Job APIs (Free / Limited / Public)
+
+ArbeitNow Job Board API
+
+Adzuna Job Search API
+
+CareerJet Job API
+
+Jooble Job API
+
+Jobs2Careers API
+
+Findwork Job API
+
+RapidAPI Job Search APIs
+
+Greenhouse Job Board API
+
+Lever Job API
+
+Theirstack Job Postings API
+
+JobDataAPI
+
+📡 RSS Feeds (Auto-Update Friendly)
+
+ReliefWeb Jobs RSS
+
+UN Careers RSS
+
+UNICEF Jobs RSS
+
+UNDP Jobs RSS
+
+NGO Careers RSS Feeds (various orgs)
+
+Government Jobs RSS (EU & national portals)
+
+🧠 Aggregation & Meta Job Sources
+
+Google Jobs (via schema, not API)
+
+Indeed (no API – indexing only)
+
+LinkedIn Jobs (no API – indexing only)
+
+Glassdoor Jobs (no API – indexing only)

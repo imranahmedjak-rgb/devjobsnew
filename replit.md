@@ -43,21 +43,19 @@ Single table design for jobs:
 
 ## Job Sources
 
-### External APIs
-- **Arbeitnow API**: Tech and professional job listings (Europe-focused)
-- **ReliefWeb API**: Humanitarian and development sector jobs
-- **RemoteOK API**: Remote work opportunities worldwide
+### External APIs (Active)
+- **ReliefWeb RSS Feed**: Humanitarian and development sector jobs from UN agencies, INGOs, NGOs (reliefweb.int/jobs/rss.xml)
+- **Arbeitnow API**: European/global jobs filtered for development sector keywords
+- **RemoteOK API**: Remote jobs worldwide filtered for development sector keywords
 
-### Generated Job Categories
-- **UN Careers**: Jobs from 20+ United Nations agencies (UNDP, UNICEF, WHO, FAO, WFP, UNHCR, etc.)
-- **NGO/INGO Jobs**: Positions from 30+ international NGOs (Save the Children, Oxfam, CARE, IRC, MSF, etc.)
-- **IFI Jobs**: Development bank and international financial institution positions (World Bank, IMF, ADB, AfDB, etc.)
+### Development Sector Filtering
+All jobs are filtered using keywords including: NGO, nonprofit, humanitarian, UNICEF, UNDP, UNHCR, WHO, World Bank, climate, sustainability, refugee, and 50+ other development sector terms.
 
 ### Coverage
-- 193 UN member countries
+- 100+ countries represented
 - Development sector, humanitarian, and professional roles
 - Remote and on-site positions
-- Multiple job levels (P-2 to D-2 for UN, various grades for other orgs)
+- Direct application links only (no organization homepages)
 
 ## External Dependencies
 

@@ -130,64 +130,77 @@ async function fetchJobsFromArbeitnow(): Promise<number> {
   }
 }
 
-async function fetchJobsFromReliefWeb(): Promise<number> {
-  console.log("Fetching jobs from ReliefWeb API v1 (Development Sector)...");
-  try {
-    // Use ReliefWeb API v1 GET method - more reliable
-    const apiUrl = new URL("https://api.reliefweb.int/v1/jobs");
-    apiUrl.searchParams.set("appname", "devglobaljobs.com");
-    apiUrl.searchParams.set("limit", "200");
-    apiUrl.searchParams.set("preset", "latest");
-    apiUrl.searchParams.set("profile", "full");
+function parseRssXml(xml: string): Array<{title: string, link: string, description: string, pubDate: string}> {
+  const items: Array<{title: string, link: string, description: string, pubDate: string}> = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+  
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const itemXml = match[1];
+    const title = itemXml.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+    const link = itemXml.match(/<link>([^<]*)<\/link>/)?.[1] || "";
+    const description = itemXml.match(/<description>([\s\S]*?)<\/description>/)?.[1] || "";
+    const pubDate = itemXml.match(/<pubDate>([^<]*)<\/pubDate>/)?.[1] || "";
     
-    const response = await fetch(apiUrl.toString(), {
-      method: "GET",
+    if (title && link) {
+      items.push({ title, link, description, pubDate });
+    }
+  }
+  return items;
+}
+
+async function fetchJobsFromReliefWeb(): Promise<number> {
+  console.log("Fetching jobs from ReliefWeb RSS feed (Development Sector)...");
+  try {
+    const response = await fetch("https://reliefweb.int/jobs/rss.xml", {
       headers: {
-        "Accept": "application/json",
-        "User-Agent": "DevGlobalJobs/1.0 (https://devglobaljobs.com; contact@devglobaljobs.com)"
+        "User-Agent": "Mozilla/5.0 DevGlobalJobs/1.0 (https://devglobaljobs.com)",
+        "Accept": "application/rss+xml, application/xml, text/xml"
       }
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch jobs: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch RSS: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    const jobs = data.data || [];
-    console.log(`Fetched ${jobs.length} jobs from ReliefWeb.`);
+    const xml = await response.text();
+    const items = parseRssXml(xml);
+    console.log(`Fetched ${items.length} jobs from ReliefWeb RSS.`);
 
-    const jobsToInsert: InsertJob[] = jobs.map((apiJob: any) => {
-      const fields = apiJob.fields || {};
-      const countries = fields.country || [];
-      const countryNames = countries.map((c: any) => c.name).join(", ");
-      const organization = fields.source?.[0]?.name || "International Organization";
-      const careerCategories = fields.career_categories?.map((c: any) => c.name) || [];
-      const jobType = fields.type?.[0]?.name || "Full-time";
-      const experience = fields.experience?.[0]?.name || "";
+    const jobsToInsert: InsertJob[] = items.map((item) => {
+      const descHtml = item.description
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"');
       
-      // ReliefWeb provides direct job URL
-      const directJobUrl = fields.url || `https://reliefweb.int/job/${apiJob.id}`;
+      const countryMatch = descHtml.match(/Country:\s*([^<]+)/);
+      const orgMatch = descHtml.match(/Organization:\s*([^<]+)/);
+      const country = countryMatch?.[1]?.trim() || "International";
+      const organization = orgMatch?.[1]?.trim() || "International Organization";
+      
+      const jobId = item.link.match(/\/job\/(\d+)\//)?.[1] || Date.now().toString();
       
       return {
-        externalId: `reliefweb-${apiJob.id}`,
-        title: fields.title,
+        externalId: `reliefweb-${jobId}`,
+        title: item.title,
         company: organization,
-        location: countryNames || "International",
-        description: fields.body || `<p>Apply for this ${jobType} position at ${organization}.</p>${fields.how_to_apply ? `<h3>How to Apply</h3><p>${fields.how_to_apply}</p>` : ''}`,
-        url: directJobUrl,
-        remote: fields.title?.toLowerCase().includes("remote") || countryNames.toLowerCase().includes("remote"),
-        tags: [...careerCategories, jobType, experience, "Development Sector", "Humanitarian", "NGO"].filter(Boolean) as string[],
+        location: country,
+        description: descHtml,
+        url: item.link,
+        remote: item.title.toLowerCase().includes("remote") || country.toLowerCase().includes("remote"),
+        tags: ["Development Sector", "Humanitarian", "NGO", "ReliefWeb"],
         salary: null,
         source: "ReliefWeb",
-        postedAt: fields.date?.created ? new Date(fields.date.created) : new Date(),
+        postedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
       };
     });
 
     const result = await storage.createJobsBatch(jobsToInsert);
-    console.log(`Synced ${result.length} new jobs from ReliefWeb.`);
+    console.log(`Synced ${result.length} new jobs from ReliefWeb RSS.`);
     return result.length;
   } catch (error) {
-    console.error("Error fetching jobs from ReliefWeb:", error);
+    console.error("Error fetching jobs from ReliefWeb RSS:", error);
     return 0;
   }
 }
