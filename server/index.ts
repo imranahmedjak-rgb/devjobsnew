@@ -22,22 +22,14 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-// Cache control middleware - prevent stale content
+// Cache control middleware - force fresh content always
 app.use((req, res, next) => {
-  // For API routes - no caching
-  if (req.path.startsWith('/api')) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-  }
-  // For HTML pages - minimal caching with revalidation
-  else if (req.path === '/' || !req.path.includes('.')) {
-    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-  }
-  // For static assets - allow caching but with validation
-  else {
-    res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
-  }
+  // Disable all caching for dynamic content
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '-1');
+  res.setHeader('Surrogate-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   next();
 });
 
