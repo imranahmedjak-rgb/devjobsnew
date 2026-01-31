@@ -30,8 +30,11 @@ export function useJobs(filters: JobFilter) {
       const params = new URLSearchParams(baseQueryString);
       params.set('page', String(pageParam));
       params.set('limit', '30');
+      params.set('_t', String(Date.now())); // Cache buster
       const url = `${api.jobs.list.path}?${params.toString()}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       if (!res.ok) throw new Error("Failed to fetch jobs");
       return await res.json() as PaginatedJobsResponse;
     },
@@ -51,7 +54,10 @@ export function useJobStats() {
   return useQuery({
     queryKey: [api.jobs.stats.path],
     queryFn: async () => {
-      const res = await fetch(api.jobs.stats.path);
+      const url = `${api.jobs.stats.path}?_t=${Date.now()}`;
+      const res = await fetch(url, {
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       if (!res.ok) throw new Error("Failed to fetch stats");
       return api.jobs.stats.responses[200].parse(await res.json());
     },
