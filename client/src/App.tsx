@@ -13,6 +13,7 @@ import Privacy from "@/pages/Privacy";
 import Cookies from "@/pages/Cookies";
 import Disclaimer from "@/pages/Disclaimer";
 import NotFound from "@/pages/not-found";
+import AIChatWidget from "@/components/AIChatWidget";
 
 function Router() {
   return (
@@ -36,6 +37,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Router />
+        <AIChatWidget />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

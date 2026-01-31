@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { type InsertJob, insertJobSchema } from "@shared/schema";
 import { parseStringPromise } from "xml2js";
+import { registerChatRoutes } from "./replit_integrations/chat";
 
 // Helper function to validate job URLs - reject homepage-only links
 function isValidJobUrl(url: string): boolean {
@@ -1701,6 +1702,9 @@ export async function registerRoutes(
 
   // Sync every 2 minutes for frequent updates (respects API rate limits)
   setInterval(syncAllJobs, 2 * 60 * 1000);
+
+  // Register AI chat routes
+  registerChatRoutes(app);
 
   // SEO: Robots.txt
   app.get("/robots.txt", (req, res) => {
