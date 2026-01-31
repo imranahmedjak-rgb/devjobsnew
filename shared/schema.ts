@@ -3,9 +3,6 @@ import { pgTable, text, serial, boolean, timestamp, jsonb } from "drizzle-orm/pg
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const jobCategories = ["un", "ngo", "international"] as const;
-export type JobCategory = typeof jobCategories[number];
-
 export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
   externalId: text("external_id").unique().notNull(),
@@ -18,7 +15,7 @@ export const jobs = pgTable("jobs", {
   tags: text("tags").array(),
   salary: text("salary"),
   source: text("source").notNull(),
-  category: text("category").default("development"),
+  region: text("region"),
   postedAt: timestamp("posted_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -35,5 +32,5 @@ export interface JobFilter {
   search?: string;
   location?: string;
   remote?: boolean;
-  category?: JobCategory;
+  region?: string;
 }
