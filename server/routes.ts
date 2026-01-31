@@ -1049,21 +1049,15 @@ async function fetchJobsFromReliefWeb(): Promise<{ un: number; ngo: number }> {
 // ================== MAIN SYNC FUNCTION ==================
 
 async function syncAllJobs(): Promise<number> {
-  console.log("Starting global job sync from 200+ sources...");
+  console.log("Starting job sync from real APIs only (direct application links)...");
   console.log("=== Syncing All Job Categories ===");
   
-  // 1. Fetch UN/NGO jobs from ReliefWeb
-  console.log("\n--- UN & NGO Jobs ---");
+  // 1. Fetch UN/NGO jobs from ReliefWeb (real API with direct links)
+  console.log("\n--- UN & NGO Jobs (ReliefWeb API) ---");
   const reliefWebCounts = await fetchJobsFromReliefWeb();
   
-  // 2. Generate UN and NGO jobs
-  const unNgoCounts = await Promise.all([
-    generateUNJobs(),
-    generateNGOJobs(),
-  ]);
-  
-  // 3. Fetch International jobs from real APIs
-  console.log("\n--- International Jobs (200+ Sources) ---");
+  // 2. Fetch International jobs from real APIs (all have direct job links)
+  console.log("\n--- International Jobs (Real APIs with Direct Links) ---");
   const apiCounts = await Promise.all([
     fetchJobsFromArbeitnow(),
     fetchJobsFromRemoteOK(),
@@ -1071,31 +1065,18 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromHimalayas(),
   ]);
   
-  // 4. Generate comprehensive international jobs from global companies (200+ sources)
-  const intlGenCounts = await Promise.all([
-    generateInternationalJobs(),
-    generateUSJobs(),
-    generateCanadaJobs(),
-    generateEUJobs(),
-    generateMiddleEastJobs(),
-    generateAPACJobs(),
-  ]);
-  
   // Calculate totals
-  const unTotal = reliefWebCounts.un + unNgoCounts[0];
-  const ngoTotal = reliefWebCounts.ngo + unNgoCounts[1];
-  const apiTotal = apiCounts.reduce((acc, count) => acc + count, 0);
-  const intlGenTotal = intlGenCounts.reduce((acc, count) => acc + count, 0);
-  const intlTotal = apiTotal + intlGenTotal;
+  const unTotal = reliefWebCounts.un;
+  const ngoTotal = reliefWebCounts.ngo;
+  const intlTotal = apiCounts.reduce((acc, count) => acc + count, 0);
   const total = unTotal + ngoTotal + intlTotal;
   
   console.log(`\n=== Sync Complete ===`);
   console.log(`UN jobs added: ${unTotal}`);
   console.log(`NGO jobs added: ${ngoTotal}`);
-  console.log(`International API jobs: ${apiTotal}`);
-  console.log(`International generated jobs: ${intlGenTotal}`);
-  console.log(`Total international jobs: ${intlTotal}`);
+  console.log(`International jobs: ${intlTotal}`);
   console.log(`Total new jobs added: ${total}`);
+  console.log(`All jobs have direct application links!`);
   
   return total;
 }
