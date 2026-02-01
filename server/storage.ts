@@ -5,7 +5,8 @@ import {
   users, type InsertUser, type User,
   recruiterProfiles, type InsertRecruiterProfile, type RecruiterProfile,
   jobSeekerProfiles, type InsertJobSeekerProfile, type JobSeekerProfile,
-  directJobs, type InsertDirectJob, type DirectJob
+  directJobs, type InsertDirectJob, type DirectJob,
+  pendingJobs, type InsertPendingJob, type PendingJob
 } from "@shared/schema";
 import { eq, ilike, and, desc, or, sql, count, countDistinct } from "drizzle-orm";
 
@@ -49,6 +50,11 @@ export interface IStorage {
   getDirectJobs(page?: number, limit?: number): Promise<{ jobs: DirectJob[]; total: number }>;
   getDirectJob(id: number): Promise<DirectJob | undefined>;
   getDirectJobsByRecruiter(recruiterId: number): Promise<DirectJob[]>;
+  
+  // Pending Jobs (for payment flow)
+  createPendingJob(job: InsertPendingJob): Promise<PendingJob>;
+  getPendingJobBySessionId(sessionId: string): Promise<PendingJob | undefined>;
+  deletePendingJob(sessionId: string): Promise<void>;
   
   // Countries
   getUniqueCountries(): Promise<string[]>;
@@ -245,6 +251,20 @@ export class DatabaseStorage implements IStorage {
 
   async getDirectJobsByRecruiter(recruiterId: number): Promise<DirectJob[]> {
     return await db.select().from(directJobs).where(eq(directJobs.recruiterId, recruiterId)).orderBy(desc(directJobs.postedAt));
+  }
+
+  async createPendingJob(job: InsertPendingJob): Promise<PendingJob> {
+    const [created] = await db.insert(pendingJobs).values(job).returning();
+    return created;
+  }
+
+  async getPendingJobBySessionId(sessionId: string): Promise<PendingJob | undefined> {
+    const [pending] = await db.select().from(pendingJobs).where(eq(pendingJobs.sessionId, sessionId));
+    return pending;
+  }
+
+  async deletePendingJob(sessionId: string): Promise<void> {
+    await db.delete(pendingJobs).where(eq(pendingJobs.sessionId, sessionId));
   }
 
   async getUniqueCountries(): Promise<string[]> {

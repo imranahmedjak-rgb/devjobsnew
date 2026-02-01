@@ -42,6 +42,25 @@ export const jobSeekerProfiles = pgTable("job_seeker_profiles", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Pending job posts (before payment is completed)
+export const pendingJobs = pgTable("pending_jobs", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull().unique(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  company: text("company").notNull(),
+  location: text("location").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  applyMethod: text("apply_method").notNull(),
+  applyValue: text("apply_value").notNull(),
+  remote: boolean("remote").default(false),
+  tags: text("tags").array(),
+  salary: text("salary"),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
 // Direct job posts (by recruiters on platform)
 export const directJobs = pgTable("direct_jobs", {
   id: serial("id").primaryKey(),
@@ -84,6 +103,11 @@ export const insertDirectJobSchema = createInsertSchema(directJobs).omit({
   postedAt: true,
 });
 
+export const insertPendingJobSchema = createInsertSchema(pendingJobs).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -93,6 +117,8 @@ export type JobSeekerProfile = typeof jobSeekerProfiles.$inferSelect;
 export type InsertJobSeekerProfile = z.infer<typeof insertJobSeekerProfileSchema>;
 export type DirectJob = typeof directJobs.$inferSelect;
 export type InsertDirectJob = z.infer<typeof insertDirectJobSchema>;
+export type PendingJob = typeof pendingJobs.$inferSelect;
+export type InsertPendingJob = z.infer<typeof insertPendingJobSchema>;
 
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),

@@ -37,24 +37,10 @@ export default function PaymentSuccess() {
       return;
     }
 
-    const savedJobData = localStorage.getItem("pendingJobData");
-    if (!savedJobData) {
-      setError("Job data not found. Please try posting again.");
-      setIsProcessing(false);
-      return;
-    }
-
     try {
-      const jobData = JSON.parse(savedJobData);
-      
       const res = await apiRequest("/api/stripe/verify-payment", {
         method: "POST",
-        body: JSON.stringify({
-          sessionId,
-          description: jobData.description,
-          tags: jobData.tags ? jobData.tags.split(",").map((t: string) => t.trim()) : [],
-          salary: jobData.salary || null,
-        }),
+        body: JSON.stringify({ sessionId }),
       });
 
       if (!res.ok) {

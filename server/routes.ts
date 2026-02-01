@@ -3131,15 +3131,27 @@ export async function registerRoutes(
         cancel_url: `${baseUrl}/post-job?cancelled=true`,
         metadata: {
           user_id: req.user!.id.toString(),
-          job_title: jobData.title,
-          job_location: jobData.location,
-          job_category: jobData.category,
-          apply_method: jobData.applyMethod,
-          apply_value: jobData.applyValue,
-          remote: jobData.remote ? 'true' : 'false',
-          company: profile.organizationName,
         },
         customer_email: req.user!.email,
+      });
+
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      await storage.createPendingJob({
+        sessionId: session.id,
+        userId: req.user!.id,
+        title: jobData.title,
+        company: profile.organizationName,
+        location: jobData.location,
+        description: jobData.description,
+        category: jobData.category,
+        applyMethod: jobData.applyMethod,
+        applyValue: jobData.applyValue,
+        remote: jobData.remote || false,
+        tags: jobData.tags ? jobData.tags.split(",").map((t: string) => t.trim()) : [],
+        salary: jobData.salary || null,
+        expiresAt,
       });
 
       res.json({ sessionId: session.id, url: session.url });
@@ -3163,29 +3175,39 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Payment not completed" });
       }
 
+      if (session.amount_total !== 200) {
+        return res.status(400).json({ error: "Invalid payment amount" });
+      }
+
       const metadata = session.metadata;
       if (!metadata || metadata.user_id !== req.user!.id.toString()) {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
-      const profile = await storage.getRecruiterProfile(req.user!.id);
-      if (!profile) {
-        return res.status(400).json({ error: "Recruiter profile not found" });
+      const pendingJob = await storage.getPendingJobBySessionId(sessionId);
+      if (!pendingJob) {
+        return res.status(400).json({ error: "Job data not found or already processed" });
+      }
+
+      if (pendingJob.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized - user mismatch" });
       }
 
       const job = await storage.createDirectJob({
         recruiterId: req.user!.id,
-        title: metadata.job_title || "Job Title",
-        company: metadata.company || profile.organizationName,
-        location: metadata.job_location || "Location",
-        description: req.body.description || "Job description",
-        category: (metadata.job_category as "un" | "ngo" | "international") || "international",
-        applyMethod: (metadata.apply_method as "link" | "email") || "email",
-        applyValue: metadata.apply_value || req.user!.email,
-        remote: metadata.remote === 'true',
-        tags: req.body.tags || [],
-        salary: req.body.salary || null,
+        title: pendingJob.title,
+        company: pendingJob.company,
+        location: pendingJob.location,
+        description: pendingJob.description,
+        category: pendingJob.category as "un" | "ngo" | "international",
+        applyMethod: pendingJob.applyMethod as "link" | "email",
+        applyValue: pendingJob.applyValue,
+        remote: pendingJob.remote || false,
+        tags: pendingJob.tags || [],
+        salary: pendingJob.salary || null,
       });
+
+      await storage.deletePendingJob(sessionId);
 
       res.json({ success: true, job });
     } catch (error) {
