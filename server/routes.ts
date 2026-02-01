@@ -809,11 +809,26 @@ async function fetchJobsFromGreenhouseBoards(): Promise<number> {
       { token: "twitch", name: "Twitch" },
       { token: "discord", name: "Discord" },
       { token: "figma", name: "Figma" },
-      { token: "notion", name: "Notion" },
       { token: "dropbox", name: "Dropbox" },
       { token: "stripe", name: "Stripe" },
       { token: "square", name: "Square" },
       { token: "plaid", name: "Plaid" },
+      { token: "hubspot", name: "HubSpot" },
+      { token: "lyft", name: "Lyft" },
+      { token: "instacart", name: "Instacart" },
+      { token: "doordash", name: "DoorDash" },
+      { token: "robinhood", name: "Robinhood" },
+      { token: "nubank", name: "Nubank" },
+      { token: "wealthfront", name: "Wealthfront" },
+      { token: "flexport", name: "Flexport" },
+      { token: "amplitude", name: "Amplitude" },
+      { token: "gitlab", name: "GitLab" },
+      { token: "hashicorp", name: "HashiCorp" },
+      { token: "mongodb", name: "MongoDB" },
+      { token: "elastic", name: "Elastic" },
+      { token: "okta", name: "Okta" },
+      { token: "zendesk", name: "Zendesk" },
+      { token: "contentful", name: "Contentful" },
     ];
 
     let totalSynced = 0;
@@ -870,6 +885,21 @@ async function fetchJobsFromLeverBoards(): Promise<number> {
       { slug: "datadog", name: "Datadog" },
       { slug: "cloudflare", name: "Cloudflare" },
       { slug: "twilio", name: "Twilio" },
+      { slug: "reddit", name: "Reddit" },
+      { slug: "canva", name: "Canva" },
+      { slug: "atlassian", name: "Atlassian" },
+      { slug: "mongodb", name: "MongoDB" },
+      { slug: "palantir", name: "Palantir" },
+      { slug: "snowflake", name: "Snowflake" },
+      { slug: "databricks", name: "Databricks" },
+      { slug: "grafana", name: "Grafana Labs" },
+      { slug: "confluent", name: "Confluent" },
+      { slug: "asana", name: "Asana" },
+      { slug: "airtable", name: "Airtable" },
+      { slug: "postman", name: "Postman" },
+      { slug: "segment", name: "Segment" },
+      { slug: "supabase", name: "Supabase" },
+      { slug: "planetscale", name: "PlanetScale" },
     ];
 
     let totalSynced = 0;
@@ -995,6 +1025,519 @@ async function fetchJobsFromWeb3Career(): Promise<number> {
     return result.length;
   } catch (error) {
     console.error("Web3.career error:", error);
+    return 0;
+  }
+}
+
+// 14. DevITjobs UK (IT Jobs - XML Feed, No Auth)
+async function fetchJobsFromDevITjobsUK(): Promise<number> {
+  console.log("Fetching jobs from DevITjobs UK...");
+  try {
+    const response = await fetch("https://devitjobs.uk/job_feed.xml", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("DevITjobs UK not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    // DevITjobs UK uses <jobs><job>... format
+    const items = result?.jobs?.job || result?.rss?.channel?.item || [];
+    const jobItems = Array.isArray(items) ? items : items ? [items] : [];
+    console.log(`Fetched ${jobItems.length} jobs from DevITjobs UK.`);
+
+    const jobsToInsert: InsertJob[] = [];
+    for (const item of jobItems.slice(0, 100)) {
+      // Handle DevITjobs specific format
+      const title = item.title?._cdata || item.title || item.name?._cdata || item.name || "IT Position";
+      const link = item.link?._cdata || item.link || item.url?._cdata || item.url || "";
+      const description = item.description?._cdata || item.description || "";
+      const company = item.company?._cdata || item.company || item['company-name']?._cdata || item['company-name'] || "UK Tech Company";
+      const location = item.location?._cdata || item.location || item.city?._cdata || item.city || "United Kingdom";
+      const salary = item.salary?._cdata || item.salary || null;
+      const jobId = item.id?._cdata || item.id || link.split('/').pop() || Math.random().toString(36).substr(2, 10);
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      jobsToInsert.push({
+        externalId: `devitjobs-uk-${jobId}`,
+        title: String(title),
+        company: String(company),
+        location: String(location),
+        description: typeof description === 'string' ? description : `<p>${title}</p>`,
+        url: String(link),
+        remote: String(description).toLowerCase().includes('remote') || String(title).toLowerCase().includes('remote'),
+        tags: ["IT", "Technology", "UK", "Europe"],
+        salary: salary ? String(salary) : null,
+        source: "DevITjobs UK",
+        category: "international",
+        postedAt: new Date(),
+      });
+    }
+
+    const jobResult = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${jobResult.length} new jobs from DevITjobs UK.`);
+    return jobResult.length;
+  } catch (error) {
+    console.error("DevITjobs UK error:", error);
+    return 0;
+  }
+}
+
+// 15. Ashby Job Boards (Popular Tech Companies - No Auth Required)
+async function fetchJobsFromAshbyBoards(): Promise<number> {
+  console.log("Fetching jobs from Ashby public boards...");
+  try {
+    const companies = [
+      { slug: "notion", name: "Notion" },
+      { slug: "linear", name: "Linear" },
+      { slug: "ramp", name: "Ramp" },
+      { slug: "mercury", name: "Mercury" },
+      { slug: "vercel", name: "Vercel" },
+      { slug: "retool", name: "Retool" },
+      { slug: "deel", name: "Deel" },
+      { slug: "brex", name: "Brex" },
+      { slug: "rippling", name: "Rippling" },
+      { slug: "openai", name: "OpenAI" },
+      { slug: "anthropic", name: "Anthropic" },
+      { slug: "scale", name: "Scale AI" },
+    ];
+
+    let totalSynced = 0;
+
+    for (const company of companies) {
+      try {
+        const response = await fetch(`https://api.ashbyhq.com/posting-api/job-board/${company.slug}`, {
+          headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/json" }
+        });
+        
+        if (!response.ok) continue;
+
+        const data = await response.json();
+        const jobs = data.jobs || [];
+        if (!Array.isArray(jobs)) continue;
+
+        const jobsToInsert: InsertJob[] = jobs.slice(0, 15).map((job: any) => ({
+          externalId: `ashby-${company.slug}-${job.id}`,
+          title: job.title || "Position",
+          company: company.name,
+          location: job.location || job.locationName || "Multiple Locations",
+          description: job.descriptionHtml || job.description || `<p>Opportunity at ${company.name}</p>`,
+          url: job.jobUrl || job.applicationUrl || `https://jobs.ashbyhq.com/${company.slug}`,
+          remote: job.isRemote || job.location?.toLowerCase().includes("remote") || false,
+          tags: [company.name, "Technology", job.department || "Engineering", "Startup"].filter(Boolean),
+          salary: job.compensation ? `${job.compensation.min} - ${job.compensation.max}` : null,
+          source: `${company.name} (Ashby)`,
+          category: "international",
+          postedAt: job.publishedAt ? new Date(job.publishedAt) : new Date(),
+        }));
+
+        const result = await storage.createJobsBatch(jobsToInsert);
+        totalSynced += result.length;
+      } catch (err) {
+        // Skip failed companies silently
+      }
+    }
+
+    console.log(`Synced ${totalSynced} new jobs from Ashby boards.`);
+    return totalSynced;
+  } catch (error) {
+    console.error("Ashby boards error:", error);
+    return 0;
+  }
+}
+
+// 16. Workable Job Boards (No Auth Required for Public Widget API)
+async function fetchJobsFromWorkableBoards(): Promise<number> {
+  console.log("Fetching jobs from Workable public boards...");
+  try {
+    const companies = [
+      { slug: "revolut", name: "Revolut" },
+      { slug: "n26", name: "N26" },
+      { slug: "wise", name: "Wise" },
+      { slug: "klarna", name: "Klarna" },
+      { slug: "checkout", name: "Checkout.com" },
+      { slug: "skyscanner", name: "Skyscanner" },
+      { slug: "booking", name: "Booking.com" },
+      { slug: "trivago", name: "Trivago" },
+    ];
+
+    let totalSynced = 0;
+
+    for (const company of companies) {
+      try {
+        const response = await fetch(`https://apply.workable.com/api/v1/widget/accounts/${company.slug}`, {
+          headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/json" }
+        });
+        
+        if (!response.ok) continue;
+
+        const data = await response.json();
+        const jobs = data.jobs || [];
+        if (!Array.isArray(jobs)) continue;
+
+        const jobsToInsert: InsertJob[] = jobs.slice(0, 15).map((job: any) => ({
+          externalId: `workable-${company.slug}-${job.shortcode || job.id}`,
+          title: job.title || "Position",
+          company: company.name,
+          location: job.location?.city || job.location?.country || "Multiple Locations",
+          description: job.description || `<p>Opportunity at ${company.name}</p>`,
+          url: job.url || `https://apply.workable.com/${company.slug}/j/${job.shortcode}`,
+          remote: job.remote || job.workplace === "remote" || false,
+          tags: [company.name, "Technology", job.department || "Engineering", "Europe"].filter(Boolean),
+          salary: null,
+          source: `${company.name} (Workable)`,
+          category: "international",
+          postedAt: job.published_on ? new Date(job.published_on) : new Date(),
+        }));
+
+        const result = await storage.createJobsBatch(jobsToInsert);
+        totalSynced += result.length;
+      } catch (err) {
+        // Skip failed companies silently
+      }
+    }
+
+    console.log(`Synced ${totalSynced} new jobs from Workable boards.`);
+    return totalSynced;
+  } catch (error) {
+    console.error("Workable boards error:", error);
+    return 0;
+  }
+}
+
+// 17. Recruitee Job Boards (No Auth Required)
+async function fetchJobsFromRecruiteeBoards(): Promise<number> {
+  console.log("Fetching jobs from Recruitee public boards...");
+  try {
+    const companies = [
+      { subdomain: "bunq", name: "Bunq" },
+      { subdomain: "hostaway", name: "Hostaway" },
+      { subdomain: "productboard", name: "Productboard" },
+      { subdomain: "pleo", name: "Pleo" },
+      { subdomain: "sendcloud", name: "Sendcloud" },
+    ];
+
+    let totalSynced = 0;
+
+    for (const company of companies) {
+      try {
+        const response = await fetch(`https://${company.subdomain}.recruitee.com/api/offers`, {
+          headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/json" }
+        });
+        
+        if (!response.ok) continue;
+
+        const data = await response.json();
+        const jobs = data.offers || data || [];
+        if (!Array.isArray(jobs)) continue;
+
+        const jobsToInsert: InsertJob[] = jobs.slice(0, 15).map((job: any) => ({
+          externalId: `recruitee-${company.subdomain}-${job.id}`,
+          title: job.title || "Position",
+          company: company.name,
+          location: job.location || job.city || "Multiple Locations",
+          description: job.description || `<p>Opportunity at ${company.name}</p>`,
+          url: job.careers_url || job.url || `https://${company.subdomain}.recruitee.com/o/${job.slug}`,
+          remote: job.remote || job.location?.toLowerCase().includes("remote") || false,
+          tags: [company.name, "Technology", job.department || "Engineering", "Europe"].filter(Boolean),
+          salary: job.min_salary && job.max_salary ? `${job.min_salary} - ${job.max_salary}` : null,
+          source: `${company.name} (Recruitee)`,
+          category: "international",
+          postedAt: job.published_at ? new Date(job.published_at) : new Date(),
+        }));
+
+        const result = await storage.createJobsBatch(jobsToInsert);
+        totalSynced += result.length;
+      } catch (err) {
+        // Skip failed companies silently
+      }
+    }
+
+    console.log(`Synced ${totalSynced} new jobs from Recruitee boards.`);
+    return totalSynced;
+  } catch (error) {
+    console.error("Recruitee boards error:", error);
+    return 0;
+  }
+}
+
+// 18. The Muse API (Free Tier - Job Board and Company Profiles)
+async function fetchJobsFromTheMuse(): Promise<number> {
+  console.log("Fetching jobs from The Muse...");
+  try {
+    // The Muse has a public API with free tier
+    const response = await fetch("https://www.themuse.com/api/public/jobs?page=1&per_page=100", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/json" }
+    });
+    if (!response.ok) {
+      console.log("The Muse API not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.results || [];
+    console.log(`Fetched ${jobs.length} jobs from The Muse.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.slice(0, 100).map((job: any) => ({
+      externalId: `themuse-${job.id}`,
+      title: job.name || "Position",
+      company: job.company?.name || "Company",
+      location: job.locations?.[0]?.name || "Multiple Locations",
+      description: job.contents || `<p>Opportunity at ${job.company?.name}</p>`,
+      url: job.refs?.landing_page || `https://www.themuse.com/jobs/${job.id}`,
+      remote: job.locations?.some((loc: any) => loc.name?.toLowerCase().includes("remote")) || false,
+      tags: [job.company?.name, job.levels?.[0]?.name || "Mid-level", job.categories?.[0]?.name || "Technology"].filter(Boolean),
+      salary: null,
+      source: "The Muse",
+      category: "international",
+      postedAt: job.publication_date ? new Date(job.publication_date) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from The Muse.`);
+    return result.length;
+  } catch (error) {
+    console.error("The Muse error:", error);
+    return 0;
+  }
+}
+
+// 19. Arbeitsamt (German Federal Job Board - OAuth but has public endpoint)
+async function fetchJobsFromArbeitsamt(): Promise<number> {
+  console.log("Fetching jobs from Arbeitsamt (German Federal Jobs)...");
+  try {
+    // Public endpoint without auth for limited results
+    const response = await fetch("https://jobsuche.api.bund.dev/ed/v1/search?angebotsart=1&page=1&size=100", {
+      headers: { 
+        "User-Agent": "DevGlobalJobs/1.0", 
+        "Accept": "application/json",
+        "X-Datenquelle-Header": "devglobaljobs"
+      }
+    });
+    if (!response.ok) {
+      console.log("Arbeitsamt API not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.stellenangebote || data.jobs || [];
+    console.log(`Fetched ${jobs.length} jobs from Arbeitsamt.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.slice(0, 100).map((job: any) => ({
+      externalId: `arbeitsamt-${job.refnr || job.hashId}`,
+      title: job.titel || job.beruf || "Position",
+      company: job.arbeitgeber || "German Employer",
+      location: job.arbeitsort?.ort || job.arbeitsort?.region || "Germany",
+      description: job.beschreibung || `<p>${job.titel || "Job opportunity in Germany"}</p>`,
+      url: job.externeUrl || `https://jobsuche.arbeitsagentur.de/stellenangebot/${job.refnr}`,
+      remote: job.homeoffice || false,
+      tags: ["Germany", "Europe", job.berufsfeld || "Professional"].filter(Boolean),
+      salary: job.verguetung || null,
+      source: "Arbeitsamt",
+      category: "international",
+      postedAt: job.eintrittsdatum ? new Date(job.eintrittsdatum) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from Arbeitsamt.`);
+    return result.length;
+  } catch (error) {
+    console.error("Arbeitsamt error:", error);
+    return 0;
+  }
+}
+
+// 20. Europe Remote Jobs (Aggregate European Remote Jobs)
+async function fetchJobsFromEuropeRemotely(): Promise<number> {
+  console.log("Fetching jobs from EuropeRemotely...");
+  try {
+    const response = await fetch("https://europeremotely.com/api/jobs.json", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("EuropeRemotely not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || data || [];
+    console.log(`Fetched ${Array.isArray(jobs) ? jobs.length : 0} jobs from EuropeRemotely.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.slice(0, 100).map((job: any) => ({
+      externalId: `europeremotely-${job.id || job.slug}`,
+      title: job.title || "Remote Position",
+      company: job.company?.name || job.company || "European Company",
+      location: "Europe (Remote)",
+      description: job.description || `<p>Remote opportunity in Europe</p>`,
+      url: job.url || job.apply_url || "https://europeremotely.com",
+      remote: true,
+      tags: ["Remote", "Europe", job.category || "Technology"].filter(Boolean),
+      salary: job.salary || null,
+      source: "EuropeRemotely",
+      category: "international",
+      postedAt: job.published_at ? new Date(job.published_at) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from EuropeRemotely.`);
+    return result.length;
+  } catch (error) {
+    console.error("EuropeRemotely error:", error);
+    return 0;
+  }
+}
+
+// 21. NoDesk (Remote Jobs Worldwide)
+async function fetchJobsFromNoDesk(): Promise<number> {
+  console.log("Fetching jobs from NoDesk (Remote Worldwide)...");
+  try {
+    const response = await fetch("https://nodesk.co/api/jobs.json", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("NoDesk not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || data || [];
+    console.log(`Fetched ${Array.isArray(jobs) ? jobs.length : 0} jobs from NoDesk.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.slice(0, 100).map((job: any) => ({
+      externalId: `nodesk-${job.id || job.slug}`,
+      title: job.title || "Remote Position",
+      company: job.company?.name || job.company || "Remote Company",
+      location: "Remote Worldwide",
+      description: job.description || `<p>Remote opportunity worldwide</p>`,
+      url: job.url || job.apply_url || "https://nodesk.co",
+      remote: true,
+      tags: ["Remote", "Worldwide", job.category || "Technology"].filter(Boolean),
+      salary: job.salary || null,
+      source: "NoDesk",
+      category: "international",
+      postedAt: job.published_at ? new Date(job.published_at) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from NoDesk.`);
+    return result.length;
+  } catch (error) {
+    console.error("NoDesk error:", error);
+    return 0;
+  }
+}
+
+// 22. Remote.co (Remote Jobs)
+async function fetchJobsFromRemoteCo(): Promise<number> {
+  console.log("Fetching jobs from Remote.co...");
+  try {
+    const response = await fetch("https://remote.co/remote-jobs/feed/", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("Remote.co not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || [];
+    const jobItems = Array.isArray(items) ? items : items ? [items] : [];
+    console.log(`Fetched ${jobItems.length} jobs from Remote.co.`);
+
+    const jobsToInsert: InsertJob[] = [];
+    for (const item of jobItems.slice(0, 100)) {
+      const title = item.title || "Remote Position";
+      const link = item.link || "";
+      const description = item.description || "";
+      const pubDate = item.pubDate || new Date().toISOString();
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      const urlParts = link.split('/');
+      const jobId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || link.replace(/[^a-z0-9]/gi, '').slice(-15);
+      
+      // Extract company from title (usually "Job Title at Company")
+      const companyMatch = title.match(/at\s+(.+)$/i);
+      const company = companyMatch ? companyMatch[1].trim() : "Remote Company";
+      const cleanTitle = companyMatch ? title.replace(/\s+at\s+.+$/i, '').trim() : title;
+      
+      jobsToInsert.push({
+        externalId: `remoteco-${jobId}`,
+        title: cleanTitle,
+        company,
+        location: "Remote",
+        description: typeof description === 'string' ? description : `<p>${title}</p>`,
+        url: link,
+        remote: true,
+        tags: ["Remote", "Worldwide"],
+        salary: null,
+        source: "Remote.co",
+        category: "international",
+        postedAt: new Date(pubDate),
+      });
+    }
+
+    const jobResult = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${jobResult.length} new jobs from Remote.co.`);
+    return jobResult.length;
+  } catch (error) {
+    console.error("Remote.co error:", error);
+    return 0;
+  }
+}
+
+// 23. 4dayweek.io (4 Day Week Jobs)
+async function fetchJobsFrom4DayWeek(): Promise<number> {
+  console.log("Fetching jobs from 4dayweek.io...");
+  try {
+    const response = await fetch("https://4dayweek.io/api/jobs", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("4dayweek.io not accessible, skipping...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data.jobs || data || [];
+    console.log(`Fetched ${Array.isArray(jobs) ? jobs.length : 0} jobs from 4dayweek.io.`);
+
+    if (!Array.isArray(jobs)) return 0;
+
+    const jobsToInsert: InsertJob[] = jobs.slice(0, 50).map((job: any) => ({
+      externalId: `4dayweek-${job.id || job.slug}`,
+      title: job.title || "4 Day Week Position",
+      company: job.company?.name || job.company || "4 Day Week Company",
+      location: job.location || "Remote",
+      description: job.description || `<p>4 day week opportunity</p>`,
+      url: job.url || job.apply_url || "https://4dayweek.io",
+      remote: job.remote || job.location?.toLowerCase().includes("remote") || false,
+      tags: ["4 Day Week", "Work-Life Balance", job.category || "Technology"].filter(Boolean),
+      salary: job.salary || null,
+      source: "4dayweek.io",
+      category: "international",
+      postedAt: job.published_at ? new Date(job.published_at) : new Date(),
+    }));
+
+    const result = await storage.createJobsBatch(jobsToInsert);
+    console.log(`Synced ${result.length} new jobs from 4dayweek.io.`);
+    return result.length;
+  } catch (error) {
+    console.error("4dayweek.io error:", error);
     return 0;
   }
 }
@@ -2202,6 +2745,16 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromLeverBoards(),
     fetchJobsFromCryptoJobs(),
     fetchJobsFromWeb3Career(),
+    fetchJobsFromDevITjobsUK(),
+    fetchJobsFromAshbyBoards(),
+    fetchJobsFromWorkableBoards(),
+    fetchJobsFromRecruiteeBoards(),
+    fetchJobsFromTheMuse(),
+    fetchJobsFromArbeitsamt(),
+    fetchJobsFromEuropeRemotely(),
+    fetchJobsFromNoDesk(),
+    fetchJobsFromRemoteCo(),
+    fetchJobsFrom4DayWeek(),
   ]);
   
   // Calculate totals - include all UN agency feeds
