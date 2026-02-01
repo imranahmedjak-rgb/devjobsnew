@@ -1,0 +1,237 @@
+hostinger
+Search
+Ctrl
+K
+Refer & earn up to US$ 200
+
+Ask
+
+
+
+
+Home
+
+Websites
+
+Domains
+
+Horizons
+
+Emails
+
+Reach
+
+VPS
+
+Billing
+
+All services
+
+Account sharing
+Website name
+Website name
+brviraltrends.com
+
+Search
+Overview
+
+Deployments
+
+Hosting Plan
+
+Performance
+
+Analytics
+
+Security
+
+Domains
+
+Files
+
+Databases
+
+Advanced
+Back
+Deployment details
+Deployment from source files
+
+brviraltrends.com
+
+Settings and redeploy
+
+All deployments
+The build failed. Please resolve the issues and redeploy.
+
+
+Redeploy
+State:
+
+Build failed
+
+File:
+
+Dev-Global-Jobs (1) (1).zip
+
+Deployed:
+
+2026-02-01 13:54
+
+•
+
+16s
+
+Framework:
+
+Express
+
+Node version:
+
+22.x
+
+Root directory:
+
+Dev-Global-Jobs
+
+Build and output settings:
+
+Default
+
+Build logs
+Lines: 35
+
+Search logs
+
+
+
+1
+
+added 486 packages, and audited 487 packages in 5s
+
+2
+
+
+3
+
+80 packages are looking for funding
+
+4
+
+run `npm fund` for details
+
+5
+
+
+6
+
+1 moderate severity vulnerability
+
+7
+
+
+8
+
+To address all issues, run:
+
+9
+
+npm audit fix
+
+10
+
+
+11
+
+Run `npm audit` for details.
+
+12
+
+
+13
+
+> rest-express@1.0.0 build
+
+14
+
+> tsx script/build.ts
+
+15
+
+
+16
+
+building client...
+
+17
+
+vite v7.3.0 building client environment for production...
+
+18
+
+transforming...
+
+19
+
+✓ 2467 modules transformed.
+
+20
+
+rendering chunks...
+
+21
+
+computing gzip size...
+
+22
+
+../dist/public/index.html 4.96 kB │ gzip: 1.78 kB
+
+23
+
+../dist/public/assets/index-Dt4cjaXw.css 91.82 kB │ gzip: 14.51 kB
+
+24
+
+../dist/public/assets/index-YEm-wl8Q.js 607.55 kB │ gzip: 181.52 kB
+
+25
+
+
+26
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+
+27
+
+- Using dynamic import() to code-split the application
+
+28
+
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+
+29
+
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+30
+
+✓ built in 4.60s
+
+31
+
+building server...
+
+32
+
+
+33
+
+dist/index.cjs 1.1mb ⚠️
+
+34
+
+
+35
+
+⚡ Done in 84ms
+
