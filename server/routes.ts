@@ -16,7 +16,7 @@ import { registerChatRoutes } from "./replit_integrations/chat";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-global-jobs-secret-key-2024";
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("JWT_SECRET must be set in production"); })() : "dev-global-jobs-secret-key-2024");
 
 // Auth middleware
 interface AuthRequest extends Request {
@@ -3112,16 +3112,15 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid apply method. Must be link or email" });
       }
       
-      // Validate apply value
+      // Validate apply value with stricter validation
       if (applyMethod === "link") {
-        try {
-          new URL(applyValue);
-        } catch {
-          return res.status(400).json({ error: "Invalid application URL" });
+        if (!isValidJobUrl(applyValue)) {
+          return res.status(400).json({ error: "Invalid application URL. Must be a valid HTTP/HTTPS URL." });
         }
       } else if (applyMethod === "email") {
-        if (!applyValue.includes("@")) {
-          return res.status(400).json({ error: "Invalid email address" });
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(applyValue)) {
+          return res.status(400).json({ error: "Invalid email address format" });
         }
       }
       
@@ -3313,8 +3312,67 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
       };
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 30;
-      const result = await storage.getJobs(filters, page, limit);
-      res.json(result);
+      
+      // Fetch both API jobs and direct jobs
+      const [apiResult, directResult] = await Promise.all([
+        storage.getJobs(filters, 1, 10000), // Get all API jobs matching filters
+        storage.getDirectJobs(1, 10000) // Get all direct jobs
+      ]);
+      
+      // Convert direct jobs to unified format with prefixed IDs to avoid collisions
+      const directJobsFormatted = directResult.jobs
+        .filter(dj => {
+          // Apply filters to direct jobs
+          if (filters.category && dj.category !== filters.category) return false;
+          if (filters.remote && !dj.remote) return false;
+          if (filters.location && !dj.location.toLowerCase().includes(filters.location.toLowerCase())) return false;
+          if (filters.search) {
+            const searchLower = filters.search.toLowerCase();
+            const matchesSearch = 
+              dj.title.toLowerCase().includes(searchLower) ||
+              dj.company.toLowerCase().includes(searchLower) ||
+              dj.description.toLowerCase().includes(searchLower);
+            if (!matchesSearch) return false;
+          }
+          return true;
+        })
+        .map(dj => ({
+          id: dj.id + 10000000, // Offset direct job IDs to avoid collision
+          externalId: `direct-${dj.id}`,
+          title: dj.title,
+          company: dj.company,
+          location: dj.location,
+          description: dj.description,
+          url: dj.applyMethod === "link" ? dj.applyValue : `mailto:${dj.applyValue}`,
+          remote: dj.remote,
+          tags: dj.tags || [],
+          salary: dj.salary,
+          source: "Direct - Dev Global Jobs",
+          category: dj.category,
+          postedAt: dj.postedAt,
+          createdAt: dj.createdAt,
+          isDirectJob: true,
+          applyMethod: dj.applyMethod,
+          applyValue: dj.applyValue,
+        }));
+      
+      // Merge and sort by postedAt descending
+      const allJobs = [...apiResult.jobs, ...directJobsFormatted]
+        .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+      
+      // Apply pagination
+      const total = allJobs.length;
+      const totalPages = Math.ceil(total / limit);
+      const offset = (page - 1) * limit;
+      const paginatedJobs = allJobs.slice(offset, offset + limit);
+      
+      res.json({
+        jobs: paginatedJobs,
+        total,
+        page,
+        totalPages,
+        hasMore: page < totalPages,
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch jobs" });
     }
@@ -3333,35 +3391,38 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
     try {
       const id = Number(req.params.id);
       
-      // First check API jobs
+      // Check if this is a direct job (ID >= 10000000)
+      if (id >= 10000000) {
+        const directJobId = id - 10000000;
+        const directJob = await storage.getDirectJob(directJobId);
+        if (directJob) {
+          return res.json({
+            id: directJob.id + 10000000, // Keep the offset ID for consistency
+            externalId: `direct-${directJob.id}`,
+            title: directJob.title,
+            company: directJob.company,
+            location: directJob.location,
+            description: directJob.description,
+            url: directJob.applyMethod === "link" ? directJob.applyValue : `mailto:${directJob.applyValue}`,
+            remote: directJob.remote,
+            tags: directJob.tags || [],
+            salary: directJob.salary,
+            source: "Direct - Dev Global Jobs",
+            category: directJob.category,
+            postedAt: directJob.postedAt,
+            createdAt: directJob.createdAt,
+            isDirectJob: true,
+            applyMethod: directJob.applyMethod,
+            applyValue: directJob.applyValue,
+          });
+        }
+        return res.status(404).json({ message: "Job not found" });
+      }
+      
+      // Regular API job
       const apiJob = await storage.getJob(id);
       if (apiJob) {
         return res.json(apiJob);
-      }
-      
-      // If not found, check direct jobs (use negative IDs or separate endpoint)
-      const directJob = await storage.getDirectJob(id);
-      if (directJob) {
-        // Convert direct job to job format for display
-        return res.json({
-          id: directJob.id,
-          externalId: `direct-${directJob.id}`,
-          title: directJob.title,
-          company: directJob.company,
-          location: directJob.location,
-          description: directJob.description,
-          url: directJob.applyMethod === "link" ? directJob.applyValue : `mailto:${directJob.applyValue}`,
-          remote: directJob.remote,
-          tags: directJob.tags || [],
-          salary: directJob.salary,
-          source: "Direct - Dev Global Jobs",
-          category: directJob.category,
-          postedAt: directJob.postedAt,
-          createdAt: directJob.createdAt,
-          isDirectJob: true,
-          applyMethod: directJob.applyMethod,
-          applyValue: directJob.applyValue,
-        });
       }
       
       return res.status(404).json({ message: "Job not found" });
