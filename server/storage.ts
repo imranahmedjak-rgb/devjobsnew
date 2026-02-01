@@ -133,15 +133,24 @@ export class DatabaseStorage implements IStorage {
 
   async getJobStats(): Promise<{ totalJobs: number; countriesCount: number; sourcesCount: number; lastUpdated: string }> {
     const [totalResult] = await db.select({ count: count() }).from(jobs);
+    const [directJobsResult] = await db.select({ count: count() }).from(directJobs);
     const [sourcesResult] = await db.select({ count: countDistinct(jobs.source) }).from(jobs);
     const [locationResult] = await db.select({ count: countDistinct(jobs.location) }).from(jobs);
     const [latestJob] = await db.select({ createdAt: jobs.createdAt }).from(jobs).orderBy(desc(jobs.createdAt)).limit(1);
+    const [latestDirectJob] = await db.select({ postedAt: directJobs.postedAt }).from(directJobs).orderBy(desc(directJobs.postedAt)).limit(1);
+    
+    const totalJobs = (totalResult?.count || 0) + (directJobsResult?.count || 0);
+    const sourcesCount = (sourcesResult?.count || 0) + ((directJobsResult?.count || 0) > 0 ? 1 : 0);
+    
+    const latestDate = latestJob?.createdAt || new Date(0);
+    const latestDirectDate = latestDirectJob?.postedAt || new Date(0);
+    const lastUpdated = latestDate > latestDirectDate ? latestDate : latestDirectDate;
     
     return {
-      totalJobs: totalResult?.count || 0,
+      totalJobs,
       countriesCount: Math.min(locationResult?.count || 0, 193),
-      sourcesCount: sourcesResult?.count || 0,
-      lastUpdated: latestJob?.createdAt?.toISOString() || new Date().toISOString(),
+      sourcesCount,
+      lastUpdated: lastUpdated.toISOString(),
     };
   }
 

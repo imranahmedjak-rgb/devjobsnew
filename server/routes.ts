@@ -3331,11 +3331,40 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
 
   app.get(api.jobs.get.path, async (req, res) => {
     try {
-      const job = await storage.getJob(Number(req.params.id));
-      if (!job) {
-        return res.status(404).json({ message: "Job not found" });
+      const id = Number(req.params.id);
+      
+      // First check API jobs
+      const apiJob = await storage.getJob(id);
+      if (apiJob) {
+        return res.json(apiJob);
       }
-      res.json(job);
+      
+      // If not found, check direct jobs (use negative IDs or separate endpoint)
+      const directJob = await storage.getDirectJob(id);
+      if (directJob) {
+        // Convert direct job to job format for display
+        return res.json({
+          id: directJob.id,
+          externalId: `direct-${directJob.id}`,
+          title: directJob.title,
+          company: directJob.company,
+          location: directJob.location,
+          description: directJob.description,
+          url: directJob.applyMethod === "link" ? directJob.applyValue : `mailto:${directJob.applyValue}`,
+          remote: directJob.remote,
+          tags: directJob.tags || [],
+          salary: directJob.salary,
+          source: "Direct - Dev Global Jobs",
+          category: directJob.category,
+          postedAt: directJob.postedAt,
+          createdAt: directJob.createdAt,
+          isDirectJob: true,
+          applyMethod: directJob.applyMethod,
+          applyValue: directJob.applyValue,
+        });
+      }
+      
+      return res.status(404).json({ message: "Job not found" });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch job" });
     }
