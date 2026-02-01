@@ -15,6 +15,7 @@ import { execSync } from "child_process";
 import { registerChatRoutes } from "./replit_integrations/chat";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
 
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("JWT_SECRET must be set in production"); })() : "dev-global-jobs-secret-key-2024");
 
@@ -3083,9 +3084,119 @@ export async function registerRoutes(
     }
   });
 
+  // ================== STRIPE PAYMENT ROUTES ==================
+
+  const JOB_POSTING_PRICE_ID = "price_1Sw7OMD8mo7cB4Da5oksygga";
+
+  app.get("/api/stripe/publishable-key", async (req, res) => {
+    try {
+      const publishableKey = await getStripePublishableKey();
+      res.json({ publishableKey });
+    } catch (error) {
+      console.error("Get publishable key error:", error);
+      res.status(500).json({ error: "Failed to get Stripe configuration" });
+    }
+  });
+
+  app.post("/api/stripe/create-job-payment-session", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      if (req.user!.role !== "recruiter") {
+        return res.status(403).json({ error: "Only recruiters can post jobs" });
+      }
+
+      const profile = await storage.getRecruiterProfile(req.user!.id);
+      if (!profile) {
+        return res.status(400).json({ error: "Please complete your recruiter profile first" });
+      }
+
+      const { jobData } = req.body;
+      if (!jobData || !jobData.title || !jobData.location || !jobData.description || !jobData.category) {
+        return res.status(400).json({ error: "Invalid job data" });
+      }
+
+      const stripe = await getUncachableStripeClient();
+      
+      const host = req.get('host') || 'localhost:5000';
+      const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+      const baseUrl = `${protocol}://${host}`;
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          price: JOB_POSTING_PRICE_ID,
+          quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/post-job?cancelled=true`,
+        metadata: {
+          user_id: req.user!.id.toString(),
+          job_title: jobData.title,
+          job_location: jobData.location,
+          job_category: jobData.category,
+          apply_method: jobData.applyMethod,
+          apply_value: jobData.applyValue,
+          remote: jobData.remote ? 'true' : 'false',
+          company: profile.organizationName,
+        },
+        customer_email: req.user!.email,
+      });
+
+      res.json({ sessionId: session.id, url: session.url });
+    } catch (error) {
+      console.error("Create payment session error:", error);
+      res.status(500).json({ error: "Failed to create payment session" });
+    }
+  });
+
+  app.post("/api/stripe/verify-payment", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const { sessionId } = req.body;
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID required" });
+      }
+
+      const stripe = await getUncachableStripeClient();
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (session.payment_status !== 'paid') {
+        return res.status(400).json({ error: "Payment not completed" });
+      }
+
+      const metadata = session.metadata;
+      if (!metadata || metadata.user_id !== req.user!.id.toString()) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const profile = await storage.getRecruiterProfile(req.user!.id);
+      if (!profile) {
+        return res.status(400).json({ error: "Recruiter profile not found" });
+      }
+
+      const job = await storage.createDirectJob({
+        recruiterId: req.user!.id,
+        title: metadata.job_title || "Job Title",
+        company: metadata.company || profile.organizationName,
+        location: metadata.job_location || "Location",
+        description: req.body.description || "Job description",
+        category: (metadata.job_category as "un" | "ngo" | "international") || "international",
+        applyMethod: (metadata.apply_method as "link" | "email") || "email",
+        applyValue: metadata.apply_value || req.user!.email,
+        remote: metadata.remote === 'true',
+        tags: req.body.tags || [],
+        salary: req.body.salary || null,
+      });
+
+      res.json({ success: true, job });
+    } catch (error) {
+      console.error("Verify payment error:", error);
+      res.status(500).json({ error: "Failed to verify payment" });
+    }
+  });
+
   // ================== DIRECT JOB POSTING ROUTES ==================
   
-  // Post a job (recruiters only)
+  // Post a job (recruiters only) - NOW REQUIRES PAYMENT
   app.post("/api/direct-jobs", authMiddleware as any, async (req: AuthRequest, res) => {
     try {
       if (req.user!.role !== "recruiter") {
