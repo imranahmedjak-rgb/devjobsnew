@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth, apiRequest } from "@/lib/auth";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,17 +9,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { Briefcase, Building2, MapPin, DollarSign, Tag, Globe, ArrowLeft, CheckCircle } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, Tag, Globe, ArrowLeft, CheckCircle, Mail, Link as LinkIcon, Building, Users, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface JobFormData {
   title: string;
-  company: string;
   location: string;
   description: string;
-  url: string;
+  category: string;
+  applyMethod: "link" | "email";
+  applyValue: string;
   remote: boolean;
   tags: string;
   salary: string;
@@ -27,55 +29,72 @@ interface JobFormData {
 
 export default function PostJob() {
   const [, setLocation] = useLocation();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [submitted, setSubmitted] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
+  const [isCheckingProfile, setIsCheckingProfile] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<JobFormData>({
     title: "",
-    company: "",
     location: "",
     description: "",
-    url: "",
+    category: "",
+    applyMethod: "link",
+    applyValue: "",
     remote: false,
     tags: "",
     salary: "",
   });
 
-  const createJobMutation = useMutation({
-    mutationFn: async (data: JobFormData) => {
-      const response = await apiRequest("POST", "/api/jobs", {
-        title: data.title,
-        company: data.company,
-        location: data.location,
-        description: data.description,
-        url: data.url || undefined,
-        remote: data.remote,
-        tags: data.tags || undefined,
-        salary: data.salary || undefined,
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
-      setSubmitted(true);
-      toast({
-        title: "Job Posted Successfully",
-        description: "Your job listing is now live on Dev Global Jobs.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to Post Job",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        setLocation("/auth");
+        return;
+      }
+      if (user.role !== "recruiter") {
+        toast({
+          title: "Access Denied",
+          description: "Only recruiters can post jobs. Please sign up as a recruiter.",
+          variant: "destructive",
+        });
+        setLocation("/auth");
+        return;
+      }
+      checkProfile();
+    }
+  }, [user, authLoading]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const checkProfile = async () => {
+    try {
+      const res = await apiRequest("/api/recruiter/profile");
+      if (res.ok) {
+        const profile = await res.json();
+        if (profile && profile.organizationName) {
+          setHasProfile(true);
+        } else {
+          toast({
+            title: "Complete Your Profile",
+            description: "Please complete your recruiter profile before posting jobs.",
+          });
+          setLocation("/profile");
+        }
+      } else {
+        setLocation("/profile");
+      }
+    } catch (error) {
+      console.error("Error checking profile:", error);
+    } finally {
+      setIsCheckingProfile(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.company || !formData.location || !formData.description) {
+    
+    if (!formData.title || !formData.location || !formData.description || !formData.category || !formData.applyValue) {
       toast({
         title: "Missing Required Fields",
         description: "Please fill in all required fields.",
@@ -83,20 +102,80 @@ export default function PostJob() {
       });
       return;
     }
-    if (!formData.url || !formData.url.startsWith('http')) {
+
+    if (formData.applyMethod === "link" && !formData.applyValue.startsWith("http")) {
       toast({
-        title: "Application URL Required",
-        description: "Please provide a valid URL where candidates can apply for this position.",
+        title: "Invalid URL",
+        description: "Please enter a valid URL starting with http:// or https://",
         variant: "destructive",
       });
       return;
     }
-    createJobMutation.mutate(formData);
+
+    if (formData.applyMethod === "email" && !formData.applyValue.includes("@")) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await apiRequest("/api/direct-jobs", {
+        method: "POST",
+        body: JSON.stringify({
+          title: formData.title,
+          location: formData.location,
+          description: formData.description,
+          category: formData.category,
+          applyMethod: formData.applyMethod,
+          applyValue: formData.applyValue,
+          remote: formData.remote,
+          tags: formData.tags ? formData.tags.split(",").map(t => t.trim()) : [],
+          salary: formData.salary || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to post job");
+      }
+
+      setSubmitted(true);
+      toast({
+        title: "Job Posted Successfully",
+        description: "Your job listing is now live on Dev Global Jobs.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to Post Job",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: keyof JobFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  if (authLoading || isCheckingProfile) {
+    return (
+      <div className="min-h-screen bg-background font-sans flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -111,21 +190,28 @@ export default function PostJob() {
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold">Job Posted Successfully</h1>
+            <h1 className="text-3xl font-bold" data-testid="text-success">Job Posted Successfully</h1>
             <p className="text-muted-foreground text-lg">
-              Your job listing is now live and visible to millions of job seekers worldwide.
+              Your job listing is now live and visible to job seekers worldwide.
             </p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-sm">
+              <p className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-300">
+                <Shield className="w-4 h-4" />
+                Source: Direct - Dev Global Jobs
+              </p>
+            </div>
             <div className="flex gap-4 justify-center pt-4">
-              <Button variant="outline" onClick={() => setLocation("/")}>
+              <Button variant="outline" onClick={() => setLocation("/")} data-testid="button-back-home">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Jobs
               </Button>
-              <Button onClick={() => { setSubmitted(false); setFormData({ title: "", company: "", location: "", description: "", url: "", remote: false, tags: "", salary: "" }); }}>
+              <Button onClick={() => { setSubmitted(false); setFormData({ title: "", location: "", description: "", category: "", applyMethod: "link", applyValue: "", remote: false, tags: "", salary: "" }); }} data-testid="button-post-another">
                 Post Another Job
               </Button>
             </div>
           </motion.div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -150,7 +236,7 @@ export default function PostJob() {
           <div className="text-center space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold font-display">Post a Job</h1>
             <p className="text-muted-foreground text-lg">
-              Reach millions of qualified candidates across 193 countries
+              Reach qualified candidates across 193 countries
             </p>
           </div>
 
@@ -161,41 +247,56 @@ export default function PostJob() {
                 Job Details
               </CardTitle>
               <CardDescription>
-                Fill in the details below to create your job listing. Fields marked with * are required.
+                Fill in the details below. Fields marked with * are required.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title" className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      Job Title *
-                    </Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Senior Software Engineer"
-                      value={formData.title}
-                      onChange={(e) => handleChange("title", e.target.value)}
-                      required
-                      data-testid="input-job-title"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Building className="w-4 h-4" />
+                    Job Category *
+                  </Label>
+                  <Select value={formData.category} onValueChange={(v) => handleChange("category", v)} required>
+                    <SelectTrigger data-testid="select-category">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="un">
+                        <span className="flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-blue-600" />
+                          UN Jobs
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="ngo">
+                        <span className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-green-600" />
+                          NGO Jobs
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="international">
+                        <span className="flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-purple-600" />
+                          International Jobs
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="company" className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4" />
-                      Company Name *
-                    </Label>
-                    <Input
-                      id="company"
-                      placeholder="e.g., Tech Corp International"
-                      value={formData.company}
-                      onChange={(e) => handleChange("company", e.target.value)}
-                      required
-                      data-testid="input-company"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="title" className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" />
+                    Job Title *
+                  </Label>
+                  <Input
+                    id="title"
+                    placeholder="e.g., Program Manager, Software Engineer"
+                    value={formData.title}
+                    onChange={(e) => handleChange("title", e.target.value)}
+                    required
+                    data-testid="input-job-title"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -206,7 +307,7 @@ export default function PostJob() {
                     </Label>
                     <Input
                       id="location"
-                      placeholder="e.g., New York, USA or Remote"
+                      placeholder="e.g., Geneva, Switzerland"
                       value={formData.location}
                       onChange={(e) => handleChange("location", e.target.value)}
                       required
@@ -230,7 +331,7 @@ export default function PostJob() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="flex items-center gap-2">
+                  <Label htmlFor="description">
                     Job Description *
                   </Label>
                   <Textarea
@@ -244,39 +345,68 @@ export default function PostJob() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="url" className="flex items-center gap-2">
-                      <Globe className="w-4 h-4" />
-                      Application URL *
-                    </Label>
-                    <Input
-                      id="url"
-                      type="url"
-                      placeholder="https://yourcompany.com/careers/apply"
-                      value={formData.url}
-                      onChange={(e) => handleChange("url", e.target.value)}
-                      required
-                      data-testid="input-url"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      The URL where candidates can apply for this position
+                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                  <Label className="text-base font-medium">Application Method *</Label>
+                  <RadioGroup 
+                    value={formData.applyMethod} 
+                    onValueChange={(v) => handleChange("applyMethod", v as "link" | "email")}
+                    className="space-y-3"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="link" id="apply-link" data-testid="radio-apply-link" />
+                      <Label htmlFor="apply-link" className="flex items-center gap-2 cursor-pointer">
+                        <LinkIcon className="w-4 h-4 text-blue-600" />
+                        Apply via Link (redirect to external URL)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="email" id="apply-email" data-testid="radio-apply-email" />
+                      <Label htmlFor="apply-email" className="flex items-center gap-2 cursor-pointer">
+                        <Mail className="w-4 h-4 text-green-600" />
+                        Apply via Email (send applications to email)
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  <div className="pt-2">
+                    {formData.applyMethod === "link" ? (
+                      <Input
+                        placeholder="https://yourcompany.com/careers/apply"
+                        value={formData.applyValue}
+                        onChange={(e) => handleChange("applyValue", e.target.value)}
+                        required
+                        data-testid="input-apply-value"
+                      />
+                    ) : (
+                      <Input
+                        type="email"
+                        placeholder="careers@yourorganization.org"
+                        value={formData.applyValue}
+                        onChange={(e) => handleChange("applyValue", e.target.value)}
+                        required
+                        data-testid="input-apply-value"
+                      />
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formData.applyMethod === "link" 
+                        ? "Candidates will be redirected to this URL to apply"
+                        : "Candidates will send their applications to this email"}
                     </p>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="tags" className="flex items-center gap-2">
-                      <Tag className="w-4 h-4" />
-                      Tags (comma separated)
-                    </Label>
-                    <Input
-                      id="tags"
-                      placeholder="e.g., JavaScript, React, Remote"
-                      value={formData.tags}
-                      onChange={(e) => handleChange("tags", e.target.value)}
-                      data-testid="input-tags"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tags" className="flex items-center gap-2">
+                    <Tag className="w-4 h-4" />
+                    Tags (comma separated)
+                  </Label>
+                  <Input
+                    id="tags"
+                    placeholder="e.g., Development, Remote, Management"
+                    value={formData.tags}
+                    onChange={(e) => handleChange("tags", e.target.value)}
+                    data-testid="input-tags"
+                  />
                 </div>
 
                 <div className="flex items-center space-x-3 p-4 bg-muted/30 rounded-lg border border-border/50">
@@ -304,10 +434,10 @@ export default function PostJob() {
                   <Button
                     type="submit"
                     className="flex-1 shadow-lg shadow-primary/20"
-                    disabled={createJobMutation.isPending}
+                    disabled={isSubmitting}
                     data-testid="button-submit-job"
                   >
-                    {createJobMutation.isPending ? "Posting..." : "Post Job"}
+                    {isSubmitting ? "Posting..." : "Post Job"}
                   </Button>
                 </div>
               </form>

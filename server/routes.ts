@@ -1,12 +1,57 @@
 
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
-import { type InsertJob, insertJobSchema } from "@shared/schema";
+import { 
+  type InsertJob, insertJobSchema,
+  type InsertUser, insertUserSchema,
+  type InsertRecruiterProfile, insertRecruiterProfileSchema,
+  type InsertJobSeekerProfile, insertJobSeekerProfileSchema,
+  type InsertDirectJob, insertDirectJobSchema
+} from "@shared/schema";
 import { parseStringPromise } from "xml2js";
 import { execSync } from "child_process";
 import { registerChatRoutes } from "./replit_integrations/chat";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-global-jobs-secret-key-2024";
+
+// Auth middleware
+interface AuthRequest extends Request {
+  user?: { id: number; email: string; role: string };
+}
+
+function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string; role: string };
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+}
+
+function optionalAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string; role: string };
+      req.user = decoded;
+    } catch (error) {
+      // Invalid token, but continue without user
+    }
+  }
+  next();
+}
 
 // Helper function to validate job URLs - reject homepage-only links
 function isValidJobUrl(url: string): boolean {
@@ -2815,6 +2860,333 @@ export async function registerRoutes(
 
   // Register AI chat routes
   registerChatRoutes(app);
+
+  // ================== AUTHENTICATION ROUTES ==================
+  
+  // Sign up
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { email, password, role } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+      
+      if (password.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters" });
+      }
+      
+      const validRole = role === "recruiter" ? "recruiter" : "jobseeker";
+      
+      // Check if user exists
+      const existingUser = await storage.getUserByEmail(email.toLowerCase());
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already registered" });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Create user
+      const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const user = await storage.createUser({
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        role: validRole,
+      });
+      
+      // Set verification token
+      await storage.setVerificationToken(user.id, verificationToken);
+      
+      // For demo purposes, auto-verify (in production, send email)
+      await storage.updateUserVerification(user.id, true);
+      
+      // Generate token
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+      
+      res.json({ 
+        token, 
+        user: { id: user.id, email: user.email, role: user.role, emailVerified: true }
+      });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(500).json({ error: "Failed to create account" });
+    }
+  });
+  
+  // Login
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+      
+      const user = await storage.getUserByEmail(email.toLowerCase());
+      if (!user) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+      
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+      
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+      
+      res.json({ 
+        token, 
+        user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified }
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Failed to login" });
+    }
+  });
+  
+  // Get current user
+  app.get("/api/auth/me", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const user = await storage.getUserById(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Get profile based on role
+      let profile = null;
+      if (user.role === "recruiter") {
+        profile = await storage.getRecruiterProfile(user.id);
+      } else {
+        profile = await storage.getJobSeekerProfile(user.id);
+      }
+      
+      res.json({ 
+        user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified },
+        profile
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ error: "Failed to get user" });
+    }
+  });
+
+  // ================== RECRUITER PROFILE ROUTES ==================
+  
+  // Create/update recruiter profile
+  app.post("/api/recruiter/profile", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      if (req.user!.role !== "recruiter") {
+        return res.status(403).json({ error: "Only recruiters can create recruiter profiles" });
+      }
+      
+      const { organizationName, contactEmail, country, description } = req.body;
+      
+      if (!organizationName || !contactEmail || !country) {
+        return res.status(400).json({ error: "Organization name, contact email, and country are required" });
+      }
+      
+      const existingProfile = await storage.getRecruiterProfile(req.user!.id);
+      
+      if (existingProfile) {
+        const updated = await storage.updateRecruiterProfile(req.user!.id, {
+          organizationName,
+          contactEmail,
+          country,
+          description,
+        });
+        return res.json(updated);
+      }
+      
+      const profile = await storage.createRecruiterProfile({
+        userId: req.user!.id,
+        organizationName,
+        contactEmail,
+        country,
+        description,
+      });
+      
+      res.json(profile);
+    } catch (error) {
+      console.error("Create recruiter profile error:", error);
+      res.status(500).json({ error: "Failed to create profile" });
+    }
+  });
+  
+  // Get recruiter profile
+  app.get("/api/recruiter/profile", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const profile = await storage.getRecruiterProfile(req.user!.id);
+      res.json(profile || null);
+    } catch (error) {
+      console.error("Get recruiter profile error:", error);
+      res.status(500).json({ error: "Failed to get profile" });
+    }
+  });
+
+  // ================== JOB SEEKER PROFILE ROUTES ==================
+  
+  // Create/update job seeker profile
+  app.post("/api/jobseeker/profile", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const { name, country, experience, expertise, cvUrl } = req.body;
+      
+      if (!name || !country) {
+        return res.status(400).json({ error: "Name and country are required" });
+      }
+      
+      const existingProfile = await storage.getJobSeekerProfile(req.user!.id);
+      
+      if (existingProfile) {
+        const updated = await storage.updateJobSeekerProfile(req.user!.id, {
+          name,
+          country,
+          experience,
+          expertise,
+          cvUrl,
+        });
+        return res.json(updated);
+      }
+      
+      const profile = await storage.createJobSeekerProfile({
+        userId: req.user!.id,
+        name,
+        country,
+        experience,
+        expertise,
+        cvUrl,
+      });
+      
+      res.json(profile);
+    } catch (error) {
+      console.error("Create job seeker profile error:", error);
+      res.status(500).json({ error: "Failed to create profile" });
+    }
+  });
+  
+  // Get job seeker profile
+  app.get("/api/jobseeker/profile", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const profile = await storage.getJobSeekerProfile(req.user!.id);
+      res.json(profile || null);
+    } catch (error) {
+      console.error("Get job seeker profile error:", error);
+      res.status(500).json({ error: "Failed to get profile" });
+    }
+  });
+
+  // ================== DIRECT JOB POSTING ROUTES ==================
+  
+  // Post a job (recruiters only)
+  app.post("/api/direct-jobs", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      if (req.user!.role !== "recruiter") {
+        return res.status(403).json({ error: "Only recruiters can post jobs" });
+      }
+      
+      // Check if recruiter has profile
+      const profile = await storage.getRecruiterProfile(req.user!.id);
+      if (!profile) {
+        return res.status(400).json({ error: "Please complete your recruiter profile before posting jobs" });
+      }
+      
+      const { title, location, description, category, applyMethod, applyValue, remote, tags, salary } = req.body;
+      
+      if (!title || !location || !description || !category || !applyMethod || !applyValue) {
+        return res.status(400).json({ error: "Title, location, description, category, apply method, and apply value are required" });
+      }
+      
+      if (!["un", "ngo", "international"].includes(category)) {
+        return res.status(400).json({ error: "Invalid category. Must be un, ngo, or international" });
+      }
+      
+      if (!["link", "email"].includes(applyMethod)) {
+        return res.status(400).json({ error: "Invalid apply method. Must be link or email" });
+      }
+      
+      // Validate apply value
+      if (applyMethod === "link") {
+        try {
+          new URL(applyValue);
+        } catch {
+          return res.status(400).json({ error: "Invalid application URL" });
+        }
+      } else if (applyMethod === "email") {
+        if (!applyValue.includes("@")) {
+          return res.status(400).json({ error: "Invalid email address" });
+        }
+      }
+      
+      const job = await storage.createDirectJob({
+        recruiterId: req.user!.id,
+        title,
+        company: profile.organizationName,
+        location,
+        description,
+        category,
+        applyMethod,
+        applyValue,
+        remote: remote || false,
+        tags: tags || [],
+        salary: salary || null,
+      });
+      
+      res.json(job);
+    } catch (error) {
+      console.error("Create direct job error:", error);
+      res.status(500).json({ error: "Failed to post job" });
+    }
+  });
+  
+  // Get all direct jobs
+  app.get("/api/direct-jobs", async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 30;
+      const result = await storage.getDirectJobs(page, limit);
+      res.json(result);
+    } catch (error) {
+      console.error("Get direct jobs error:", error);
+      res.status(500).json({ error: "Failed to get jobs" });
+    }
+  });
+  
+  // Get direct job by ID
+  app.get("/api/direct-jobs/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const job = await storage.getDirectJob(id);
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      res.json(job);
+    } catch (error) {
+      console.error("Get direct job error:", error);
+      res.status(500).json({ error: "Failed to get job" });
+    }
+  });
+  
+  // Get recruiter's jobs
+  app.get("/api/recruiter/jobs", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      if (req.user!.role !== "recruiter") {
+        return res.status(403).json({ error: "Only recruiters can view their jobs" });
+      }
+      const jobs = await storage.getDirectJobsByRecruiter(req.user!.id);
+      res.json(jobs);
+    } catch (error) {
+      console.error("Get recruiter jobs error:", error);
+      res.status(500).json({ error: "Failed to get jobs" });
+    }
+  });
 
   // SEO: Robots.txt
   app.get("/robots.txt", (req, res) => {
