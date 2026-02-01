@@ -515,7 +515,7 @@ async function fetchJobsFromJobicy(): Promise<number> {
     const jobsToInsert: InsertJob[] = validJobs.map((job: any) => {
       const industry = typeof job.jobIndustry === 'string' ? job.jobIndustry : "Technology";
       return {
-        externalId: `jobicy-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        externalId: `jobicy-${job.id}`,
         title: job.jobTitle || "Remote Position",
         company: job.companyName || "Remote Company",
         location: job.jobGeo || "Remote Worldwide",
@@ -556,7 +556,7 @@ async function fetchJobsFromHimalayas(): Promise<number> {
     console.log(`Fetched ${jobs.length} jobs from Himalayas.`);
 
     const jobsToInsert: InsertJob[] = jobs.map((job: any) => ({
-      externalId: `himalayas-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      externalId: `himalayas-${job.id}`,
       title: job.title || "Remote Position",
       company: job.companyName || "Remote Company",
       location: job.locationRestrictions?.[0] || "Remote Worldwide",
@@ -596,7 +596,7 @@ async function fetchJobsFromRemotive(): Promise<number> {
     console.log(`Fetched ${jobs.length} jobs from Remotive.`);
 
     const jobsToInsert: InsertJob[] = jobs.map((job: any) => ({
-      externalId: `remotive-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+      externalId: `remotive-${job.id}`,
       title: job.title || "Remote Position",
       company: job.company_name || "Remote Company",
       location: job.candidate_required_location || "Remote Worldwide",
@@ -636,7 +636,7 @@ async function fetchJobsFromFindWork(): Promise<number> {
     console.log(`Fetched ${jobs.length} jobs from FindWork.`);
 
     const jobsToInsert: InsertJob[] = jobs.map((job: any) => ({
-      externalId: `findwork-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+      externalId: `findwork-${job.id}`,
       title: job.role || "Developer Position",
       company: job.company_name || "Tech Company",
       location: job.location || "Remote",
@@ -687,8 +687,11 @@ async function fetchJobsFromWWR(): Promise<number> {
       const company = parts.length > 1 ? parts[0] : "Remote Company";
       const jobTitle = parts.length > 1 ? parts.slice(1).join(": ") : title;
 
+      // Create stable ID from URL
+      const urlHash = link.split('/').pop() || link.replace(/[^a-z0-9]/gi, '').slice(-20);
+      
       return {
-        externalId: `wwr-${idx}-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        externalId: `wwr-${urlHash}`,
         title: jobTitle,
         company,
         location: "Remote Worldwide",
@@ -730,7 +733,7 @@ async function fetchJobsFromAuthenticJobs(): Promise<number> {
 
     const jobList = Array.isArray(jobs) ? jobs : [jobs];
     const jobsToInsert: InsertJob[] = jobList.slice(0, 50).map((job: any) => ({
-      externalId: `authentic-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+      externalId: `authentic-${job.id}`,
       title: job.title || "Design/Dev Position",
       company: job.company?.name || "Company",
       location: job.company?.location?.name || "Remote",
@@ -772,7 +775,7 @@ async function fetchJobsFromLandingJobs(): Promise<number> {
     if (!Array.isArray(jobs)) return 0;
 
     const jobsToInsert: InsertJob[] = jobs.map((job: any) => ({
-      externalId: `landingjobs-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      externalId: `landingjobs-${job.id}`,
       title: job.title || "Tech Position",
       company: job.company?.name || job.company_name || "European Tech Company",
       location: job.city || job.location || "Europe",
@@ -827,7 +830,7 @@ async function fetchJobsFromGreenhouseBoards(): Promise<number> {
         const jobs = data.jobs || [];
 
         const jobsToInsert: InsertJob[] = jobs.slice(0, 10).map((job: any) => ({
-          externalId: `greenhouse-${board.token}-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+          externalId: `greenhouse-${board.token}-${job.id}`,
           title: job.title || "Position",
           company: board.name,
           location: job.location?.name || "Multiple Locations",
@@ -883,7 +886,7 @@ async function fetchJobsFromLeverBoards(): Promise<number> {
         if (!Array.isArray(jobs)) continue;
 
         const jobsToInsert: InsertJob[] = jobs.slice(0, 10).map((job: any) => ({
-          externalId: `lever-${company.slug}-${job.id}-${Math.random().toString(36).substr(2, 6)}`,
+          externalId: `lever-${company.slug}-${job.id}`,
           title: job.text || "Position",
           company: company.name,
           location: job.categories?.location || "Multiple Locations",
@@ -931,7 +934,7 @@ async function fetchJobsFromCryptoJobs(): Promise<number> {
     if (!Array.isArray(jobs)) return 0;
 
     const jobsToInsert: InsertJob[] = jobs.slice(0, 50).map((job: any) => ({
-      externalId: `cryptojobs-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      externalId: `cryptojobs-${job.id}`,
       title: job.title || "Blockchain Position",
       company: job.company?.name || job.company || "Crypto Company",
       location: job.location || "Remote",
@@ -973,7 +976,7 @@ async function fetchJobsFromWeb3Career(): Promise<number> {
     if (!Array.isArray(jobs)) return 0;
 
     const jobsToInsert: InsertJob[] = jobs.slice(0, 50).map((job: any) => ({
-      externalId: `web3career-${job.id || Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      externalId: `web3career-${job.id}`,
       title: job.title || "Web3 Position",
       company: job.company?.name || job.company || "Web3 Company",
       location: job.location || "Remote",
@@ -1111,8 +1114,11 @@ async function generateUSJobs(): Promise<number> {
     const salaryMin = Math.round(salaryBase);
     const salaryMax = Math.round(salaryBase * 1.3);
     
+    // Create stable externalId from company, role and index
+    const stableId = `${company.name}-${role}-${i}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    
     jobsToInsert.push({
-      externalId: `us-${now}-${i}-${Math.random().toString(36).substr(2, 8)}`,
+      externalId: `us-${stableId}`,
       title: role,
       company: company.name,
       location: isRemote ? "Remote - US" : location,
@@ -1148,8 +1154,11 @@ async function generateCanadaJobs(): Promise<number> {
     
     const salaryBase = 70000 + Math.random() * 80000;
     
+    // Create stable externalId from company, role and index
+    const stableId = `${company.name}-${role}-${i}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    
     jobsToInsert.push({
-      externalId: `ca-${now}-${i}-${Math.random().toString(36).substr(2, 8)}`,
+      externalId: `ca-${stableId}`,
       title: role,
       company: company.name,
       location,
@@ -1191,8 +1200,11 @@ async function generateEUJobs(): Promise<number> {
     
     const salaryBase = 50000 + Math.random() * 70000;
     
+    // Create stable externalId from company, role and index
+    const stableId = `${company.name}-${role}-${i}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    
     jobsToInsert.push({
-      externalId: `eu-${now}-${i}-${Math.random().toString(36).substr(2, 8)}`,
+      externalId: `eu-${stableId}`,
       title: role,
       company: company.name,
       location,
@@ -1234,8 +1246,11 @@ async function generateMiddleEastJobs(): Promise<number> {
     
     const salaryBase = 60000 + Math.random() * 100000;
     
+    // Create stable externalId from company, role and index
+    const stableId = `${company.name}-${role}-${i}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    
     jobsToInsert.push({
-      externalId: `me-${now}-${i}-${Math.random().toString(36).substr(2, 8)}`,
+      externalId: `me-${stableId}`,
       title: role,
       company: company.name,
       location,
@@ -1278,8 +1293,11 @@ async function generateAPACJobs(): Promise<number> {
     
     const salaryBase = 50000 + Math.random() * 80000;
     
+    // Create stable externalId from company, role and index
+    const stableId = `${company.name}-${role}-${i}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    
     jobsToInsert.push({
-      externalId: `apac-${now}-${i}-${Math.random().toString(36).substr(2, 8)}`,
+      externalId: `apac-${stableId}`,
       title: role,
       company: company.name,
       location,
