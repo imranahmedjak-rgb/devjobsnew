@@ -2153,8 +2153,8 @@ export async function registerRoutes(
     }
   })();
 
-  // Sync every 2 minutes for frequent updates (respects API rate limits)
-  setInterval(syncAllJobs, 2 * 60 * 1000);
+  // Sync every 1 minute for frequent updates (respects API rate limits)
+  setInterval(syncAllJobs, 1 * 60 * 1000);
 
   // Register AI chat routes
   registerChatRoutes(app);
