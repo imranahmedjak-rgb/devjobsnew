@@ -132,6 +132,14 @@ Single table design for jobs:
 - Number of sources (200+)
 - Real-time updates
 
+### Dynamic Country Filter
+- **Searchable Dropdown**: Users can search and select from all countries with available jobs
+- **Dynamic Population**: Countries are automatically extracted from job data (no hard-coded list)
+- **Country Badges**: Top 12 countries shown as clickable badges for quick filtering
+- **Normalization**: Handles country name variations (USA/US/United States, UK/United Kingdom, etc.)
+- **API Endpoint**: `GET /api/countries` returns dynamically generated country list
+- **Mobile Friendly**: Popover-based dropdown works on all screen sizes
+
 ### Auto-Refresh System
 - Server syncs new jobs every 2 minutes
 - Client refreshes listings every 15 seconds
