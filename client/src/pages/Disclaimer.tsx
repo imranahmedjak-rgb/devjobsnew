@@ -25,7 +25,7 @@ export default function Disclaimer() {
               <div>
                 <h3 className="font-semibold text-amber-600 dark:text-amber-400 mb-2">Important Notice</h3>
                 <p className="text-muted-foreground text-sm">
-                  Please read this disclaimer carefully before using CareerNest. By accessing our platform, you acknowledge that you have read, understood, and agree to be bound by this disclaimer.
+                  Please read this disclaimer carefully before using Dev Global Jobs. By accessing our platform, you acknowledge that you have read, understood, and agree to be bound by this disclaimer.
                 </p>
               </div>
             </div>
@@ -33,14 +33,14 @@ export default function Disclaimer() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">General Information</h2>
               <p className="text-muted-foreground leading-relaxed">
-                CareerNest is operated by Trend Nova World Ltd. The information provided on this website is for general informational purposes only. While we strive to keep the information up to date and accurate, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the information, products, services, or related graphics contained on the website.
+                Dev Global Jobs is operated by Trend Nova World Ltd. The information provided on this website is for general informational purposes only. While we strive to keep the information up to date and accurate, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the information, products, services, or related graphics contained on the website.
               </p>
             </div>
 
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">Job Listings Disclaimer</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Job listings displayed on CareerNest are aggregated from third-party sources and external websites. We do not:
+                Job listings displayed on Dev Global Jobs are aggregated from third-party sources and external websites. We do not:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li>Verify the accuracy of job listings or employer information</li>
@@ -57,7 +57,7 @@ export default function Disclaimer() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">No Employment Relationship</h2>
               <p className="text-muted-foreground leading-relaxed">
-                CareerNest acts solely as an aggregator and information platform. We are not a recruitment agency, employer, or employment service. Any relationship formed between job seekers and employers through our platform is exclusively between those parties. We bear no responsibility for hiring decisions, employment terms, or workplace conditions.
+                Dev Global Jobs acts solely as an aggregator and information platform. We are not a recruitment agency, employer, or employment service. Any relationship formed between job seekers and employers through our platform is exclusively between those parties. We bear no responsibility for hiring decisions, employment terms, or workplace conditions.
               </p>
             </div>
 
@@ -110,7 +110,7 @@ export default function Disclaimer() {
                 If you have any questions about this disclaimer, please contact us:
               </p>
               <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-                <p><strong className="text-foreground">Email:</strong> info@careernest.com</p>
+                <p><strong className="text-foreground">Email:</strong> info@devglobaljobs.com</p>
                 <p><strong className="text-foreground">Company:</strong> Trend Nova World Ltd.</p>
               </div>
             </div>

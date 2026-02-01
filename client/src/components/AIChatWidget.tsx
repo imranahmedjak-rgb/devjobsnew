@@ -182,7 +182,7 @@ export default function AIChatWidget() {
               {messages.length === 0 ? (
                 <div data-testid="text-welcome-message" className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                   <Bot className="h-12 w-12 mb-4 opacity-50" />
-                  <p className="text-sm font-medium mb-2">Welcome to CareerNest</p>
+                  <p className="text-sm font-medium mb-2">Welcome to Dev Global Jobs</p>
                   <p className="text-xs">
                     Get help with verified jobs, application guidance, CV and ATS optimization, and cover letters for UN, NGO, and international roles.
                   </p>

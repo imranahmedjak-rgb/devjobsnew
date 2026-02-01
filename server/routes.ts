@@ -2247,7 +2247,7 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
         "url": `https://devglobaljobs.com/jobs/${job.id}`,
         "identifier": {
           "@type": "PropertyValue",
-          "name": job.source || "CareerNest",
+          "name": job.source || "DevGlobalJobs",
           "value": job.externalId
         }
       };

@@ -21,14 +21,14 @@ export default function Terms() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                By accessing and using CareerNest (the "Platform"), operated by Trend Nova World Ltd., you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our Platform.
+                By accessing and using Dev Global Jobs (the "Platform"), operated by Trend Nova World Ltd., you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our Platform.
               </p>
             </div>
 
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">2. Description of Service</h2>
               <p className="text-muted-foreground leading-relaxed">
-                CareerNest is a job aggregation platform that collects and displays job listings from various external sources. We do not directly employ or recruit candidates. Our service is designed to help job seekers discover opportunities at UN agencies, NGOs, and international organizations.
+                Dev Global Jobs is a job aggregation platform that collects and displays job listings from various external sources. We do not directly employ or recruit candidates. Our service is designed to help job seekers discover opportunities at UN agencies, NGOs, and international organizations.
               </p>
             </div>
 
@@ -61,7 +61,7 @@ export default function Terms() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">6. Limitation of Liability</h2>
               <p className="text-muted-foreground leading-relaxed">
-                CareerNest and Trend Nova World Ltd. shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising from your use of the Platform. This includes, but is not limited to, damages resulting from job applications, employment decisions, or reliance on information provided on the Platform.
+                Dev Global Jobs and Trend Nova World Ltd. shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising from your use of the Platform. This includes, but is not limited to, damages resulting from job applications, employment decisions, or reliance on information provided on the Platform.
               </p>
             </div>
 
@@ -92,7 +92,7 @@ export default function Terms() {
                 For questions about these Terms and Conditions, please contact us at:
               </p>
               <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-                <p><strong className="text-foreground">Email:</strong> info@careernest.com</p>
+                <p><strong className="text-foreground">Email:</strong> info@devglobaljobs.com</p>
                 <p><strong className="text-foreground">Company:</strong> Trend Nova World Ltd.</p>
               </div>
             </div>

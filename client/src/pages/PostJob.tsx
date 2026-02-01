@@ -61,7 +61,7 @@ export default function PostJob() {
       setSubmitted(true);
       toast({
         title: "Job Posted Successfully",
-        description: "Your job listing is now live on CareerNest.",
+        description: "Your job listing is now live on Dev Global Jobs.",
       });
     },
     onError: (error) => {

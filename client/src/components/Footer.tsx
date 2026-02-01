@@ -10,13 +10,13 @@ export default function Footer() {
         {/* Widget 1: About */}
         <div className="space-y-4">
           <h3 className="text-white text-2xl font-bold tracking-tight">
-            Career<span className="text-primary">Nest</span>
+            Dev Global<span className="text-primary">Jobs</span>
           </h3>
           <span className="text-primary text-xs font-semibold block">
             Associated with Trend Nova World Ltd.
           </span>
           <p className="text-sm leading-relaxed text-slate-400">
-            CareerNest is an online opportunities platform associated with Trend Nova World Limited. We publish development sector jobs, consultancy roles, and professional opportunities worldwide, supporting organizations in humanitarian, sustainability, and education sectors.
+            Dev Global Jobs is an online opportunities platform associated with Trend Nova World Limited. We publish development sector jobs, consultancy roles, and professional opportunities worldwide, supporting organizations in humanitarian, sustainability, and education sectors.
           </p>
           <div className="flex justify-center md:justify-start gap-3 pt-2">
             <a 
@@ -53,7 +53,7 @@ export default function Footer() {
             </a>
           </div>
           <div className="text-xs text-slate-500 pt-2">
-            &copy; {new Date().getFullYear()} CareerNest. All Rights Reserved.
+            &copy; {new Date().getFullYear()} Dev Global Jobs. All Rights Reserved.
           </div>
         </div>
 
@@ -114,8 +114,8 @@ export default function Footer() {
             <div className="space-y-2">
               <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
                 <Mail className="w-3.5 h-3.5 text-primary" />
-                <a href="mailto:publication@careernest.com" className="text-slate-300 hover:text-white hover:underline">
-                  publication@careernest.com
+                <a href="mailto:publication@devglobaljobs.com" className="text-slate-300 hover:text-white hover:underline">
+                  publication@devglobaljobs.com
                 </a>
               </div>
               <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
@@ -130,8 +130,8 @@ export default function Footer() {
           <div className="space-y-2">
             <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
               <Mail className="w-3.5 h-3.5 text-primary" />
-              <a href="mailto:info@careernest.com" className="text-slate-300 hover:text-white hover:underline">
-                info@careernest.com
+              <a href="mailto:info@devglobaljobs.com" className="text-slate-300 hover:text-white hover:underline">
+                info@devglobaljobs.com
               </a>
             </div>
             <div className="flex items-center justify-center md:justify-start gap-2 text-sm">

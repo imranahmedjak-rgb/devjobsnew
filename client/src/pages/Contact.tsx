@@ -42,8 +42,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold">General Inquiries</h3>
-                      <a href="mailto:info@careernest.com" className="text-primary hover:underline">
-                        info@careernest.com
+                      <a href="mailto:info@devglobaljobs.com" className="text-primary hover:underline">
+                        info@devglobaljobs.com
                       </a>
                     </div>
                   </CardContent>
@@ -56,8 +56,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold">Job Publishing</h3>
-                      <a href="mailto:publication@careernest.com" className="text-primary hover:underline">
-                        publication@careernest.com
+                      <a href="mailto:publication@devglobaljobs.com" className="text-primary hover:underline">
+                        publication@devglobaljobs.com
                       </a>
                     </div>
                   </CardContent>
