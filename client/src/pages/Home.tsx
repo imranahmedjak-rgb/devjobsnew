@@ -288,12 +288,20 @@ export default function Home() {
                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search countries..." data-testid="input-country-search" />
-                  <CommandList>
-                    <CommandEmpty>No country found.</CommandEmpty>
-                    <CommandGroup>
+              <PopoverContent className="w-[320px] p-0" align="start" sideOffset={8}>
+                <Command className="rounded-lg border shadow-lg">
+                  <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Select Country</span>
+                  </div>
+                  <CommandInput 
+                    placeholder="Type to search countries..." 
+                    className="h-11 text-base"
+                    data-testid="input-country-search" 
+                  />
+                  <CommandList className="max-h-[300px]">
+                    <CommandEmpty className="py-6 text-center text-sm">No country found.</CommandEmpty>
+                    <CommandGroup heading={`${countriesData?.countries.length || 0} countries available`}>
                       {countriesData?.countries.map((country) => (
                         <CommandItem
                           key={country}
@@ -302,10 +310,11 @@ export default function Home() {
                             setLocation(value === location ? "" : value);
                             setCountryOpen(false);
                           }}
+                          className="py-2.5 cursor-pointer"
                           data-testid={`option-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
                         >
-                          <Globe className="mr-2 h-4 w-4" />
-                          {country}
+                          <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span className="flex-1">{country}</span>
                           {location === country && (
                             <CheckCircle className="ml-auto h-4 w-4 text-primary" />
                           )}
