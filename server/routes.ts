@@ -3358,7 +3358,11 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
       
       // Merge and sort by postedAt descending
       const allJobs = [...apiResult.jobs, ...directJobsFormatted]
-        .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+        .sort((a, b) => {
+          const dateA = a.postedAt ? new Date(a.postedAt).getTime() : 0;
+          const dateB = b.postedAt ? new Date(b.postedAt).getTime() : 0;
+          return dateB - dateA;
+        });
       
       // Apply pagination
       const total = allJobs.length;
@@ -3384,6 +3388,16 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // Get unique countries for filtering
+  app.get("/api/countries", async (req, res) => {
+    try {
+      const countries = await storage.getUniqueCountries();
+      res.json({ countries });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch countries" });
     }
   });
 

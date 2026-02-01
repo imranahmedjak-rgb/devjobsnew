@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useJobs, useJobStats } from "@/hooks/use-jobs";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
 import { JobCard } from "@/components/JobCard";
@@ -9,7 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, CheckCircle, Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -18,6 +21,12 @@ export default function Home() {
   const [location, setLocation] = useState("");
   const [remote, setRemote] = useState(false);
   const [category, setCategory] = useState<JobCategory>("international");
+  const [countryOpen, setCountryOpen] = useState(false);
+  
+  // Fetch unique countries for filtering
+  const { data: countriesData } = useQuery<{ countries: string[] }>({
+    queryKey: ['/api/countries'],
+  });
   
   const { 
     data, 
@@ -199,44 +208,35 @@ export default function Home() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Region Tags for International */}
-        {category === "international" && (
+        {/* Country Tags - Dynamic from job data */}
+        {countriesData?.countries && countriesData.countries.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto mt-4"
           >
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-us">
-              <Globe className="w-3 h-3 mr-1" /> USA
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-canada">
-              <Globe className="w-3 h-3 mr-1" /> Canada
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-eu">
-              <Globe className="w-3 h-3 mr-1" /> Europe
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-uk">
-              <Globe className="w-3 h-3 mr-1" /> UK
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-me">
-              <Globe className="w-3 h-3 mr-1" /> Middle East
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-apac">
-              <Globe className="w-3 h-3 mr-1" /> Asia Pacific
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-australia">
-              <Globe className="w-3 h-3 mr-1" /> Australia
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-latam">
-              <Globe className="w-3 h-3 mr-1" /> Latin America
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-africa">
-              <Globe className="w-3 h-3 mr-1" /> Africa
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5 text-xs" data-testid="badge-region-remote">
-              <Globe className="w-3 h-3 mr-1" /> Remote
-            </Badge>
+            {countriesData.countries.slice(0, 12).map((country) => (
+              <Badge 
+                key={country}
+                variant={location === country ? "default" : "secondary"} 
+                className="px-3 py-1.5 text-xs cursor-pointer hover-elevate" 
+                data-testid={`badge-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
+                onClick={() => setLocation(location === country ? "" : country)}
+              >
+                <Globe className="w-3 h-3 mr-1" /> {country}
+              </Badge>
+            ))}
+            {countriesData.countries.length > 12 && (
+              <Badge 
+                variant="outline" 
+                className="px-3 py-1.5 text-xs cursor-pointer"
+                data-testid="badge-more-countries"
+                onClick={() => setCountryOpen(true)}
+              >
+                +{countriesData.countries.length - 12} more
+              </Badge>
+            )}
           </motion.div>
         )}
       </section>
@@ -261,14 +261,61 @@ export default function Home() {
           </div>
           <div className="w-px bg-border my-2 hidden md:block" />
           <div className="relative flex-1">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
-            <Input 
-              placeholder="City, country, or region..." 
-              className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 bg-transparent text-base"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              data-testid="input-location"
-            />
+            <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  role="combobox"
+                  aria-expanded={countryOpen}
+                  className="w-full h-12 justify-start text-left font-normal hover:bg-transparent"
+                  data-testid="button-country-filter"
+                >
+                  <MapPin className="mr-2 h-5 w-5 text-muted-foreground shrink-0" />
+                  {location ? (
+                    <span className="flex items-center gap-2 flex-1">
+                      <span className="truncate">{location}</span>
+                      <X 
+                        className="h-4 w-4 text-muted-foreground hover:text-foreground shrink-0" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLocation("");
+                        }}
+                      />
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground flex-1">Select country...</span>
+                  )}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search countries..." data-testid="input-country-search" />
+                  <CommandList>
+                    <CommandEmpty>No country found.</CommandEmpty>
+                    <CommandGroup>
+                      {countriesData?.countries.map((country) => (
+                        <CommandItem
+                          key={country}
+                          value={country}
+                          onSelect={(value) => {
+                            setLocation(value === location ? "" : value);
+                            setCountryOpen(false);
+                          }}
+                          data-testid={`option-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
+                        >
+                          <Globe className="mr-2 h-4 w-4" />
+                          {country}
+                          {location === country && (
+                            <CheckCircle className="ml-auto h-4 w-4 text-primary" />
+                          )}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <Button size="lg" className="h-12 px-8 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" data-testid="button-search">
             Search Jobs

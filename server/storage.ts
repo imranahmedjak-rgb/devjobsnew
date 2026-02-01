@@ -49,6 +49,9 @@ export interface IStorage {
   getDirectJobs(page?: number, limit?: number): Promise<{ jobs: DirectJob[]; total: number }>;
   getDirectJob(id: number): Promise<DirectJob | undefined>;
   getDirectJobsByRecruiter(recruiterId: number): Promise<DirectJob[]>;
+  
+  // Countries
+  getUniqueCountries(): Promise<string[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -242,6 +245,126 @@ export class DatabaseStorage implements IStorage {
 
   async getDirectJobsByRecruiter(recruiterId: number): Promise<DirectJob[]> {
     return await db.select().from(directJobs).where(eq(directJobs.recruiterId, recruiterId)).orderBy(desc(directJobs.postedAt));
+  }
+
+  async getUniqueCountries(): Promise<string[]> {
+    // Get all unique locations from both jobs and direct jobs
+    const apiJobLocations = await db.selectDistinct({ location: jobs.location }).from(jobs);
+    const directJobLocations = await db.selectDistinct({ location: directJobs.location }).from(directJobs);
+    
+    const allLocations = [
+      ...apiJobLocations.map(j => j.location),
+      ...directJobLocations.map(j => j.location)
+    ];
+    
+    // Country mapping for normalization
+    const countryMappings: Record<string, string> = {
+      'usa': 'United States',
+      'us': 'United States',
+      'u.s.': 'United States',
+      'u.s.a.': 'United States',
+      'united states of america': 'United States',
+      'uk': 'United Kingdom',
+      'u.k.': 'United Kingdom',
+      'britain': 'United Kingdom',
+      'great britain': 'United Kingdom',
+      'england': 'United Kingdom',
+      'uae': 'United Arab Emirates',
+      'u.a.e.': 'United Arab Emirates',
+      'ksa': 'Saudi Arabia',
+      'drc': 'Democratic Republic of the Congo',
+      'south korea': 'South Korea',
+      'republic of korea': 'South Korea',
+      'korea': 'South Korea',
+    };
+    
+    // Common country names to detect
+    const knownCountries = [
+      'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
+      'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia',
+      'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi',
+      'Cambodia', 'Cameroon', 'Canada', 'Cape Verde', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros',
+      'Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Czechia',
+      'Democratic Republic of the Congo', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic',
+      'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia',
+      'Fiji', 'Finland', 'France',
+      'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
+      'Haiti', 'Honduras', 'Hong Kong', 'Hungary',
+      'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Ivory Coast',
+      'Jamaica', 'Japan', 'Jordan',
+      'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan',
+      'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+      'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Mauritania', 'Mauritius', 'Mexico', 'Moldova', 'Monaco',
+      'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar',
+      'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway',
+      'Oman',
+      'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
+      'Qatar',
+      'Romania', 'Russia', 'Rwanda',
+      'Saint Kitts and Nevis', 'Saint Lucia', 'Samoa', 'San Marino', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles',
+      'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan',
+      'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria',
+      'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu',
+      'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan',
+      'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
+      'Yemen',
+      'Zambia', 'Zimbabwe',
+      // Special locations
+      'Remote', 'Worldwide', 'Global', 'Multiple Locations'
+    ];
+    
+    const extractedCountries = new Set<string>();
+    
+    for (const location of allLocations) {
+      if (!location) continue;
+      
+      const locationLower = location.toLowerCase().trim();
+      
+      // Check mappings first
+      for (const [abbrev, fullName] of Object.entries(countryMappings)) {
+        if (locationLower.includes(abbrev)) {
+          extractedCountries.add(fullName);
+          break;
+        }
+      }
+      
+      // Check for known countries
+      for (const country of knownCountries) {
+        if (locationLower.includes(country.toLowerCase())) {
+          extractedCountries.add(country);
+        }
+      }
+      
+      // If location has comma, last part might be country
+      const parts = location.split(',').map(p => p.trim());
+      if (parts.length >= 2) {
+        const potentialCountry = parts[parts.length - 1];
+        const potentialCountryLower = potentialCountry.toLowerCase();
+        
+        // Check if it matches a known country
+        for (const country of knownCountries) {
+          if (potentialCountryLower === country.toLowerCase()) {
+            extractedCountries.add(country);
+          }
+        }
+        
+        // Check mappings
+        if (countryMappings[potentialCountryLower]) {
+          extractedCountries.add(countryMappings[potentialCountryLower]);
+        }
+      }
+    }
+    
+    // Sort alphabetically, but put Remote/Worldwide/Global at the end
+    const specialLocations = ['Remote', 'Worldwide', 'Global', 'Multiple Locations'];
+    const regularCountries = Array.from(extractedCountries)
+      .filter(c => !specialLocations.includes(c))
+      .sort((a, b) => a.localeCompare(b));
+    const special = Array.from(extractedCountries)
+      .filter(c => specialLocations.includes(c))
+      .sort((a, b) => a.localeCompare(b));
+    
+    return [...regularCountries, ...special];
   }
 }
 
