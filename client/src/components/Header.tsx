@@ -40,7 +40,7 @@ export function Header() {
           </div>
           <div className="flex flex-col">
             <span className="font-display font-bold text-xl tracking-tight leading-tight">
-              Dev Global<span className="text-primary">Jobs</span>
+              Career<span className="text-primary">Nest</span>
             </span>
             <span className="text-[10px] text-muted-foreground font-medium leading-tight hidden sm:block">
               Trend Nova World Ltd.

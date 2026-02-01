@@ -2166,7 +2166,7 @@ Allow: /
 Allow: /jobs/
 Disallow: /api/
 
-Sitemap: https://devglobaljobs.com/sitemap.xml
+Sitemap: https://careernest.com/sitemap.xml
 `;
     res.type("text/plain").send(robotsTxt);
   });
@@ -2176,7 +2176,7 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
     try {
       const allJobsResult = await storage.getJobs({});
       const allJobs = allJobsResult.jobs || [];
-      const baseUrl = "https://devglobaljobs.com";
+      const baseUrl = "https://careernest.com";
       const today = new Date().toISOString().split('T')[0];
       
       let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -2244,10 +2244,10 @@ Sitemap: https://devglobaljobs.com/sitemap.xml
         },
         "jobLocationType": job.remote ? "TELECOMMUTE" : undefined,
         "directApply": true,
-        "url": `https://devglobaljobs.com/jobs/${job.id}`,
+        "url": `https://careernest.com/jobs/${job.id}`,
         "identifier": {
           "@type": "PropertyValue",
-          "name": job.source || "DevGlobalJobs",
+          "name": job.source || "CareerNest",
           "value": job.externalId
         }
       };

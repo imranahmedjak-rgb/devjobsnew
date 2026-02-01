@@ -145,7 +145,7 @@ export default function Cookies() {
                 If you have questions about our use of cookies, please contact us:
               </p>
               <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-                <p><strong className="text-foreground">Email:</strong> info@devglobaljobs.com</p>
+                <p><strong className="text-foreground">Email:</strong> info@careernest.com</p>
                 <p><strong className="text-foreground">Company:</strong> Trend Nova World Ltd.</p>
               </div>
             </div>

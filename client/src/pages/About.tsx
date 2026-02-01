@@ -30,7 +30,7 @@ export default function About() {
               <h2 className="text-2xl font-bold">Who We Are</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              Dev Global Jobs is an international job aggregation platform operated by Trend Nova World Ltd. We specialize in connecting professionals with career opportunities in the development sector, humanitarian organizations, and international institutions. Our platform serves as a bridge between talented individuals and organizations making a difference globally.
+              CareerNest is an international job aggregation platform operated by Trend Nova World Ltd. We specialize in connecting professionals with career opportunities in the development sector, humanitarian organizations, and international institutions. Our platform serves as a bridge between talented individuals and organizations making a difference globally.
             </p>
           </div>
 
@@ -119,9 +119,9 @@ export default function About() {
             <h3 className="font-semibold mb-4">Company Information</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <p><strong className="text-foreground">Company:</strong> Trend Nova World Ltd.</p>
-              <p><strong className="text-foreground">Platform:</strong> Dev Global Jobs</p>
-              <p><strong className="text-foreground">Website:</strong> devglobaljobs.com</p>
-              <p><strong className="text-foreground">Email:</strong> info@devglobaljobs.com</p>
+              <p><strong className="text-foreground">Platform:</strong> CareerNest</p>
+              <p><strong className="text-foreground">Website:</strong> careernest.com</p>
+              <p><strong className="text-foreground">Email:</strong> info@careernest.com</p>
             </div>
           </div>
         </section>

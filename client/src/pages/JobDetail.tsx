@@ -48,10 +48,10 @@ function JobSchemaScript({ job }: { job: any }) {
       },
       "jobLocationType": job.remote ? "TELECOMMUTE" : undefined,
       "directApply": true,
-      "url": `https://devglobaljobs.com/jobs/${job.id}`,
+      "url": `https://careernest.com/jobs/${job.id}`,
       "identifier": {
         "@type": "PropertyValue",
-        "name": job.source || "DevGlobalJobs",
+        "name": job.source || "CareerNest",
         "value": job.externalId
       }
     };
@@ -65,7 +65,7 @@ function JobSchemaScript({ job }: { job: any }) {
     document.head.appendChild(script);
     
     // Update page title and meta for SEO
-    document.title = `${job.title} at ${job.company} | Dev Global Jobs`;
+    document.title = `${job.title} at ${job.company} | CareerNest`;
     
     // Update meta description
     let metaDesc = document.querySelector('meta[name="description"]');
@@ -74,13 +74,13 @@ function JobSchemaScript({ job }: { job: any }) {
       metaDesc.setAttribute('name', 'description');
       document.head.appendChild(metaDesc);
     }
-    metaDesc.setAttribute('content', `Apply for ${job.title} position at ${job.company} in ${job.location}. ${job.remote ? 'Remote work available.' : ''} View job details and apply now on Dev Global Jobs.`);
+    metaDesc.setAttribute('content', `Apply for ${job.title} position at ${job.company} in ${job.location}. ${job.remote ? 'Remote work available.' : ''} View job details and apply now on CareerNest.`);
     
     // Update Open Graph tags
     const ogTags = [
       { property: 'og:title', content: `${job.title} at ${job.company}` },
       { property: 'og:description', content: `Apply for ${job.title} at ${job.company} in ${job.location}` },
-      { property: 'og:url', content: `https://devglobaljobs.com/jobs/${job.id}` },
+      { property: 'og:url', content: `https://careernest.com/jobs/${job.id}` },
       { property: 'og:type', content: 'website' }
     ];
     

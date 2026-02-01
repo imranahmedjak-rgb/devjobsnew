@@ -21,7 +21,7 @@ export default function Privacy() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">1. Introduction</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Trend Nova World Ltd. ("we", "our", "us") operates Dev Global Jobs. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website. Please read this policy carefully.
+                Trend Nova World Ltd. ("we", "our", "us") operates CareerNest. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website. Please read this policy carefully.
               </p>
             </div>
 
@@ -109,7 +109,7 @@ export default function Privacy() {
                 If you have questions about this Privacy Policy, please contact us:
               </p>
               <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-                <p><strong className="text-foreground">Email:</strong> info@devglobaljobs.com</p>
+                <p><strong className="text-foreground">Email:</strong> info@careernest.com</p>
                 <p><strong className="text-foreground">Company:</strong> Trend Nova World Ltd.</p>
               </div>
             </div>
