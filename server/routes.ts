@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { type InsertJob, insertJobSchema } from "@shared/schema";
 import { parseStringPromise } from "xml2js";
+import { execSync } from "child_process";
 import { registerChatRoutes } from "./replit_integrations/chat";
 
 // Helper function to validate job URLs - reject homepage-only links
@@ -1447,22 +1448,36 @@ async function generateNGOJobs(): Promise<number> {
 }
 
 // Fetch from ReliefWeb RSS Feed (UN/NGO job source - no API key required)
+// Note: Uses curl because ReliefWeb returns 202 empty response to Node.js fetch
 async function fetchJobsFromReliefWeb(): Promise<{ un: number; ngo: number }> {
   console.log("Fetching jobs from ReliefWeb RSS Feed...");
   
   try {
-    const response = await fetch("https://reliefweb.int/jobs/rss.xml", {
-      headers: { "User-Agent": "DevGlobalJobs/1.0" }
-    });
-    if (!response.ok) {
-      console.log("ReliefWeb RSS not accessible, skipping...");
+    // Use curl because Node.js fetch gets blocked by ReliefWeb (returns 202 empty)
+    let xmlText: string;
+    try {
+      xmlText = execSync('curl -s --max-time 30 "https://reliefweb.int/jobs/rss.xml"', { 
+        encoding: 'utf8', 
+        timeout: 35000 
+      });
+    } catch (curlError) {
+      console.log("ReliefWeb curl failed:", curlError);
       return { un: 0, ngo: 0 };
     }
-
-    const xmlText = await response.text();
+    
+    if (!xmlText || xmlText.length < 100) {
+      console.log("ReliefWeb returned empty response, skipping...");
+      return { un: 0, ngo: 0 };
+    }
+    
+    console.log(`ReliefWeb RSS fetched ${xmlText.length} bytes`);
     const result = await parseStringPromise(xmlText, { explicitArray: false });
     
-    const items = result?.rss?.channel?.item || [];
+    const items = result?.rss?.channel?.item;
+    if (!items) {
+      console.log("ReliefWeb RSS has no items, skipping...");
+      return { un: 0, ngo: 0 };
+    }
     const jobItems = Array.isArray(items) ? items : [items];
     console.log(`Fetched ${jobItems.length} jobs from ReliefWeb RSS.`);
 
@@ -1643,18 +1658,428 @@ async function fetchJobsFromUNDP(): Promise<number> {
   }
 }
 
+// Fetch from UNICEF Jobs (jobs.unicef.org)
+async function fetchJobsFromUNICEF(): Promise<number> {
+  console.log("Fetching jobs from UNICEF (jobs.unicef.org)...");
+  
+  try {
+    const response = await fetch("https://jobs.unicef.org/en-us/rss/job-listings", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("UNICEF feed not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || result?.feed?.entry || [];
+    const jobItems = Array.isArray(items) ? items : items ? [items] : [];
+    console.log(`Fetched ${jobItems.length} jobs from UNICEF.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const item of jobItems) {
+      const title = item.title?._text || item.title || "UNICEF Position";
+      const link = item.link?.href || item.link?._text || item.link || "";
+      const description = item.description?._text || item.description || "";
+      const pubDate = item.pubDate || item.published || new Date().toISOString();
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      const jobIdMatch = link.match(/(\d+)/);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
+      
+      unJobs.push({
+        externalId: `unicef-${jobId}`,
+        title,
+        company: "UNICEF - United Nations Children's Fund",
+        location: "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "UNICEF", "Children", "International Organization"],
+        salary: null,
+        source: "UNICEF",
+        category: "un",
+        postedAt: new Date(pubDate),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from UNICEF.`);
+    return result2.length;
+  } catch (error) {
+    console.error("UNICEF error:", error);
+    return 0;
+  }
+}
+
+// Fetch from WFP Jobs (wfp.org)
+async function fetchJobsFromWFP(): Promise<number> {
+  console.log("Fetching jobs from WFP (wfp.org/careers)...");
+  
+  try {
+    const response = await fetch("https://www.wfp.org/careers/rss.xml", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("WFP feed not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || result?.feed?.entry || [];
+    const jobItems = Array.isArray(items) ? items : items ? [items] : [];
+    console.log(`Fetched ${jobItems.length} jobs from WFP.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const item of jobItems) {
+      const title = item.title?._text || item.title || "WFP Position";
+      const link = item.link?.href || item.link?._text || item.link || "";
+      const description = item.description?._text || item.description || "";
+      const pubDate = item.pubDate || item.published || new Date().toISOString();
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      const jobIdMatch = link.match(/(\d+)/);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
+      
+      unJobs.push({
+        externalId: `wfp-${jobId}`,
+        title,
+        company: "World Food Programme (WFP)",
+        location: "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "WFP", "Food Security", "Humanitarian"],
+        salary: null,
+        source: "WFP",
+        category: "un",
+        postedAt: new Date(pubDate),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from WFP.`);
+    return result2.length;
+  } catch (error) {
+    console.error("WFP error:", error);
+    return 0;
+  }
+}
+
+// Fetch from WHO Jobs (careers.who.int)
+async function fetchJobsFromWHO(): Promise<number> {
+  console.log("Fetching jobs from WHO (careers.who.int)...");
+  
+  try {
+    const response = await fetch("https://careers.who.int/careersection/in/moresearch.ftl?lang=en", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("WHO jobs not accessible, skipping...");
+      return 0;
+    }
+    console.log("WHO careers portal requires login, skipping direct feed...");
+    return 0;
+  } catch (error) {
+    console.error("WHO error:", error);
+    return 0;
+  }
+}
+
+// Fetch from ILO Jobs (jobs.ilo.org)
+async function fetchJobsFromILO(): Promise<number> {
+  console.log("Fetching jobs from ILO (jobs.ilo.org)...");
+  
+  try {
+    const response = await fetch("https://jobs.ilo.org/careersection/ilo/joblist.ftl?lang=en&portal=101430233", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("ILO jobs not accessible, skipping...");
+      return 0;
+    }
+    console.log("ILO careers portal requires login, skipping direct feed...");
+    return 0;
+  } catch (error) {
+    console.error("ILO error:", error);
+    return 0;
+  }
+}
+
+// Fetch from UNHCR Jobs (unhcr.org/careers)
+async function fetchJobsFromUNHCR(): Promise<number> {
+  console.log("Fetching jobs from UNHCR (unhcr.org/careers)...");
+  
+  try {
+    const response = await fetch("https://www.unhcr.org/careers/rss", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("UNHCR feed not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || result?.feed?.entry || [];
+    const jobItems = Array.isArray(items) ? items : items ? [items] : [];
+    console.log(`Fetched ${jobItems.length} jobs from UNHCR.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const item of jobItems) {
+      const title = item.title?._text || item.title || "UNHCR Position";
+      const link = item.link?.href || item.link?._text || item.link || "";
+      const description = item.description?._text || item.description || "";
+      const pubDate = item.pubDate || item.published || new Date().toISOString();
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      const jobIdMatch = link.match(/(\d+)/);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
+      
+      unJobs.push({
+        externalId: `unhcr-${jobId}`,
+        title,
+        company: "UNHCR - UN Refugee Agency",
+        location: "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "UNHCR", "Refugees", "Humanitarian"],
+        salary: null,
+        source: "UNHCR",
+        category: "un",
+        postedAt: new Date(pubDate),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from UNHCR.`);
+    return result2.length;
+  } catch (error) {
+    console.error("UNHCR error:", error);
+    return 0;
+  }
+}
+
+// Fetch from UNOPS Jobs (unops.org/jobs)
+async function fetchJobsFromUNOPS(): Promise<number> {
+  console.log("Fetching jobs from UNOPS (unops.org/jobs)...");
+  
+  try {
+    const response = await fetch("https://jobs.unops.org/api/jobs", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/json" }
+    });
+    if (!response.ok) {
+      console.log("UNOPS API not accessible, trying RSS...");
+      return 0;
+    }
+
+    const data = await response.json();
+    const jobs = data?.jobs || data?.data || [];
+    console.log(`Fetched ${jobs.length} jobs from UNOPS.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const job of jobs) {
+      const title = job.title || job.name || "UNOPS Position";
+      const link = job.url || job.link || `https://jobs.unops.org/job/${job.id}`;
+      const description = job.description || job.summary || "";
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      unJobs.push({
+        externalId: `unops-${job.id || Math.random().toString(36).substr(2, 10)}`,
+        title,
+        company: "UNOPS - UN Office for Project Services",
+        location: job.location || "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "UNOPS", "Project Management", "Infrastructure"],
+        salary: null,
+        source: "UNOPS",
+        category: "un",
+        postedAt: new Date(job.posted_at || job.createdAt || new Date()),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from UNOPS.`);
+    return result2.length;
+  } catch (error) {
+    console.error("UNOPS error:", error);
+    return 0;
+  }
+}
+
+// Fetch from IOM Jobs (iom.int)
+async function fetchJobsFromIOM(): Promise<number> {
+  console.log("Fetching jobs from IOM (iom.int/careers)...");
+  
+  try {
+    const response = await fetch("https://www.iom.int/careers/rss.xml", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("IOM feed not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || result?.feed?.entry || [];
+    const jobItems = Array.isArray(items) ? items : items ? [items] : [];
+    console.log(`Fetched ${jobItems.length} jobs from IOM.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const item of jobItems) {
+      const title = item.title?._text || item.title || "IOM Position";
+      const link = item.link?.href || item.link?._text || item.link || "";
+      const description = item.description?._text || item.description || "";
+      const pubDate = item.pubDate || item.published || new Date().toISOString();
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      const jobIdMatch = link.match(/(\d+)/);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
+      
+      unJobs.push({
+        externalId: `iom-${jobId}`,
+        title,
+        company: "IOM - International Organization for Migration",
+        location: "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "IOM", "Migration", "Humanitarian"],
+        salary: null,
+        source: "IOM",
+        category: "un",
+        postedAt: new Date(pubDate),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from IOM.`);
+    return result2.length;
+  } catch (error) {
+    console.error("IOM error:", error);
+    return 0;
+  }
+}
+
+// Fetch from UNESCO Jobs (careers.unesco.org)
+async function fetchJobsFromUNESCO(): Promise<number> {
+  console.log("Fetching jobs from UNESCO (careers.unesco.org)...");
+  
+  try {
+    const response = await fetch("https://careers.unesco.org/rss/job-listings", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0", "Accept": "application/xml, text/xml, */*" }
+    });
+    if (!response.ok) {
+      console.log("UNESCO feed not accessible, skipping...");
+      return 0;
+    }
+
+    const xmlText = await response.text();
+    const result = await parseStringPromise(xmlText, { explicitArray: false });
+    
+    const items = result?.rss?.channel?.item || result?.feed?.entry || [];
+    const jobItems = Array.isArray(items) ? items : items ? [items] : [];
+    console.log(`Fetched ${jobItems.length} jobs from UNESCO.`);
+
+    const unJobs: InsertJob[] = [];
+    
+    for (const item of jobItems) {
+      const title = item.title?._text || item.title || "UNESCO Position";
+      const link = item.link?.href || item.link?._text || item.link || "";
+      const description = item.description?._text || item.description || "";
+      const pubDate = item.pubDate || item.published || new Date().toISOString();
+      
+      if (!link || !isValidJobUrl(link)) continue;
+      
+      const jobIdMatch = link.match(/(\d+)/);
+      const jobId = jobIdMatch ? jobIdMatch[1] : Math.random().toString(36).substr(2, 10);
+      
+      unJobs.push({
+        externalId: `unesco-${jobId}`,
+        title,
+        company: "UNESCO",
+        location: "Global",
+        description: typeof description === 'string' ? description : JSON.stringify(description),
+        url: link,
+        remote: false,
+        tags: ["UN", "UNESCO", "Education", "Culture"],
+        salary: null,
+        source: "UNESCO",
+        category: "un",
+        postedAt: new Date(pubDate),
+      });
+    }
+    
+    const result2 = await storage.createJobsBatch(unJobs);
+    console.log(`Synced ${result2.length} UN jobs from UNESCO.`);
+    return result2.length;
+  } catch (error) {
+    console.error("UNESCO error:", error);
+    return 0;
+  }
+}
+
+// Fetch from FAO Jobs (fao.org/employment)
+async function fetchJobsFromFAO(): Promise<number> {
+  console.log("Fetching jobs from FAO (fao.org/employment)...");
+  
+  try {
+    const response = await fetch("https://jobs.fao.org/careersection/fao/joblist.ftl", {
+      headers: { "User-Agent": "DevGlobalJobs/1.0" }
+    });
+    if (!response.ok) {
+      console.log("FAO jobs portal requires login, skipping...");
+      return 0;
+    }
+    console.log("FAO careers portal requires login, skipping direct feed...");
+    return 0;
+  } catch (error) {
+    console.error("FAO error:", error);
+    return 0;
+  }
+}
+
 // ================== MAIN SYNC FUNCTION ==================
 
 async function syncAllJobs(): Promise<number> {
   console.log("Starting job sync from real APIs only (direct application links)...");
   console.log("=== Syncing All Job Categories ===");
   
-  // 1. Fetch UN/NGO jobs from ReliefWeb + UN Careers + UNDP (real APIs with direct links)
-  console.log("\n--- UN & NGO Jobs (ReliefWeb + UN Careers + UNDP) ---");
-  const [reliefWebCounts, unCareersCounts, undpCounts] = await Promise.all([
+  // 1. Fetch UN/NGO jobs from multiple sources
+  console.log("\n--- UN & NGO Jobs (ReliefWeb + UN Careers + UNDP + Additional UN Agencies) ---");
+  const [reliefWebCounts, unCareersCounts, undpCounts, unicefCounts, wfpCounts, unhcrCounts, unopsCounts, iomCounts, unescoCounts, whoCounts, iloCounts, faoCounts] = await Promise.all([
     fetchJobsFromReliefWeb(),
     fetchJobsFromUNCareers(),
     fetchJobsFromUNDP(),
+    fetchJobsFromUNICEF(),
+    fetchJobsFromWFP(),
+    fetchJobsFromUNHCR(),
+    fetchJobsFromUNOPS(),
+    fetchJobsFromIOM(),
+    fetchJobsFromUNESCO(),
+    fetchJobsFromWHO(),
+    fetchJobsFromILO(),
+    fetchJobsFromFAO(),
   ]);
   
   // 2. Fetch International jobs from real APIs (all have direct job links)
@@ -1675,14 +2100,15 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromWeb3Career(),
   ]);
   
-  // Calculate totals
-  const unTotal = reliefWebCounts.un + unCareersCounts + undpCounts;
+  // Calculate totals - include all UN agency feeds
+  const unAgencyTotal = unicefCounts + wfpCounts + unhcrCounts + unopsCounts + iomCounts + unescoCounts + whoCounts + iloCounts + faoCounts;
+  const unTotal = reliefWebCounts.un + unCareersCounts + undpCounts + unAgencyTotal;
   const ngoTotal = reliefWebCounts.ngo;
   const intlTotal = apiCounts.reduce((acc, count) => acc + count, 0);
   const total = unTotal + ngoTotal + intlTotal;
   
   console.log(`\n=== Sync Complete ===`);
-  console.log(`UN jobs added: ${unTotal} (ReliefWeb: ${reliefWebCounts.un}, UN Careers: ${unCareersCounts}, UNDP: ${undpCounts})`);
+  console.log(`UN jobs added: ${unTotal} (ReliefWeb: ${reliefWebCounts.un}, UN Careers: ${unCareersCounts}, UNDP: ${undpCounts}, UNICEF: ${unicefCounts}, WFP: ${wfpCounts}, UNHCR: ${unhcrCounts}, UNOPS: ${unopsCounts}, IOM: ${iomCounts}, UNESCO: ${unescoCounts})`);
   console.log(`NGO jobs added: ${ngoTotal}`);
   console.log(`International jobs: ${intlTotal}`);
   console.log(`Total new jobs added: ${total}`);

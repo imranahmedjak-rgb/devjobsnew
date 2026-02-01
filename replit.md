@@ -68,7 +68,9 @@ Single table design for jobs:
 ## Job Sources (200+)
 
 ### External APIs (Active)
-- **ReliefWeb API**: UN and humanitarian sector jobs (https://api.reliefweb.int)
+- **ReliefWeb RSS**: UN and humanitarian sector jobs (https://reliefweb.int/jobs/rss.xml)
+  - Note: Uses curl via child_process because Node.js fetch gets 202 empty response from ReliefWeb
+- **UN Careers**: Official UN job feed (https://careers.un.org/jobfeed)
 - **Arbeitnow API**: European and remote jobs (https://www.arbeitnow.com/api/job-board-api)
 - **RemoteOK API**: Remote jobs worldwide (https://remoteok.com/api)
 - **Jobicy API**: Remote job listings (https://jobicy.com/api/v2/remote-jobs)
