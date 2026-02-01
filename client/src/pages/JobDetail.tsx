@@ -48,7 +48,7 @@ function JobSchemaScript({ job }: { job: any }) {
       },
       "jobLocationType": job.remote ? "TELECOMMUTE" : undefined,
       "directApply": true,
-      "url": `https://careernest.com/jobs/${job.id}`,
+      "url": `https://devglobaljobs.com/jobs/${job.id}`,
       "identifier": {
         "@type": "PropertyValue",
         "name": job.source || "CareerNest",
@@ -80,7 +80,7 @@ function JobSchemaScript({ job }: { job: any }) {
     const ogTags = [
       { property: 'og:title', content: `${job.title} at ${job.company}` },
       { property: 'og:description', content: `Apply for ${job.title} at ${job.company} in ${job.location}` },
-      { property: 'og:url', content: `https://careernest.com/jobs/${job.id}` },
+      { property: 'og:url', content: `https://devglobaljobs.com/jobs/${job.id}` },
       { property: 'og:type', content: 'website' }
     ];
     
