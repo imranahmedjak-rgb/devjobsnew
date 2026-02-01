@@ -1,5 +1,5 @@
 import { useRoute, Link } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useJob } from "@/hooks/use-jobs";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
   Building2, 
@@ -15,7 +16,9 @@ import {
   Clock, 
   ExternalLink,
   Share2,
-  Bookmark
+  Bookmark,
+  BookmarkCheck,
+  Check
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
@@ -107,6 +110,81 @@ export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
   const id = params ? parseInt(params.id) : 0;
   const { data: job, isLoading, error } = useJob(id);
+  const { toast } = useToast();
+  
+  // Check if job is saved in localStorage
+  const [isSaved, setIsSaved] = useState(() => {
+    const savedJobs = JSON.parse(localStorage.getItem('savedJobs') || '[]');
+    return savedJobs.includes(id);
+  });
+
+  // Handle Save/Bookmark
+  const handleSave = () => {
+    const savedJobs = JSON.parse(localStorage.getItem('savedJobs') || '[]');
+    
+    if (isSaved) {
+      // Remove from saved
+      const updated = savedJobs.filter((jobId: number) => jobId !== id);
+      localStorage.setItem('savedJobs', JSON.stringify(updated));
+      setIsSaved(false);
+      toast({
+        title: "Removed from saved jobs",
+        description: "Job has been removed from your bookmarks.",
+      });
+    } else {
+      // Add to saved
+      savedJobs.push(id);
+      localStorage.setItem('savedJobs', JSON.stringify(savedJobs));
+      setIsSaved(true);
+      toast({
+        title: "Job saved!",
+        description: "Job has been added to your bookmarks.",
+      });
+    }
+  };
+
+  // Handle Share
+  const handleShare = async () => {
+    const shareUrl = `https://devglobaljobs.com/jobs/${id}`;
+    const shareData = {
+      title: job ? `${job.title} at ${job.company}` : 'Job Opportunity',
+      text: job ? `Check out this job: ${job.title} at ${job.company}` : 'Check out this job opportunity!',
+      url: shareUrl,
+    };
+
+    try {
+      // Try Web Share API first (mobile/modern browsers)
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast({
+          title: "Shared successfully!",
+          description: "Job link has been shared.",
+        });
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link copied!",
+          description: "Job link has been copied to your clipboard.",
+        });
+      }
+    } catch (err) {
+      // If share was cancelled or failed, try clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Link copied!",
+          description: "Job link has been copied to your clipboard.",
+        });
+      } catch {
+        toast({
+          title: "Share failed",
+          description: "Please copy the URL from the address bar.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -245,11 +323,25 @@ export default function JobDetail() {
                   </Button>
                   
                   <div className="grid grid-cols-2 gap-3">
-                    <Button variant="outline" className="w-full">
-                      <Bookmark className="w-4 h-4 mr-2" />
-                      Save
+                    <Button 
+                      variant="outline" 
+                      className={`w-full ${isSaved ? 'bg-primary/10 border-primary text-primary' : ''}`}
+                      onClick={handleSave}
+                      data-testid="button-save-job"
+                    >
+                      {isSaved ? (
+                        <BookmarkCheck className="w-4 h-4 mr-2" />
+                      ) : (
+                        <Bookmark className="w-4 h-4 mr-2" />
+                      )}
+                      {isSaved ? 'Saved' : 'Save'}
                     </Button>
-                    <Button variant="outline" className="w-full">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={handleShare}
+                      data-testid="button-share-job"
+                    >
                       <Share2 className="w-4 h-4 mr-2" />
                       Share
                     </Button>
