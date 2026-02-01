@@ -1,0 +1,145 @@
+Please implement the following features ONLY for jobs posted directly on Dev Global Jobs.
+These requirements do NOT apply to jobs imported via APIs or external sources.
+
+1️⃣ Job Posting Form (Direct Posts Only)
+A. Mandatory Job Categories
+
+For directly posted jobs, add a required category field with the following options:
+
+UN Jobs
+
+NGO Jobs
+
+International Jobs
+
+(Category selection is mandatory before submission.)
+
+B. Application Method (Direct Posts Only)
+
+Add two mandatory application options (radio buttons):
+
+Apply via Link
+
+Recruiter provides an external application URL
+
+Users clicking “Apply” are redirected to the external site
+
+Apply via Email
+
+Recruiter provides an email address
+
+Applications are sent directly via email
+
+(Recruiter must select one option.)
+
+2️⃣ Recruiter Authentication (Direct Job Posting Only)
+
+Recruiter must sign up with email
+
+Email verification required
+
+Recruiter must log in before posting a job
+
+Guest job posting must NOT be allowed
+
+3️⃣ Recruiter Profile (Required for Direct Posting)
+
+Before posting a job, recruiter must complete a simple profile:
+
+Organization / Company name
+
+Contact email
+
+Country
+
+Short organization description
+
+(Profile completion required only once.)
+
+4️⃣ Job Seeker Profile (Optional – Platform Feature)
+
+Users may:
+
+Sign up with email
+
+Log in and create a simple profile:
+
+Name
+
+Country
+
+Experience
+
+Expertise
+
+CV upload (PDF / DOC)
+
+(This applies platform-wide, not only to direct jobs.)
+
+5️⃣ Application Logic (Direct Jobs Only)
+
+If job uses Apply via Email:
+
+Applications go directly to recruiter email
+
+If job uses Apply via Link:
+
+Users are redirected to the provided URL
+
+(No internal application tracking needed at this stage.)
+
+6️⃣ Navigation & Access Control
+
+Post a Job → Redirect to signup/login if recruiter is not authenticated
+
+Profile → Redirect to signup/login if user is not authenticated
+
+Main navigation should include:
+
+193 Countries
+
+Refresh Feed
+
+Post a Job
+
+User Profile
+
+7️⃣ Important Clarification (VERY IMPORTANT)
+
+⚠️ All above rules apply ONLY to jobs posted directly on Dev Global Jobs.
+
+API-imported jobs:
+
+Do NOT require recruiter signup
+
+Do NOT use job posting form
+
+Do NOT require category or apply method selection
+
+Keep original source & apply link/email
+
+8️⃣ Additional Best Practices (Recommended)
+
+Prevent duplicate direct job postings
+
+Display job source clearly:
+
+“Direct – Dev Global Jobs”
+
+“Source: Lever / Greenhouse / API”
+
+Show “Posted X days ago”
+
+Enable job sharing buttons
+
+✅ Objective
+
+Keep the platform:
+
+Professional
+
+Simple
+
+Trustworthy
+
+Scalable for future monetization
