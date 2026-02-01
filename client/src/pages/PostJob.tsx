@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Briefcase, MapPin, DollarSign, Tag, Globe, ArrowLeft, CheckCircle, Mail, Link as LinkIcon, Building, Users, Shield } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, Tag, Globe, ArrowLeft, CheckCircle, Mail, Link as LinkIcon, Building, Users, Shield, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface JobFormData {
@@ -123,38 +123,40 @@ export default function PostJob() {
 
     setIsSubmitting(true);
     try {
-      const res = await apiRequest("/api/direct-jobs", {
+      localStorage.setItem("pendingJobData", JSON.stringify(formData));
+
+      const res = await apiRequest("/api/stripe/create-job-payment-session", {
         method: "POST",
         body: JSON.stringify({
-          title: formData.title,
-          location: formData.location,
-          description: formData.description,
-          category: formData.category,
-          applyMethod: formData.applyMethod,
-          applyValue: formData.applyValue,
-          remote: formData.remote,
-          tags: formData.tags ? formData.tags.split(",").map(t => t.trim()) : [],
-          salary: formData.salary || null,
+          jobData: {
+            title: formData.title,
+            location: formData.location,
+            description: formData.description,
+            category: formData.category,
+            applyMethod: formData.applyMethod,
+            applyValue: formData.applyValue,
+            remote: formData.remote,
+          },
         }),
       });
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to post job");
+        throw new Error(error.error || "Failed to create payment session");
       }
 
-      setSubmitted(true);
-      toast({
-        title: "Job Posted Successfully",
-        description: "Your job listing is now live on Dev Global Jobs.",
-      });
+      const { url } = await res.json();
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error("No payment URL received");
+      }
     } catch (error: any) {
       toast({
-        title: "Failed to Post Job",
+        title: "Failed to Initiate Payment",
         description: error.message || "Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -422,6 +424,19 @@ export default function PostJob() {
                   </Label>
                 </div>
 
+                <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-lg border border-primary/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-primary" />
+                      <span className="font-medium">Job Posting Fee</span>
+                    </div>
+                    <span className="text-2xl font-bold text-primary">$2.00 USD</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    One-time payment to publish your job listing worldwide
+                  </p>
+                </div>
+
                 <div className="flex gap-4 pt-4">
                   <Button
                     type="button"
@@ -437,7 +452,8 @@ export default function PostJob() {
                     disabled={isSubmitting}
                     data-testid="button-submit-job"
                   >
-                    {isSubmitting ? "Posting..." : "Post Job"}
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {isSubmitting ? "Processing..." : "Pay $2 & Post Job"}
                   </Button>
                 </div>
               </form>

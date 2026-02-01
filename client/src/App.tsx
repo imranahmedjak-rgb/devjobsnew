@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth";
 import Home from "@/pages/Home";
 import JobDetail from "@/pages/JobDetail";
 import PostJob from "@/pages/PostJob";
+import PaymentSuccess from "@/pages/PaymentSuccess";
 import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import About from "@/pages/About";
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/jobs/:id" component={JobDetail} />
       <Route path="/post-job" component={PostJob} />
+      <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/auth" component={Auth} />
       <Route path="/profile" component={Profile} />
       <Route path="/about" component={About} />
