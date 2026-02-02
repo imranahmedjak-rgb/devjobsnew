@@ -34,16 +34,96 @@ export const recruiterProfiles = pgTable("recruiter_profiles", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Job seeker profiles
+// Job seeker profiles (enhanced for AI-powered system)
 export const jobSeekerProfiles = pgTable("job_seeker_profiles", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   country: text("country").notNull(),
-  experience: text("experience"),
-  expertise: text("expertise"),
+  phone: text("phone"),
+  dateOfBirth: text("date_of_birth"),
+  nationality: text("nationality"),
+  linkedinUrl: text("linkedin_url"),
+  portfolioUrl: text("portfolio_url"),
+  professionalSummary: text("professional_summary"),
+  currentJobTitle: text("current_job_title"),
+  yearsOfExperience: integer("years_of_experience"),
+  skills: text("skills").array(),
+  languages: text("languages").array(),
+  education: text("education"),
+  certifications: text("certifications"),
   cvUrl: text("cv_url"),
+  cvData: jsonb("cv_data"),
+  profileCompleteness: integer("profile_completeness").default(0),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Candidate work experiences
+export const candidateExperiences = pgTable("candidate_experiences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  jobTitle: text("job_title").notNull(),
+  company: text("company").notNull(),
+  location: text("location"),
+  startDate: text("start_date").notNull(),
+  endDate: text("end_date"),
+  isCurrent: boolean("is_current").default(false),
+  description: text("description"),
+  responsibilities: text("responsibilities").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Candidate achievements (linked to experiences)
+export const candidateAchievements = pgTable("candidate_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  experienceId: integer("experience_id").references(() => candidateExperiences.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  metrics: text("metrics"),
+  isAiGenerated: boolean("is_ai_generated").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Candidate projects
+export const candidateProjects = pgTable("candidate_projects", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  role: text("role"),
+  technologies: text("technologies").array(),
+  startDate: text("start_date"),
+  endDate: text("end_date"),
+  projectUrl: text("project_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Candidate references
+export const candidateReferences = pgTable("candidate_references", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  title: text("title").notNull(),
+  company: text("company").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  relationship: text("relationship"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Job applications (for Easy Apply)
+export const jobApplications = pgTable("job_applications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  jobId: integer("job_id"),
+  directJobId: integer("direct_job_id"),
+  recruiterEmail: text("recruiter_email"),
+  status: text("status").default("submitted"),
+  appliedAt: timestamp("applied_at").defaultNow(),
+  aiSuccessPrediction: integer("ai_success_prediction"),
+  aiRecommendations: text("ai_recommendations"),
 });
 
 // Pending job posts (before payment is completed)
@@ -99,6 +179,32 @@ export const insertRecruiterProfileSchema = createInsertSchema(recruiterProfiles
 export const insertJobSeekerProfileSchema = createInsertSchema(jobSeekerProfiles).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCandidateExperienceSchema = createInsertSchema(candidateExperiences).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCandidateAchievementSchema = createInsertSchema(candidateAchievements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCandidateProjectSchema = createInsertSchema(candidateProjects).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCandidateReferenceSchema = createInsertSchema(candidateReferences).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertJobApplicationSchema = createInsertSchema(jobApplications).omit({
+  id: true,
+  appliedAt: true,
 });
 
 export const insertDirectJobSchema = createInsertSchema(directJobs).omit({
@@ -123,6 +229,17 @@ export type DirectJob = typeof directJobs.$inferSelect;
 export type InsertDirectJob = z.infer<typeof insertDirectJobSchema>;
 export type PendingJob = typeof pendingJobs.$inferSelect;
 export type InsertPendingJob = z.infer<typeof insertPendingJobSchema>;
+
+export type CandidateExperience = typeof candidateExperiences.$inferSelect;
+export type InsertCandidateExperience = z.infer<typeof insertCandidateExperienceSchema>;
+export type CandidateAchievement = typeof candidateAchievements.$inferSelect;
+export type InsertCandidateAchievement = z.infer<typeof insertCandidateAchievementSchema>;
+export type CandidateProject = typeof candidateProjects.$inferSelect;
+export type InsertCandidateProject = z.infer<typeof insertCandidateProjectSchema>;
+export type CandidateReference = typeof candidateReferences.$inferSelect;
+export type InsertCandidateReference = z.infer<typeof insertCandidateReferenceSchema>;
+export type JobApplication = typeof jobApplications.$inferSelect;
+export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
 
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),

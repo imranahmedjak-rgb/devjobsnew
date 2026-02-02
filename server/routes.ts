@@ -3073,7 +3073,11 @@ export async function registerRoutes(
   // Create/update job seeker profile
   app.post("/api/jobseeker/profile", authMiddleware as any, async (req: AuthRequest, res) => {
     try {
-      const { name, country, experience, expertise, cvUrl } = req.body;
+      const { 
+        name, country, phone, dateOfBirth, nationality, linkedinUrl, portfolioUrl,
+        professionalSummary, currentJobTitle, yearsOfExperience, skills, languages,
+        education, certifications, cvUrl 
+      } = req.body;
       
       if (!name || !country) {
         return res.status(400).json({ error: "Name and country are required" });
@@ -3085,8 +3089,18 @@ export async function registerRoutes(
         const updated = await storage.updateJobSeekerProfile(req.user!.id, {
           name,
           country,
-          experience,
-          expertise,
+          phone,
+          dateOfBirth,
+          nationality,
+          linkedinUrl,
+          portfolioUrl,
+          professionalSummary,
+          currentJobTitle,
+          yearsOfExperience,
+          skills,
+          languages,
+          education,
+          certifications,
           cvUrl,
         });
         return res.json(updated);
@@ -3096,8 +3110,18 @@ export async function registerRoutes(
         userId: req.user!.id,
         name,
         country,
-        experience,
-        expertise,
+        phone,
+        dateOfBirth,
+        nationality,
+        linkedinUrl,
+        portfolioUrl,
+        professionalSummary,
+        currentJobTitle,
+        yearsOfExperience,
+        skills,
+        languages,
+        education,
+        certifications,
         cvUrl,
       });
       
