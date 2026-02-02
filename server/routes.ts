@@ -2905,7 +2905,7 @@ export async function registerRoutes(
       });
       
       // Mark user as verified automatically
-      await storage.markEmailVerified(user.id);
+      await storage.updateUserVerification(user.id, true);
       
       // Generate JWT token immediately
       const token = jwt.sign(
