@@ -2893,7 +2893,7 @@ export async function registerRoutes(
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Create user
+      // Create user with emailVerified = true (no verification required)
       const user = await storage.createUser({
         email: email.toLowerCase(),
         password: hashedPassword,
@@ -2904,18 +2904,28 @@ export async function registerRoutes(
         city: city?.trim() || null,
       });
       
-      // Generate 6-digit verification code
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      await storage.setVerificationCode(user.id, verificationCode, 15);
+      // Mark user as verified automatically
+      await storage.markEmailVerified(user.id);
       
-      // Send verification email
-      await sendVerificationCodeEmail(email.toLowerCase(), verificationCode, firstName?.trim());
+      // Generate JWT token immediately
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
       
       res.json({ 
-        requiresVerification: true,
-        userId: user.id,
-        email: user.email,
-        message: "Please check your email for a verification code"
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          gender: user.gender,
+          city: user.city,
+          emailVerified: true
+        }
       });
     } catch (error) {
       console.error("Signup error:", error);
@@ -3017,21 +3027,6 @@ export async function registerRoutes(
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) {
         return res.status(401).json({ error: "Invalid email or password" });
-      }
-      
-      // Check if email is verified
-      if (!user.emailVerified) {
-        // Generate and send new verification code
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-        await storage.setVerificationCode(user.id, verificationCode, 15);
-        await sendVerificationCodeEmail(user.email, verificationCode, user.firstName || undefined);
-        
-        return res.json({ 
-          requiresVerification: true,
-          userId: user.id,
-          email: user.email,
-          message: "Please verify your email. A new code has been sent."
-        });
       }
       
       const token = jwt.sign(

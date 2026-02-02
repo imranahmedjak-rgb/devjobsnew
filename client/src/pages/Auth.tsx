@@ -6,12 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Globe, User, Briefcase, ArrowLeft, Eye, EyeOff, Mail, RefreshCw } from "lucide-react";
+import { Globe, User, Briefcase, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { SiGoogle, SiApple, SiGithub } from "react-icons/si";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
-  const { login, signup, verifyCode, resendCode } = useAuth();
+  const { login, signup } = useAuth();
   const { toast } = useToast();
   
   const [isLogin, setIsLogin] = useState(true);
@@ -24,35 +24,16 @@ export default function Auth() {
   const [role, setRole] = useState<"recruiter" | "jobseeker">("jobseeker");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Verification state
-  const [showVerification, setShowVerification] = useState(false);
-  const [verificationUserId, setVerificationUserId] = useState<number | null>(null);
-  const [verificationEmail, setVerificationEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [isResending, setIsResending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      let result;
       if (isLogin) {
-        result = await login(email, password);
+        await login(email, password);
       } else {
-        result = await signup(email, password, role, firstName, lastName, gender, city);
-      }
-      
-      if (result?.requiresVerification) {
-        setVerificationUserId(result.userId);
-        setVerificationEmail(result.email);
-        setShowVerification(true);
-        toast({ 
-          title: "Verification Required", 
-          description: "Please check your email for a verification code." 
-        });
-        return;
+        await signup(email, password, role, firstName, lastName, gender, city);
       }
       
       toast({ 
@@ -75,147 +56,6 @@ export default function Auth() {
       setIsLoading(false);
     }
   };
-
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!verificationUserId) return;
-    
-    setIsLoading(true);
-    try {
-      await verifyCode(verificationUserId, verificationCode);
-      toast({ 
-        title: "Email Verified!", 
-        description: "Your account has been verified successfully." 
-      });
-      
-      if (role === "recruiter") {
-        setLocation("/profile");
-      } else {
-        setLocation("/");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Verification Failed",
-        description: error.message || "Invalid or expired verification code",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    if (!verificationUserId) return;
-    
-    setIsResending(true);
-    try {
-      await resendCode(verificationUserId);
-      toast({ 
-        title: "Code Sent", 
-        description: "A new verification code has been sent to your email." 
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to resend code",
-        variant: "destructive",
-      });
-    } finally {
-      setIsResending(false);
-    }
-  };
-
-  // Verification Code UI
-  if (showVerification) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <a href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-blue-600">
-              <Globe className="w-8 h-8" />
-              Dev Global Jobs
-            </a>
-          </div>
-          
-          <Card>
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
-                <Mail className="w-8 h-8 text-blue-600" />
-              </div>
-              <CardTitle data-testid="text-verify-title">Verify Your Email</CardTitle>
-              <CardDescription>
-                We've sent a 6-digit verification code to<br />
-                <span className="font-medium text-foreground">{verificationEmail}</span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleVerify} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="code">Verification Code</Label>
-                  <Input
-                    id="code"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    required
-                    maxLength={6}
-                    className="text-center text-2xl tracking-widest"
-                    data-testid="input-verification-code"
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading || verificationCode.length !== 6}
-                  data-testid="button-verify"
-                >
-                  {isLoading ? "Verifying..." : "Verify Email"}
-                </Button>
-              </form>
-              
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Didn't receive the code?
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResendCode}
-                  disabled={isResending}
-                  className="gap-2"
-                  data-testid="button-resend-code"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isResending ? 'animate-spin' : ''}`} />
-                  {isResending ? "Sending..." : "Resend Code"}
-                </Button>
-              </div>
-              
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => {
-                    setShowVerification(false);
-                    setVerificationCode("");
-                  }}
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                  data-testid="button-back-to-login"
-                >
-                  <ArrowLeft className="w-4 h-4 inline mr-1" />
-                  Back to sign in
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            The code expires in 15 minutes
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">

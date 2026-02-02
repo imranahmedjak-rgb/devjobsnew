@@ -11,20 +11,12 @@ interface User {
   emailVerified: boolean;
 }
 
-interface VerificationRequired {
-  requiresVerification: true;
-  userId: number;
-  email: string;
-}
-
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<VerificationRequired | void>;
-  signup: (email: string, password: string, role: "recruiter" | "jobseeker", firstName: string, lastName: string, gender: string, city: string) => Promise<VerificationRequired | void>;
-  verifyCode: (userId: number, code: string) => Promise<void>;
-  resendCode: (userId: number) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, role: "recruiter" | "jobseeker", firstName: string, lastName: string, gender: string, city: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -72,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string): Promise<VerificationRequired | void> => {
+  const login = async (email: string, password: string): Promise<void> => {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -85,21 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     const data = await res.json();
-    
-    if (data.requiresVerification) {
-      return {
-        requiresVerification: true,
-        userId: data.userId,
-        email: data.email,
-      };
-    }
-    
     localStorage.setItem("auth_token", data.token);
     setToken(data.token);
     setUser(data.user);
   };
 
-  const signup = async (email: string, password: string, role: "recruiter" | "jobseeker", firstName: string, lastName: string, gender: string, city: string): Promise<VerificationRequired | void> => {
+  const signup = async (email: string, password: string, role: "recruiter" | "jobseeker", firstName: string, lastName: string, gender: string, city: string): Promise<void> => {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -112,49 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     const data = await res.json();
-    
-    if (data.requiresVerification) {
-      return {
-        requiresVerification: true,
-        userId: data.userId,
-        email: data.email,
-      };
-    }
-    
     localStorage.setItem("auth_token", data.token);
     setToken(data.token);
     setUser(data.user);
-  };
-
-  const verifyCode = async (userId: number, code: string): Promise<void> => {
-    const res = await fetch("/api/auth/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, code }),
-    });
-    
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || "Verification failed");
-    }
-    
-    const data = await res.json();
-    localStorage.setItem("auth_token", data.token);
-    setToken(data.token);
-    setUser(data.user);
-  };
-
-  const resendCode = async (userId: number): Promise<void> => {
-    const res = await fetch("/api/auth/resend-code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    });
-    
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || "Failed to resend code");
-    }
   };
 
   const logout = () => {
@@ -164,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, signup, verifyCode, resendCode, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, signup, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
