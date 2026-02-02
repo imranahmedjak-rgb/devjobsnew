@@ -38,6 +38,7 @@ The server implements a storage pattern (`IStorage` interface) for database oper
 **Users table**:
 - `users`: Stores user accounts with email, password, role (recruiter/jobseeker)
 - Profile fields: firstName, lastName, gender, city
+- Email verification fields: verificationCode (6-digit string), verificationCodeExpiry (timestamp), emailVerified (boolean)
 - Header displays user's full name instead of email when logged in
 
 **Jobs tables**:
