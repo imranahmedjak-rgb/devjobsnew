@@ -2064,9 +2064,9 @@ async function fetchJobsFromReliefWeb(): Promise<{ un: number; ngo: number }> {
     // Fetch 500 most recent jobs using the public API
     let jsonText: string;
     try {
-      jsonText = execSync('curl -s --max-time 45 "https://api.reliefweb.int/v1/jobs?appname=devglobaljobs&limit=500&sort[]=date:desc&fields[include][]=title&fields[include][]=body&fields[include][]=url&fields[include][]=source&fields[include][]=country&fields[include][]=date"', { 
+      jsonText = execSync('curl -s --max-time 60 "https://api.reliefweb.int/v2/jobs?appname=TrendNova-v5ofdaDo&limit=500&sort[]=date:desc&fields[include][]=title&fields[include][]=body&fields[include][]=url&fields[include][]=source&fields[include][]=country&fields[include][]=date"', { 
         encoding: 'utf8', 
-        timeout: 50000 
+        timeout: 70000 
       });
     } catch (curlError) {
       console.log("ReliefWeb API curl failed, trying RSS fallback...", curlError);

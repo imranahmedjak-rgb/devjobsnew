@@ -68,8 +68,11 @@ Single table design for jobs:
 ## Job Sources (200+)
 
 ### External APIs (Active)
-- **ReliefWeb RSS**: UN and humanitarian sector jobs (https://reliefweb.int/jobs/rss.xml)
-  - Note: Uses curl via child_process because Node.js fetch gets 202 empty response from ReliefWeb
+- **ReliefWeb API v2**: UN and humanitarian sector jobs
+  - Appname: `TrendNova-v5ofdaDo` (approved by ReliefWeb team)
+  - API: https://api.reliefweb.int/v2/jobs
+  - RSS Fallback: https://reliefweb.int/jobs/rss.xml
+  - Note: Uses curl via child_process because Node.js fetch gets 202 empty response
 - **UN Careers**: Official UN job feed (https://careers.un.org/jobfeed)
 - **Arbeitnow API**: European and remote jobs (https://www.arbeitnow.com/api/job-board-api)
 - **RemoteOK API**: Remote jobs worldwide (https://remoteok.com/api)
@@ -164,6 +167,21 @@ Single table design for jobs:
 - All jobs have direct application links
 - Sources: ReliefWeb, Arbeitnow, RemoteOK, Jobicy, Himalayas, UN Careers, and company career pages
 - Verified URLs from trusted sources
+
+### Paid Job Posting (Recruiters)
+- **Price**: $2.00 USD per job posting
+- **Payment**: Stripe integration with secure checkout
+- **Flow**: Recruiter fills form → pays $2 via Stripe → job published
+- **Security**: 
+  - Job data stored server-side in `pending_jobs` table before payment
+  - Payment verified via Stripe session (amount, user ID, payment status)
+  - No client-side data used for job creation (prevents tampering)
+- **Database Tables**:
+  - `pending_jobs`: Temporary storage during payment flow
+  - `direct_jobs`: Published recruiter job listings
+- **API Endpoints**:
+  - `POST /api/stripe/create-job-payment-session`: Create Stripe checkout session
+  - `POST /api/stripe/verify-payment`: Verify payment and publish job
 
 ### AI Chat Assistant
 - **Location**: Floating button in bottom-right corner of all pages
