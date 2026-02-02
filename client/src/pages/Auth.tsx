@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, User, Briefcase, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { SiGoogle, SiApple, SiGithub } from "react-icons/si";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
@@ -211,6 +212,43 @@ export default function Auth() {
                 {isLoading ? "Please wait..." : (isLogin ? "Log In" : "Create Account")}
               </Button>
             </form>
+            
+            {/* Social Login Options */}
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-background text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="w-full gap-2"
+                onClick={() => window.location.href = "/api/login"}
+                data-testid="button-social-login"
+              >
+                <Globe className="w-5 h-5" />
+                Continue with Google, Apple, X or GitHub
+              </Button>
+              
+              <div className="mt-4 flex items-center justify-center gap-4 text-muted-foreground">
+                <SiGoogle className="w-4 h-4" />
+                <SiApple className="w-4 h-4" />
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                <SiGithub className="w-4 h-4" />
+              </div>
+              
+              <p className="mt-2 text-xs text-center text-muted-foreground">
+                Choose your preferred sign-in method on the next screen
+              </p>
+            </div>
             
             <div className="mt-6 text-center text-sm">
               {isLogin ? (

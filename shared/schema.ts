@@ -304,3 +304,6 @@ export interface JobFilter {
   remote?: boolean;
   category?: JobCategory;
 }
+
+// Export sessions table for Replit Auth
+export * from "./models/auth";

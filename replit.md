@@ -232,9 +232,10 @@ The server implements a storage pattern (`IStorage` interface) for database oper
 ### Easy Apply (Job Seekers)
 - **Location**: Job detail pages for direct-posted jobs
 - **Purpose**: Apply to jobs directly without leaving the platform
+- **Professional Display**: Shows application method indicator with verified badge
 - **Two Application Methods**:
-  1. **Email Method** (`applyMethod: "email"`): Green "Easy Apply" button that sends profile/CV directly to recruiter
-  2. **URL Method** (`applyMethod: "url"`): "Apply Now" button that links directly to recruiter's website
+  1. **Email Method** (`applyMethod: "email"`): Green "Apply via Email" button that sends profile/CV directly to recruiter
+  2. **URL Method** (`applyMethod: "url"`): "Apply via Company Website" button that links directly to recruiter's website
 - **Requirements**:
   - Job seeker account with completed profile
   - Job must be a "direct job" posted on the platform (not from external API)
@@ -252,3 +253,15 @@ The server implements a storage pattern (`IStorage` interface) for database oper
 - **Security**: Only authenticated job seekers with complete profiles can apply (server-side role check)
 - **Component**: `client/src/pages/JobDetail.tsx`
 - **Email Templates**: `server/emailService.ts` (HTML and plain text versions)
+
+### Social Login (Replit Auth)
+- **Location**: Auth page (`/auth`)
+- **Purpose**: Allow users to sign in with international platform accounts
+- **Supported Providers**: Google, Apple, X (Twitter), GitHub
+- **Technology**: Replit Auth OpenID Connect integration
+- **Routes**:
+  - `/api/login`: Initiates OAuth login flow
+  - `/api/logout`: Logs out user
+  - `/api/callback`: OAuth callback handler
+- **Database**: Sessions table for OAuth session management
+- **Note**: Social login buttons redirect to Replit's OIDC provider which handles provider selection

@@ -21,7 +21,11 @@ import {
   BookmarkCheck,
   Check,
   Send,
-  Loader2
+  Loader2,
+  Mail,
+  Link2,
+  Shield,
+  CheckCircle2
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
@@ -289,7 +293,7 @@ export default function JobDetail() {
       {/* Back Button */}
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <Link href="/">
-          <Button variant="ghost" className="pl-0 hover:pl-2 transition-all text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" className="text-muted-foreground" data-testid="button-back-listings">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to listings
           </Button>
@@ -370,64 +374,109 @@ export default function JobDetail() {
           <div className="lg:col-span-4 space-y-6">
             <div className="sticky top-24">
               <Card className="p-6 border-border/60 shadow-lg shadow-black/5 rounded-2xl bg-white dark:bg-slate-900">
-                <h3 className="text-lg font-bold mb-2">Interested?</h3>
-                <p className="text-sm text-muted-foreground mb-6">
-                  {isEasyApplyAvailable 
-                    ? "Apply instantly with your profile or visit the company's site."
-                    : "Read the full description and apply on the company's official site."
-                  }
-                </p>
+                {/* Professional Header */}
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">Apply for this Position</h3>
+                    <p className="text-xs text-muted-foreground">Verified opportunity</p>
+                  </div>
+                </div>
+                
+                {/* Application Method Indicator */}
+                {jobWithMeta?.isDirectJob && (
+                  <div className="mb-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 text-sm">
+                      {jobWithMeta.applyMethod === "email" ? (
+                        <>
+                          <Mail className="w-4 h-4 text-green-600" />
+                          <span className="font-medium text-green-700 dark:text-green-400">Applications via Email</span>
+                        </>
+                      ) : (
+                        <>
+                          <Link2 className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-blue-700 dark:text-blue-400">Apply via Company Website</span>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {jobWithMeta.applyMethod === "email" 
+                        ? "Your profile and CV will be sent directly to the recruiter"
+                        : "You will be redirected to the company's official careers page"
+                      }
+                    </p>
+                  </div>
+                )}
                 
                 <div className="space-y-3">
-                  {/* Two options based on how job accepts applications */}
+                  {/* Professional Apply Buttons */}
                   {jobWithMeta?.isDirectJob ? (
-                    // Direct job - show apply method based on recruiter preference
                     jobWithMeta.applyMethod === "email" ? (
-                      // Option 1: Easy Apply via Email
-                      <Button 
-                        size="lg"
-                        className="w-full text-base font-semibold shadow-lg shadow-green-500/25 bg-green-600"
-                        onClick={handleEasyApply}
-                        disabled={isApplying}
-                        data-testid="button-easy-apply"
-                      >
-                        {isApplying ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Sending Application...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4 mr-2" />
-                            Easy Apply (Send Profile & CV)
-                          </>
-                        )}
-                      </Button>
+                      // Email Application - Professional Style
+                      <div className="space-y-2">
+                        <Button 
+                          size="lg"
+                          className="w-full text-base font-semibold shadow-lg bg-green-600"
+                          onClick={handleEasyApply}
+                          disabled={isApplying}
+                          data-testid="button-easy-apply"
+                        >
+                          {isApplying ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              Sending Application...
+                            </>
+                          ) : (
+                            <>
+                              <Mail className="w-5 h-5 mr-2" />
+                              Apply via Email
+                            </>
+                          )}
+                        </Button>
+                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                          <Shield className="w-3 h-3" />
+                          <span>One-click application with your profile</span>
+                        </div>
+                      </div>
                     ) : (
-                      // Option 2: Apply via Link (recruiter's website)
+                      // Company Website Application - Professional Style
+                      <div className="space-y-2">
+                        <Button 
+                          size="lg"
+                          className="w-full text-base font-semibold shadow-lg"
+                          asChild
+                        >
+                          <a href={job.url} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="w-5 h-5 mr-2" />
+                            Apply via Company Website
+                          </a>
+                        </Button>
+                        <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                          <Shield className="w-3 h-3" />
+                          <span>Opens official company careers page</span>
+                        </div>
+                      </div>
+                    )
+                  ) : (
+                    // External Job - Professional Style
+                    <div className="space-y-2">
                       <Button 
                         size="lg"
-                        className="w-full text-base font-semibold shadow-lg shadow-primary/25"
+                        className="w-full text-base font-semibold shadow-lg"
                         asChild
                       >
                         <a href={job.url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Apply Now (Recruiter's Website)
+                          <ExternalLink className="w-5 h-5 mr-2" />
+                          Apply on {job.source || 'Company Site'}
                         </a>
                       </Button>
-                    )
-                  ) : (
-                    // External job - apply on company site
-                    <Button 
-                      size="lg"
-                      className="w-full text-base font-semibold shadow-lg shadow-primary/25"
-                      asChild
-                    >
-                      <a href={job.url} target="_blank" rel="noopener noreferrer">
-                        Apply Now
-                        <ExternalLink className="w-4 h-4 ml-2" />
-                      </a>
-                    </Button>
+                      <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                        <Shield className="w-3 h-3" />
+                        <span>Verified job listing from {job.source}</span>
+                      </div>
+                    </div>
                   )}
                   
                   <div className="grid grid-cols-2 gap-3">
