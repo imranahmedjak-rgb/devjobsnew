@@ -53,26 +53,28 @@ async function getCredentials() {
     return cachedCredentials;
   }
 
-  // Try Replit connector first
-  const connectorCreds = await getCredentialsFromConnector();
-  if (connectorCreds) {
-    cachedCredentials = connectorCreds;
-    return cachedCredentials;
-  }
-
-  // Fall back to environment variables
+  // Prioritize environment variables (user's explicit configuration)
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
 
   if (secretKey && publishableKey) {
+    console.log('Using Stripe credentials from environment variables');
     cachedCredentials = { publishableKey, secretKey };
+    return cachedCredentials;
+  }
+
+  // Fall back to Replit connector
+  const connectorCreds = await getCredentialsFromConnector();
+  if (connectorCreds) {
+    console.log('Using Stripe credentials from Replit connector');
+    cachedCredentials = connectorCreds;
     return cachedCredentials;
   }
 
   throw new Error(
     'Stripe credentials not found. Please either:\n' +
-    '1. Set up Stripe via the Integrations tab, OR\n' +
-    '2. Add STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY to your secrets'
+    '1. Add STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY to your secrets, OR\n' +
+    '2. Set up Stripe via the Integrations tab'
   );
 }
 
