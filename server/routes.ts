@@ -3761,9 +3761,11 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
       });
 
       res.json({ sessionId: session.id, url: session.url });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Create payment session error:", error);
-      res.status(500).json({ error: "Failed to create payment session" });
+      const errorMessage = error?.message || "Failed to create payment session";
+      console.error("Stripe error details:", errorMessage);
+      res.status(500).json({ error: errorMessage });
     }
   });
 

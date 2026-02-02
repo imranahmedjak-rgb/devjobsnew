@@ -142,13 +142,19 @@ export default function PostJob() {
 
       if (!res.ok) {
         let errorMessage = "Failed to create payment session";
+        
+        // Handle 401 specifically - session expired
+        if (res.status === 401) {
+          localStorage.removeItem("auth_token");
+          window.location.href = "/auth";
+          throw new Error("Your session has expired. Redirecting to login...");
+        }
+        
         try {
           const error = await res.json();
           errorMessage = error.error || errorMessage;
         } catch {
-          errorMessage = res.status === 401 
-            ? "Your session has expired. Please log out and log back in." 
-            : "Server error. Please try again.";
+          errorMessage = "Server error. Please try again.";
         }
         throw new Error(errorMessage);
       }
