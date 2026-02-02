@@ -3692,7 +3692,7 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
 
   // ================== STRIPE PAYMENT ROUTES ==================
 
-  const JOB_POSTING_PRICE_ID = "price_1Sw7OMD8mo7cB4Da5oksygga";
+  const JOB_POSTING_PRICE_ID = "price_1SwQxcD8mo7cB4Dai0T013Mf";
 
   app.get("/api/stripe/publishable-key", async (req, res) => {
     try {
