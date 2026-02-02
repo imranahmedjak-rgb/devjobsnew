@@ -39,6 +39,8 @@ export interface IStorage {
   updateUserVerification(userId: number, verified: boolean): Promise<void>;
   setVerificationToken(userId: number, token: string): Promise<void>;
   getUserByVerificationToken(token: string): Promise<User | undefined>;
+  setVerificationCode(userId: number, code: string, expiryMinutes?: number): Promise<void>;
+  verifyCode(userId: number, code: string): Promise<boolean>;
   
   // Recruiter Profiles
   createRecruiterProfile(profile: InsertRecruiterProfile): Promise<RecruiterProfile>;
@@ -206,6 +208,33 @@ export class DatabaseStorage implements IStorage {
   async getUserByVerificationToken(token: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.verificationToken, token));
     return user;
+  }
+
+  async setVerificationCode(userId: number, code: string, expiryMinutes: number = 15): Promise<void> {
+    const expiry = new Date(Date.now() + expiryMinutes * 60 * 1000);
+    await db.update(users).set({ 
+      verificationCode: code, 
+      verificationCodeExpiry: expiry 
+    }).where(eq(users.id, userId));
+  }
+
+  async verifyCode(userId: number, code: string): Promise<boolean> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user || !user.verificationCode || !user.verificationCodeExpiry) {
+      return false;
+    }
+    if (user.verificationCode !== code) {
+      return false;
+    }
+    if (new Date() > new Date(user.verificationCodeExpiry)) {
+      return false;
+    }
+    await db.update(users).set({ 
+      emailVerified: true, 
+      verificationCode: null, 
+      verificationCodeExpiry: null 
+    }).where(eq(users.id, userId));
+    return true;
   }
 
   // Recruiter Profile methods

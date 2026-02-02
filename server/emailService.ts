@@ -228,3 +228,104 @@ This application was sent via Dev Global Jobs (devglobaljobs.com)
 
   return text.trim();
 }
+
+// Email verification code sending
+export async function sendVerificationCodeEmail(email: string, code: string, firstName?: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  const client = getResendClient();
+  
+  const name = firstName || "there";
+  const emailHtml = generateVerificationEmailHtml(code, name);
+  const emailText = generateVerificationEmailText(code, name);
+  
+  if (!client) {
+    console.log("=== VERIFICATION EMAIL WOULD BE SENT (Resend not configured) ===");
+    console.log("To:", email);
+    console.log("From:", `Dev Global Jobs <${FROM_EMAIL}>`);
+    console.log("Subject:", `Your verification code: ${code}`);
+    console.log("Code:", code);
+    console.log("=================================================================");
+    return { success: true, messageId: "mock-verification-" + Date.now() };
+  }
+  
+  try {
+    const result = await client.emails.send({
+      from: `Dev Global Jobs <${FROM_EMAIL}>`,
+      to: email,
+      subject: `Your verification code: ${code}`,
+      html: emailHtml,
+      text: emailText,
+    });
+    
+    if (result.error) {
+      console.error("Resend verification error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+    
+    return { success: true, messageId: result.data?.id };
+  } catch (error: any) {
+    console.error("Verification email send error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+function generateVerificationEmailHtml(code: string, name: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">Verify Your Email</h1>
+    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">Dev Global Jobs</p>
+  </div>
+  
+  <div style="background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+    <p style="color: #4b5563; margin-bottom: 20px;">Hi ${name},</p>
+    
+    <p>Thank you for registering with Dev Global Jobs. Please use the verification code below to complete your registration:</p>
+    
+    <div style="background: white; padding: 30px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 25px 0; text-align: center;">
+      <p style="font-size: 36px; font-weight: bold; color: #1d4ed8; letter-spacing: 8px; margin: 0;">${code}</p>
+    </div>
+    
+    <p style="color: #6b7280; font-size: 14px;">This code will expire in 15 minutes.</p>
+    
+    <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #f59e0b;">
+      <p style="margin: 0; color: #92400e; font-size: 14px;">
+        <strong>Security tip:</strong> Never share this code with anyone. Dev Global Jobs will never ask for your verification code.
+      </p>
+    </div>
+    
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+    
+    <p style="color: #6b7280; font-size: 12px; text-align: center; margin: 0;">
+      This email was sent by <a href="https://devglobaljobs.com" style="color: #2563eb;">Dev Global Jobs</a>
+    </p>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+function generateVerificationEmailText(code: string, name: string): string {
+  return `
+Verify Your Email - Dev Global Jobs
+====================================
+
+Hi ${name},
+
+Thank you for registering with Dev Global Jobs. Please use the verification code below to complete your registration:
+
+Your verification code: ${code}
+
+This code will expire in 15 minutes.
+
+Security tip: Never share this code with anyone. Dev Global Jobs will never ask for your verification code.
+
+--------------------------------------
+This email was sent by Dev Global Jobs (devglobaljobs.com)
+  `.trim();
+}

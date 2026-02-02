@@ -16,7 +16,7 @@ import { registerChatRoutes } from "./replit_integrations/chat";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
-import { sendJobApplicationEmail } from "./emailService";
+import { sendJobApplicationEmail, sendVerificationCodeEmail } from "./emailService";
 
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("JWT_SECRET must be set in production"); })() : "dev-global-jobs-secret-key-2024");
 
@@ -2894,7 +2894,6 @@ export async function registerRoutes(
       const hashedPassword = await bcrypt.hash(password, 10);
       
       // Create user
-      const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       const user = await storage.createUser({
         email: email.toLowerCase(),
         password: hashedPassword,
@@ -2905,13 +2904,45 @@ export async function registerRoutes(
         city: city?.trim() || null,
       });
       
-      // Set verification token
-      await storage.setVerificationToken(user.id, verificationToken);
+      // Generate 6-digit verification code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await storage.setVerificationCode(user.id, verificationCode, 15);
       
-      // For demo purposes, auto-verify (in production, send email)
-      await storage.updateUserVerification(user.id, true);
+      // Send verification email
+      await sendVerificationCodeEmail(email.toLowerCase(), verificationCode, firstName?.trim());
       
-      // Generate token
+      res.json({ 
+        requiresVerification: true,
+        userId: user.id,
+        email: user.email,
+        message: "Please check your email for a verification code"
+      });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(500).json({ error: "Failed to create account" });
+    }
+  });
+  
+  // Verify email with code
+  app.post("/api/auth/verify", async (req, res) => {
+    try {
+      const { userId, code } = req.body;
+      
+      if (!userId || !code) {
+        return res.status(400).json({ error: "User ID and verification code are required" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const isValid = await storage.verifyCode(userId, code);
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid or expired verification code" });
+      }
+      
+      // Generate token after successful verification
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         JWT_SECRET,
@@ -2932,8 +2963,40 @@ export async function registerRoutes(
         }
       });
     } catch (error) {
-      console.error("Signup error:", error);
-      res.status(500).json({ error: "Failed to create account" });
+      console.error("Verification error:", error);
+      res.status(500).json({ error: "Failed to verify code" });
+    }
+  });
+  
+  // Resend verification code
+  app.post("/api/auth/resend-code", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      if (user.emailVerified) {
+        return res.status(400).json({ error: "Email is already verified" });
+      }
+      
+      // Generate new 6-digit verification code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await storage.setVerificationCode(user.id, verificationCode, 15);
+      
+      // Send verification email
+      await sendVerificationCodeEmail(user.email, verificationCode, user.firstName || undefined);
+      
+      res.json({ message: "Verification code sent" });
+    } catch (error) {
+      console.error("Resend code error:", error);
+      res.status(500).json({ error: "Failed to resend verification code" });
     }
   });
   
@@ -2954,6 +3017,21 @@ export async function registerRoutes(
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) {
         return res.status(401).json({ error: "Invalid email or password" });
+      }
+      
+      // Check if email is verified
+      if (!user.emailVerified) {
+        // Generate and send new verification code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        await storage.setVerificationCode(user.id, verificationCode, 15);
+        await sendVerificationCodeEmail(user.email, verificationCode, user.firstName || undefined);
+        
+        return res.json({ 
+          requiresVerification: true,
+          userId: user.id,
+          email: user.email,
+          message: "Please verify your email. A new code has been sent."
+        });
       }
       
       const token = jwt.sign(

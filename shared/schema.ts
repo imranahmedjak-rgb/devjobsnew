@@ -20,6 +20,8 @@ export const users = pgTable("users", {
   city: text("city"),
   emailVerified: boolean("email_verified").default(false),
   verificationToken: text("verification_token"),
+  verificationCode: text("verification_code"),
+  verificationCodeExpiry: timestamp("verification_code_expiry"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
