@@ -526,12 +526,18 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(jobApplications.appliedAt));
   }
   
-  async getJobApplication(userId: number, jobId: number): Promise<JobApplication | undefined> {
+  async getJobApplication(userId: number, jobId?: number, directJobId?: number): Promise<JobApplication | undefined> {
+    const conditions = [eq(jobApplications.userId, userId)];
+    
+    if (jobId) {
+      conditions.push(eq(jobApplications.jobId, jobId));
+    }
+    if (directJobId) {
+      conditions.push(eq(jobApplications.directJobId, directJobId));
+    }
+    
     const [application] = await db.select().from(jobApplications)
-      .where(and(
-        eq(jobApplications.userId, userId),
-        eq(jobApplications.jobId, jobId)
-      ));
+      .where(and(...conditions));
     return application;
   }
   

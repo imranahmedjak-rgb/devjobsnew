@@ -232,3 +232,23 @@ The server implements a storage pattern (`IStorage` interface) for database oper
   - `POST /api/ai/generate-achievements`: AI generates achievements from experience
 - **AI Integration**: Uses OpenAI via Replit AI Integrations for achievement generation
 - **Component**: `client/src/pages/ProfileDevelopment.tsx`
+
+### Easy Apply (Job Seekers)
+- **Location**: Green "Easy Apply" button on job detail pages for direct-posted jobs with email application method
+- **Purpose**: Send professional job applications directly to recruiters without leaving the platform
+- **Requirements**:
+  - Job seeker account with completed profile
+  - Job must be a "direct job" posted on the platform (not from external API)
+  - Job must have `applyMethod: "email"` (recruiter accepts email applications)
+- **Features**:
+  - Professional email sent from `applications@devglobaljobs.com` to recruiter
+  - Includes candidate's name, email, phone, current role, years of experience, skills, summary
+  - Optional cover letter field for personalized applications
+  - Reply-to header set to candidate's email for direct recruiter responses
+  - Application history tracked in database
+- **Email Service**: Uses Resend API for reliable email delivery (requires `RESEND_API_KEY` secret)
+  - If Resend not configured, emails are logged to console for development/testing
+- **API Endpoint**: `POST /api/candidate/apply` with `directJobId` and optional `coverLetter`
+- **Security**: Only authenticated job seekers with complete profiles can apply
+- **Component**: Dialog in `client/src/pages/JobDetail.tsx`
+- **Email Templates**: `server/emailService.ts` (HTML and plain text versions)

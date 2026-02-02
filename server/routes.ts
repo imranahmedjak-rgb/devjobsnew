@@ -16,6 +16,7 @@ import { registerChatRoutes } from "./replit_integrations/chat";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
+import { sendJobApplicationEmail } from "./emailService";
 
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("JWT_SECRET must be set in production"); })() : "dev-global-jobs-secret-key-2024");
 
@@ -3411,27 +3412,111 @@ export async function registerRoutes(
     }
   });
   
-  // Job Applications
+  // Job Applications with Easy Apply (sends email to recruiter)
   app.post("/api/candidate/apply", authMiddleware as any, async (req: AuthRequest, res) => {
     try {
-      const { jobId, directJobId, recruiterEmail } = req.body;
+      const { jobId, directJobId, coverLetter } = req.body;
+      
+      // Verify user is a job seeker
+      if (req.user!.role !== "jobseeker") {
+        return res.status(403).json({ error: "Only job seekers can apply to jobs" });
+      }
+      
+      if (!jobId && !directJobId) {
+        return res.status(400).json({ error: "Either jobId or directJobId is required" });
+      }
       
       // Check if already applied
       if (jobId) {
-        const existing = await storage.getJobApplication(req.user!.id, jobId);
+        const existing = await storage.getJobApplication(req.user!.id, jobId, undefined);
+        if (existing) {
+          return res.status(400).json({ error: "You have already applied to this job" });
+        }
+      }
+      if (directJobId) {
+        const existing = await storage.getJobApplication(req.user!.id, undefined, directJobId);
         if (existing) {
           return res.status(400).json({ error: "You have already applied to this job" });
         }
       }
       
+      // Get job details
+      let jobTitle = "";
+      let companyName = "";
+      let recruiterEmail = "";
+      
+      if (directJobId) {
+        const directJob = await storage.getDirectJob(directJobId);
+        if (!directJob) {
+          return res.status(404).json({ error: "Job not found" });
+        }
+        jobTitle = directJob.title;
+        companyName = directJob.company;
+        if (directJob.applyMethod === "email") {
+          recruiterEmail = directJob.applyValue;
+        } else {
+          return res.status(400).json({ error: "This job does not accept Easy Apply applications. Please apply via the external link." });
+        }
+      } else if (jobId) {
+        // For API jobs, we can't use Easy Apply as they don't have recruiter emails
+        // These jobs have external application URLs
+        return res.status(400).json({ error: "This job does not accept Easy Apply applications. Please apply via the external link." });
+      }
+      
+      // Get candidate profile
+      const [profile, user, experiences] = await Promise.all([
+        storage.getJobSeekerProfile(req.user!.id),
+        storage.getUserById(req.user!.id),
+        storage.getCandidateExperiences(req.user!.id)
+      ]);
+      
+      if (!profile) {
+        return res.status(400).json({ error: "Please complete your profile before applying" });
+      }
+      
+      if (!user) {
+        return res.status(400).json({ error: "User not found" });
+      }
+      
+      const candidateName = profile.name || `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email;
+      
+      // Send email to recruiter
+      const emailResult = await sendJobApplicationEmail({
+        recruiterEmail,
+        jobTitle,
+        companyName,
+        candidateName,
+        candidateEmail: user.email,
+        candidatePhone: profile.phone || undefined,
+        candidateCurrentTitle: profile.currentJobTitle || undefined,
+        candidateYearsExperience: profile.yearsOfExperience || undefined,
+        candidateSummary: profile.professionalSummary || undefined,
+        candidateSkills: profile.skills || undefined,
+        candidateLinkedin: profile.linkedinUrl || undefined,
+        candidatePortfolio: profile.portfolioUrl || undefined,
+        cvUrl: profile.cvUrl || undefined,
+        coverLetter: coverLetter || undefined
+      });
+      
+      if (!emailResult.success) {
+        console.error("Failed to send application email:", emailResult.error);
+        return res.status(500).json({ error: "Failed to send application. Please try again." });
+      }
+      
+      // Save application record
       const application = await storage.createJobApplication({
         userId: req.user!.id,
         jobId,
         directJobId,
-        recruiterEmail
+        recruiterEmail,
+        status: "submitted"
       });
       
-      res.json(application);
+      res.json({ 
+        success: true, 
+        application,
+        message: "Your application has been sent to the recruiter!"
+      });
     } catch (error) {
       console.error("Apply to job error:", error);
       res.status(500).json({ error: "Failed to apply to job" });
@@ -3520,9 +3605,7 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
           userId: req.user!.id,
           experienceId: experienceId,
           title: achievementText,
-          description: null,
-          metrics: null,
-          date: null,
+          description: achievementText,
           isAiGenerated: true
         });
       }
