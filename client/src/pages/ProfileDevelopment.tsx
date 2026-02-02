@@ -10,17 +10,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  User, Briefcase, Award, FolderOpen, Users, FileText, Sparkles, 
-  Plus, Trash2, ChevronLeft, ChevronRight, Check, ArrowLeft, Download
+  User, Briefcase, FolderOpen, Users, FileText, 
+  Plus, Trash2, ChevronLeft, ChevronRight, Check, ArrowLeft, Download, Eye
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { jsPDF } from "jspdf";
 
-type WizardStep = "personal" | "experience" | "achievements" | "projects" | "references" | "review";
+type WizardStep = "personal" | "experience" | "projects" | "references" | "review";
 
 const steps: { id: WizardStep; label: string; icon: any }[] = [
   { id: "personal", label: "Personal Details", icon: User },
   { id: "experience", label: "Experience", icon: Briefcase },
-  { id: "achievements", label: "Achievements", icon: Award },
   { id: "projects", label: "Projects", icon: FolderOpen },
   { id: "references", label: "References", icon: Users },
   { id: "review", label: "Review & CV", icon: FileText },
@@ -86,7 +86,6 @@ export default function ProfileDevelopment() {
   const { data: fullProfile, isLoading: profileLoading } = useQuery<{
     profile: any;
     experiences: any[];
-    achievements: any[];
     projects: any[];
     references: any[];
   }>({
@@ -221,20 +220,6 @@ export default function ProfileDevelopment() {
     },
   });
 
-  const generateAchievementsMutation = useMutation({
-    mutationFn: async (experienceId: number) => {
-      const res = await apiRequest("/api/ai/generate-achievements", {
-        method: "POST",
-        body: JSON.stringify({ experienceId }),
-      });
-      if (!res.ok) throw new Error("Failed to generate");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/candidate/full-profile"] });
-      toast({ title: "AI achievements generated!" });
-    },
-  });
 
   if (authLoading || profileLoading) {
     return (
@@ -298,6 +283,223 @@ export default function ProfileDevelopment() {
   const prevStep = () => {
     const idx = steps.findIndex(s => s.id === currentStep);
     if (idx > 0) setCurrentStep(steps[idx - 1].id);
+  };
+
+  const downloadCV = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
+    let yPosition = 20;
+
+    // Helper function to add wrapped text
+    const addWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 5) => {
+      const lines = doc.splitTextToSize(text, maxWidth);
+      doc.text(lines, x, y);
+      return y + (lines.length * lineHeight);
+    };
+
+    // Header - Name (British CV format)
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text(personalData.name || "Your Name", pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 8;
+
+    // Contact info line
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    const contactParts = [];
+    if (user?.email) contactParts.push(user.email);
+    if (personalData.phone) contactParts.push(personalData.phone);
+    if (personalData.country) contactParts.push(personalData.country);
+    if (contactParts.length > 0) {
+      doc.text(contactParts.join(" | "), pageWidth / 2, yPosition, { align: "center" });
+      yPosition += 5;
+    }
+
+    // LinkedIn and Portfolio
+    const linkParts = [];
+    if (personalData.linkedinUrl) linkParts.push(personalData.linkedinUrl);
+    if (personalData.portfolioUrl) linkParts.push(personalData.portfolioUrl);
+    if (linkParts.length > 0) {
+      doc.text(linkParts.join(" | "), pageWidth / 2, yPosition, { align: "center" });
+      yPosition += 10;
+    } else {
+      yPosition += 5;
+    }
+
+    // Horizontal line
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 10;
+
+    // Professional Summary
+    if (personalData.professionalSummary) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("PROFESSIONAL SUMMARY", margin, yPosition);
+      yPosition += 6;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      yPosition = addWrappedText(personalData.professionalSummary, margin, yPosition, contentWidth);
+      yPosition += 8;
+    }
+
+    // Work Experience
+    if (fullProfile?.experiences && fullProfile.experiences.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("WORK EXPERIENCE", margin, yPosition);
+      yPosition += 6;
+      
+      fullProfile.experiences.forEach((exp: any) => {
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text(exp.jobTitle, margin, yPosition);
+        yPosition += 5;
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        const dateRange = `${exp.startDate || ""} - ${exp.isCurrent ? "Present" : exp.endDate || ""}`;
+        doc.text(`${exp.company}${exp.location ? ", " + exp.location : ""} | ${dateRange}`, margin, yPosition);
+        yPosition += 5;
+        
+        if (exp.description) {
+          yPosition = addWrappedText(exp.description, margin, yPosition, contentWidth);
+        }
+        yPosition += 6;
+      });
+    }
+
+    // Projects
+    if (fullProfile?.projects && fullProfile.projects.length > 0) {
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("KEY PROJECTS", margin, yPosition);
+      yPosition += 6;
+      
+      fullProfile.projects.forEach((proj: any) => {
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text(proj.title, margin, yPosition);
+        if (proj.role) {
+          doc.setFont("helvetica", "normal");
+          doc.text(` - ${proj.role}`, margin + doc.getTextWidth(proj.title), yPosition);
+        }
+        yPosition += 5;
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        if (proj.description) {
+          yPosition = addWrappedText(proj.description, margin, yPosition, contentWidth);
+        }
+        if (proj.technologies?.length > 0) {
+          doc.text(`Technologies: ${proj.technologies.join(", ")}`, margin, yPosition);
+          yPosition += 5;
+        }
+        yPosition += 4;
+      });
+    }
+
+    // Skills
+    if (personalData.skills.length > 0) {
+      if (yPosition > 260) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("SKILLS", margin, yPosition);
+      yPosition += 6;
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      yPosition = addWrappedText(personalData.skills.join(" | "), margin, yPosition, contentWidth);
+      yPosition += 8;
+    }
+
+    // Languages
+    if (personalData.languages.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("LANGUAGES", margin, yPosition);
+      yPosition += 6;
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(personalData.languages.join(" | "), margin, yPosition);
+      yPosition += 8;
+    }
+
+    // Education
+    if (personalData.education) {
+      if (yPosition > 260) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("EDUCATION", margin, yPosition);
+      yPosition += 6;
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      yPosition = addWrappedText(personalData.education, margin, yPosition, contentWidth);
+      yPosition += 8;
+    }
+
+    // Certifications
+    if (personalData.certifications) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("CERTIFICATIONS", margin, yPosition);
+      yPosition += 6;
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      yPosition = addWrappedText(personalData.certifications, margin, yPosition, contentWidth);
+      yPosition += 8;
+    }
+
+    // References
+    if (fullProfile?.references && fullProfile.references.length > 0) {
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("REFERENCES", margin, yPosition);
+      yPosition += 6;
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Available upon request", margin, yPosition);
+    }
+
+    // Save PDF
+    const fileName = `CV_${personalData.name?.replace(/\s+/g, "_") || "candidate"}_${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(fileName);
+    toast({ title: "CV Downloaded!", description: "Your CV has been saved as PDF." });
   };
 
   return (
@@ -625,70 +827,11 @@ export default function ProfileDevelopment() {
                           </p>
                           {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => generateAchievementsMutation.mutate(exp.id)}
-                            disabled={generateAchievementsMutation.isPending}
-                            data-testid={`button-generate-achievements-${exp.id}`}
-                          >
-                            <Sparkles className="h-4 w-4 mr-1" />
-                            AI Achievements
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteExperienceMutation.mutate(exp.id)}
-                            data-testid={`button-delete-exp-${exp.id}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {currentStep === "achievements" && (
-              <div className="space-y-6">
-                <div className="bg-primary/5 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <h3 className="font-medium">AI-Powered Achievements</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    The AI will automatically suggest 5-10 achievements based on your job titles and experience. 
-                    All suggestions are ATS-optimized and aligned with international recruitment standards.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-medium">Your Achievements</h3>
-                  {fullProfile?.achievements?.length === 0 && (
-                    <p className="text-muted-foreground text-sm">
-                      No achievements yet. Go to the Experience step and click "AI Achievements" to generate suggestions.
-                    </p>
-                  )}
-                  {fullProfile?.achievements?.map((ach: any) => (
-                    <div key={ach.id} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium flex items-center gap-2">
-                            {ach.title}
-                            {ach.isAiGenerated && (
-                              <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded">AI Generated</span>
-                            )}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mt-1">{ach.description}</p>
-                          {ach.metrics && <p className="text-xs text-primary mt-1">{ach.metrics}</p>}
-                        </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => deleteReferenceMutation.mutate(ach.id)}
+                          onClick={() => deleteExperienceMutation.mutate(exp.id)}
+                          data-testid={`button-delete-exp-${exp.id}`}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -935,8 +1078,8 @@ export default function ProfileDevelopment() {
                       <p><strong>Name:</strong> {personalData.name || "Not set"}</p>
                       <p><strong>Title:</strong> {personalData.currentJobTitle || "Not set"}</p>
                       <p><strong>Experience:</strong> {personalData.yearsOfExperience} years</p>
+                      <p><strong>Skills:</strong> {personalData.skills.length || 0}</p>
                       <p><strong>Experiences:</strong> {fullProfile?.experiences?.length || 0}</p>
-                      <p><strong>Achievements:</strong> {fullProfile?.achievements?.length || 0}</p>
                       <p><strong>Projects:</strong> {fullProfile?.projects?.length || 0}</p>
                       <p><strong>References:</strong> {fullProfile?.references?.length || 0}</p>
                     </CardContent>
@@ -947,7 +1090,7 @@ export default function ProfileDevelopment() {
                       <CardTitle className="text-lg">Actions</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <Button className="w-full" data-testid="button-download-cv">
+                      <Button className="w-full" onClick={downloadCV} data-testid="button-download-cv">
                         <Download className="h-4 w-4 mr-2" />
                         Download CV (British Format)
                       </Button>
@@ -957,6 +1100,73 @@ export default function ProfileDevelopment() {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Live CV Preview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Eye className="h-5 w-5" />
+                      CV Preview
+                    </CardTitle>
+                    <CardDescription>Preview of how your CV will look</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border shadow-inner space-y-4 text-sm">
+                      {/* Header */}
+                      <div className="text-center border-b pb-4">
+                        <h2 className="text-xl font-bold">{personalData.name || "Your Name"}</h2>
+                        <p className="text-muted-foreground">
+                          {[user?.email, personalData.phone, personalData.country].filter(Boolean).join(" | ")}
+                        </p>
+                        {(personalData.linkedinUrl || personalData.portfolioUrl) && (
+                          <p className="text-muted-foreground text-xs">
+                            {[personalData.linkedinUrl, personalData.portfolioUrl].filter(Boolean).join(" | ")}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Professional Summary */}
+                      {personalData.professionalSummary && (
+                        <div>
+                          <h3 className="font-bold text-primary mb-1">PROFESSIONAL SUMMARY</h3>
+                          <p className="text-muted-foreground">{personalData.professionalSummary}</p>
+                        </div>
+                      )}
+
+                      {/* Experience */}
+                      {fullProfile?.experiences && fullProfile.experiences.length > 0 && (
+                        <div>
+                          <h3 className="font-bold text-primary mb-2">WORK EXPERIENCE</h3>
+                          {fullProfile.experiences.map((exp: any) => (
+                            <div key={exp.id} className="mb-3">
+                              <p className="font-semibold">{exp.jobTitle}</p>
+                              <p className="text-muted-foreground text-xs">
+                                {exp.company}{exp.location ? `, ${exp.location}` : ""} | {exp.startDate} - {exp.isCurrent ? "Present" : exp.endDate}
+                              </p>
+                              {exp.description && <p className="mt-1">{exp.description}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Skills */}
+                      {personalData.skills.length > 0 && (
+                        <div>
+                          <h3 className="font-bold text-primary mb-1">SKILLS</h3>
+                          <p>{personalData.skills.join(" | ")}</p>
+                        </div>
+                      )}
+
+                      {/* Education */}
+                      {personalData.education && (
+                        <div>
+                          <h3 className="font-bold text-primary mb-1">EDUCATION</h3>
+                          <p>{personalData.education}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
 

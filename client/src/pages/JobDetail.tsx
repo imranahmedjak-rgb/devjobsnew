@@ -7,18 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, apiRequest } from "@/lib/auth";
-import { useMutation } from "@tanstack/react-query";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   Building2, 
@@ -30,9 +20,7 @@ import {
   Bookmark,
   BookmarkCheck,
   Check,
-  Zap,
   Send,
-  AlertCircle,
   Loader2
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -130,8 +118,7 @@ export default function JobDetail() {
   const isAuthenticated = user !== null;
   
   // Easy Apply state
-  const [showEasyApplyDialog, setShowEasyApplyDialog] = useState(false);
-  const [coverLetter, setCoverLetter] = useState("");
+  const [isApplying, setIsApplying] = useState(false);
   
   // Check if job is saved in localStorage
   const [isSaved, setIsSaved] = useState(() => {
@@ -139,40 +126,52 @@ export default function JobDetail() {
     return savedJobs.includes(id);
   });
   
-  // Easy Apply mutation
-  const easyApplyMutation = useMutation({
-    mutationFn: async () => {
-      // Get the direct job ID from the offset ID
+  // Easy Apply - send application directly
+  const handleEasyApply = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please sign in to use Easy Apply.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (!isJobSeeker) {
+      toast({
+        title: "Job Seeker Account Required",
+        description: "Easy Apply is only available for job seekers.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsApplying(true);
+    try {
       const directJobId = id >= 10000000 ? id - 10000000 : undefined;
       const response = await apiRequest("/api/candidate/apply", {
         method: "POST",
-        body: JSON.stringify({
-          directJobId,
-          coverLetter: coverLetter.trim() || undefined
-        })
+        body: JSON.stringify({ directJobId })
       });
+      
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || "Failed to apply");
       }
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setShowEasyApplyDialog(false);
-      setCoverLetter("");
+      
       toast({
         title: "Application Sent!",
-        description: "Your application has been sent to the recruiter. They will contact you via email.",
+        description: "Your profile and CV have been sent to the recruiter. They will contact you via email.",
       });
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       toast({
         title: "Application Failed",
         description: error.message || "Failed to submit application. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsApplying(false);
     }
-  });
+  };
   
   // Check if Easy Apply is available (direct job with email apply method)
   // Job type is extended with isDirectJob and applyMethod for direct jobs
@@ -380,48 +379,56 @@ export default function JobDetail() {
                 </p>
                 
                 <div className="space-y-3">
-                  {/* Easy Apply Button - only for direct jobs with email method */}
-                  {isEasyApplyAvailable && (
+                  {/* Two options based on how job accepts applications */}
+                  {jobWithMeta?.isDirectJob ? (
+                    // Direct job - show apply method based on recruiter preference
+                    jobWithMeta.applyMethod === "email" ? (
+                      // Option 1: Easy Apply via Email
+                      <Button 
+                        size="lg"
+                        className="w-full text-base font-semibold shadow-lg shadow-green-500/25 bg-green-600"
+                        onClick={handleEasyApply}
+                        disabled={isApplying}
+                        data-testid="button-easy-apply"
+                      >
+                        {isApplying ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Sending Application...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Easy Apply (Send Profile & CV)
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      // Option 2: Apply via Link (recruiter's website)
+                      <Button 
+                        size="lg"
+                        className="w-full text-base font-semibold shadow-lg shadow-primary/25"
+                        asChild
+                      >
+                        <a href={job.url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Apply Now (Recruiter's Website)
+                        </a>
+                      </Button>
+                    )
+                  ) : (
+                    // External job - apply on company site
                     <Button 
                       size="lg"
-                      className="w-full text-base font-semibold shadow-lg shadow-green-500/25 bg-green-600"
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          toast({
-                            title: "Login Required",
-                            description: "Please sign in to use Easy Apply.",
-                            variant: "destructive"
-                          });
-                          return;
-                        }
-                        if (!isJobSeeker) {
-                          toast({
-                            title: "Job Seeker Account Required",
-                            description: "Easy Apply is only available for job seekers.",
-                            variant: "destructive"
-                          });
-                          return;
-                        }
-                        setShowEasyApplyDialog(true);
-                      }}
-                      data-testid="button-easy-apply"
+                      className="w-full text-base font-semibold shadow-lg shadow-primary/25"
+                      asChild
                     >
-                      <Zap className="w-4 h-4 mr-2" />
-                      Easy Apply
+                      <a href={job.url} target="_blank" rel="noopener noreferrer">
+                        Apply Now
+                        <ExternalLink className="w-4 h-4 ml-2" />
+                      </a>
                     </Button>
                   )}
-                  
-                  <Button 
-                    size="lg"
-                    className={`w-full text-base font-semibold ${isEasyApplyAvailable ? '' : 'shadow-lg shadow-primary/25'}`}
-                    variant={isEasyApplyAvailable ? "outline" : "default"}
-                    asChild
-                  >
-                    <a href={job.url} target="_blank" rel="noopener noreferrer">
-                      {isEasyApplyAvailable ? "Visit Company Site" : "Apply Now"}
-                      <ExternalLink className="w-4 h-4 ml-2" />
-                    </a>
-                  </Button>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <Button 
@@ -469,79 +476,6 @@ export default function JobDetail() {
 
         </div>
       </main>
-      
-      {/* Easy Apply Dialog */}
-      <Dialog open={showEasyApplyDialog} onOpenChange={setShowEasyApplyDialog}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-green-600" />
-              Easy Apply
-            </DialogTitle>
-            <DialogDescription>
-              Apply to <span className="font-medium">{job?.title}</span> at <span className="font-medium">{job?.company}</span>
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800 dark:text-blue-200">
-                  <p className="font-medium mb-1">Your profile will be sent to the recruiter</p>
-                  <p className="text-blue-600 dark:text-blue-300">
-                    Make sure your profile is complete. Include your experience, skills, and contact information.
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Cover Letter <span className="text-muted-foreground">(optional)</span>
-              </label>
-              <Textarea
-                placeholder="Write a brief cover letter explaining why you're a great fit for this role..."
-                value={coverLetter}
-                onChange={(e) => setCoverLetter(e.target.value)}
-                className="min-h-[150px] resize-none"
-                data-testid="input-cover-letter"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                A personalized cover letter increases your chances of getting noticed.
-              </p>
-            </div>
-          </div>
-          
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowEasyApplyDialog(false)}
-              data-testid="button-cancel-apply"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => easyApplyMutation.mutate()}
-              disabled={easyApplyMutation.isPending}
-              className="bg-green-600"
-              data-testid="button-submit-application"
-            >
-              {easyApplyMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Send Application
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       
       <Footer />
     </div>

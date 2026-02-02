@@ -208,17 +208,16 @@ The server implements a storage pattern (`IStorage` interface) for database oper
 
 ### AI-Powered Profile Development (Job Seekers)
 - **Route**: `/profile-development`
-- **Purpose**: Step-by-step wizard to build professional CV/resume with AI assistance
+- **Purpose**: Step-by-step wizard to build professional CV/resume
 - **Access**: Available only to logged-in job seekers (via "Build CV" menu option)
 - **Features**:
-  - 6-step wizard: Personal Details → Experience → Achievements → Projects → References → Review & CV
-  - AI-generated achievements from work experience descriptions
+  - 5-step wizard: Personal Details → Experience → Projects → References → Review & CV
+  - One-click PDF CV download in British format (using jsPDF)
+  - Live CV preview showing data as it's filled
   - Skills, languages, and technologies tagging
   - Professional reference management
-  - CV generation in British format (coming soon)
 - **Database Tables**:
   - `candidate_experiences`: Work history with job title, company, location, dates, description
-  - `candidate_achievements`: Accomplishments linked to experiences, supports AI-generated content
   - `candidate_projects`: Portfolio projects with technologies and URLs
   - `candidate_references`: Professional references with contact details
   - `job_applications`: Tracks Easy Apply submissions
@@ -226,31 +225,30 @@ The server implements a storage pattern (`IStorage` interface) for database oper
   - `GET /api/candidate/full-profile`: Get complete profile with all sections
   - `POST /api/candidate/profile`: Update personal profile data
   - `POST /api/candidate/experiences`: Add work experience
-  - `POST /api/candidate/achievements`: Add achievement
   - `POST /api/candidate/projects`: Add project
   - `POST /api/candidate/references`: Add reference
-  - `POST /api/ai/generate-achievements`: AI generates achievements from experience
-- **AI Integration**: Uses OpenAI via Replit AI Integrations for achievement generation
 - **Component**: `client/src/pages/ProfileDevelopment.tsx`
 
 ### Easy Apply (Job Seekers)
-- **Location**: Green "Easy Apply" button on job detail pages for direct-posted jobs with email application method
-- **Purpose**: Send professional job applications directly to recruiters without leaving the platform
+- **Location**: Job detail pages for direct-posted jobs
+- **Purpose**: Apply to jobs directly without leaving the platform
+- **Two Application Methods**:
+  1. **Email Method** (`applyMethod: "email"`): Green "Easy Apply" button that sends profile/CV directly to recruiter
+  2. **URL Method** (`applyMethod: "url"`): "Apply Now" button that links directly to recruiter's website
 - **Requirements**:
   - Job seeker account with completed profile
   - Job must be a "direct job" posted on the platform (not from external API)
-  - Job must have `applyMethod: "email"` (recruiter accepts email applications)
 - **Features**:
+  - One-click application - no form or dialog required
   - Email appears FROM the candidate (e.g., "John Doe via Dev Global Jobs")
   - Uses profile data already filled in - NO CV storage or file uploads
   - Includes candidate's name, email, phone, current role, years of experience, skills, summary
-  - Optional cover letter field for personalized applications
   - Reply-to header set to candidate's email for direct recruiter responses
   - Application history tracked in database
 - **Email Service**: Uses Resend API for reliable email delivery (requires `RESEND_API_KEY` secret)
   - If Resend not configured, emails are logged to console for development/testing
   - Emails sent via `applications@devglobaljobs.com` but show candidate's name in From field
-- **API Endpoint**: `POST /api/candidate/apply` with `directJobId` and optional `coverLetter`
+- **API Endpoint**: `POST /api/candidate/apply` with `directJobId`
 - **Security**: Only authenticated job seekers with complete profiles can apply (server-side role check)
-- **Component**: Dialog in `client/src/pages/JobDetail.tsx`
+- **Component**: `client/src/pages/JobDetail.tsx`
 - **Email Templates**: `server/emailService.ts` (HTML and plain text versions)
