@@ -241,14 +241,16 @@ The server implements a storage pattern (`IStorage` interface) for database oper
   - Job must be a "direct job" posted on the platform (not from external API)
   - Job must have `applyMethod: "email"` (recruiter accepts email applications)
 - **Features**:
-  - Professional email sent from `applications@devglobaljobs.com` to recruiter
+  - Email appears FROM the candidate (e.g., "John Doe via Dev Global Jobs")
+  - Uses profile data already filled in - NO CV storage or file uploads
   - Includes candidate's name, email, phone, current role, years of experience, skills, summary
   - Optional cover letter field for personalized applications
   - Reply-to header set to candidate's email for direct recruiter responses
   - Application history tracked in database
 - **Email Service**: Uses Resend API for reliable email delivery (requires `RESEND_API_KEY` secret)
   - If Resend not configured, emails are logged to console for development/testing
+  - Emails sent via `applications@devglobaljobs.com` but show candidate's name in From field
 - **API Endpoint**: `POST /api/candidate/apply` with `directJobId` and optional `coverLetter`
-- **Security**: Only authenticated job seekers with complete profiles can apply
+- **Security**: Only authenticated job seekers with complete profiles can apply (server-side role check)
 - **Component**: Dialog in `client/src/pages/JobDetail.tsx`
 - **Email Templates**: `server/emailService.ts` (HTML and plain text versions)

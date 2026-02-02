@@ -1,7 +1,6 @@
 import { Resend } from 'resend';
 
 const FROM_EMAIL = "applications@devglobaljobs.com";
-const FROM_NAME = "Dev Global Jobs";
 
 let resend: Resend | null = null;
 
@@ -30,7 +29,6 @@ export interface JobApplicationEmailData {
   candidateSkills?: string[];
   candidateLinkedin?: string;
   candidatePortfolio?: string;
-  cvUrl?: string;
   coverLetter?: string;
 }
 
@@ -40,11 +38,15 @@ export async function sendJobApplicationEmail(data: JobApplicationEmailData): Pr
   const emailHtml = generateApplicationEmailHtml(data);
   const emailText = generateApplicationEmailText(data);
   
+  // Show candidate's name in From field (e.g., "John Doe via Dev Global Jobs")
+  const fromName = `${data.candidateName} via Dev Global Jobs`;
+  
   if (!client) {
     console.log("=== EMAIL WOULD BE SENT (Resend not configured) ===");
     console.log("To:", data.recruiterEmail);
-    console.log("From:", `${FROM_NAME} <${FROM_EMAIL}>`);
-    console.log("Subject:", `New Application: ${data.candidateName} for ${data.jobTitle}`);
+    console.log("From:", `${fromName} <${FROM_EMAIL}>`);
+    console.log("Reply-To:", data.candidateEmail);
+    console.log("Subject:", `Application: ${data.candidateName} for ${data.jobTitle}`);
     console.log("Body preview:", emailText.substring(0, 500));
     console.log("=================================================");
     return { success: true, messageId: "mock-" + Date.now() };
@@ -52,9 +54,9 @@ export async function sendJobApplicationEmail(data: JobApplicationEmailData): Pr
   
   try {
     const result = await client.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: `${fromName} <${FROM_EMAIL}>`,
       to: data.recruiterEmail,
-      subject: `New Application: ${data.candidateName} for ${data.jobTitle}`,
+      subject: `Application: ${data.candidateName} for ${data.jobTitle}`,
       html: emailHtml,
       text: emailText,
       replyTo: data.candidateEmail,
@@ -84,9 +86,6 @@ function generateApplicationEmailHtml(data: JobApplicationEmailData): string {
   if (data.candidatePortfolio) {
     linksHtml.push(`<a href="${data.candidatePortfolio}" style="color: #2563eb;">Portfolio</a>`);
   }
-  if (data.cvUrl) {
-    linksHtml.push(`<a href="${data.cvUrl}" style="color: #2563eb;">Download CV</a>`);
-  }
   
   return `
 <!DOCTYPE html>
@@ -97,14 +96,14 @@ function generateApplicationEmailHtml(data: JobApplicationEmailData): string {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">Dev Global Jobs</h1>
-    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">New Job Application</p>
+    <h1 style="color: white; margin: 0; font-size: 24px;">Job Application from ${data.candidateName}</h1>
+    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">via Dev Global Jobs</p>
   </div>
   
   <div style="background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
     <p style="color: #6b7280; margin-bottom: 20px;">Dear ${data.recruiterName || "Hiring Manager"},</p>
     
-    <p>A candidate has applied for your position through Dev Global Jobs.</p>
+    <p>I am writing to express my interest in your position. Please find my details below.</p>
     
     <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 20px 0;">
       <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">Position Applied For</h2>
@@ -113,7 +112,7 @@ function generateApplicationEmailHtml(data: JobApplicationEmailData): string {
     </div>
     
     <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 20px 0;">
-      <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">Candidate Information</h2>
+      <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">My Contact Information</h2>
       <p style="margin: 5px 0;"><strong>Name:</strong> ${data.candidateName}</p>
       <p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:${data.candidateEmail}" style="color: #2563eb;">${data.candidateEmail}</a></p>
       ${data.candidatePhone ? `<p style="margin: 5px 0;"><strong>Phone:</strong> ${data.candidatePhone}</p>` : ""}
@@ -145,15 +144,14 @@ function generateApplicationEmailHtml(data: JobApplicationEmailData): string {
     
     <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #2563eb;">
       <p style="margin: 0; color: #1e40af; font-size: 14px;">
-        <strong>Reply directly to this email</strong> to contact the candidate at ${data.candidateEmail}
+        <strong>Reply to this email</strong> to contact me directly at ${data.candidateEmail}
       </p>
     </div>
     
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
     
     <p style="color: #6b7280; font-size: 12px; text-align: center; margin: 0;">
-      This application was submitted via <a href="https://devglobaljobs.com" style="color: #2563eb;">Dev Global Jobs</a><br>
-      A service by Trend Nova World Ltd.
+      This application was sent via <a href="https://devglobaljobs.com" style="color: #2563eb;">Dev Global Jobs</a>
     </p>
   </div>
 </body>
@@ -163,20 +161,20 @@ function generateApplicationEmailHtml(data: JobApplicationEmailData): string {
 
 function generateApplicationEmailText(data: JobApplicationEmailData): string {
   let text = `
-New Job Application - Dev Global Jobs
+Job Application from ${data.candidateName}
 ======================================
 
 Dear ${data.recruiterName || "Hiring Manager"},
 
-A candidate has applied for your position through Dev Global Jobs.
+I am writing to express my interest in your position. Please find my details below.
 
 POSITION APPLIED FOR
 --------------------
 Job Title: ${data.jobTitle}
 Company: ${data.companyName}
 
-CANDIDATE INFORMATION
----------------------
+MY CONTACT INFORMATION
+----------------------
 Name: ${data.candidateName}
 Email: ${data.candidateEmail}
 `;
@@ -213,7 +211,6 @@ ${data.coverLetter}
   const links = [];
   if (data.candidateLinkedin) links.push(`LinkedIn: ${data.candidateLinkedin}`);
   if (data.candidatePortfolio) links.push(`Portfolio: ${data.candidatePortfolio}`);
-  if (data.cvUrl) links.push(`CV/Resume: ${data.cvUrl}`);
 
   if (links.length > 0) {
     text += `
@@ -225,9 +222,8 @@ ${links.join("\n")}
 
   text += `
 --------------------------------------
-Reply directly to this email to contact the candidate.
-This application was submitted via Dev Global Jobs (devglobaljobs.com)
-A service by Trend Nova World Ltd.
+Please reply to this email to contact me directly.
+This application was sent via Dev Global Jobs (devglobaljobs.com)
 `;
 
   return text.trim();
