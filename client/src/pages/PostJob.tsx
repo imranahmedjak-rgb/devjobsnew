@@ -141,11 +141,20 @@ export default function PostJob() {
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to create payment session");
+        let errorMessage = "Failed to create payment session";
+        try {
+          const error = await res.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          errorMessage = res.status === 401 
+            ? "Your session has expired. Please log out and log back in." 
+            : "Server error. Please try again.";
+        }
+        throw new Error(errorMessage);
       }
 
-      const { url } = await res.json();
+      const data = await res.json();
+      const { url } = data;
       if (url) {
         window.location.href = url;
       } else {
