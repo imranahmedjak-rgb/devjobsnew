@@ -99,7 +99,11 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" data-testid="button-user-menu">
                       <User className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline max-w-[100px] truncate">{user.email.split('@')[0]}</span>
+                      <span className="hidden sm:inline max-w-[120px] truncate">
+                        {user.firstName && user.lastName 
+                          ? `${user.firstName} ${user.lastName}` 
+                          : user.firstName || user.email.split('@')[0]}
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">

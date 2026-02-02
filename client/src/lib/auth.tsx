@@ -4,6 +4,10 @@ interface User {
   id: number;
   email: string;
   role: "recruiter" | "jobseeker";
+  firstName: string | null;
+  lastName: string | null;
+  gender: string | null;
+  city: string | null;
   emailVerified: boolean;
 }
 
@@ -12,7 +16,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, role: "recruiter" | "jobseeker") => Promise<void>;
+  signup: (email: string, password: string, role: "recruiter" | "jobseeker", firstName: string, lastName: string, gender: string, city: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -78,11 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user);
   };
 
-  const signup = async (email: string, password: string, role: "recruiter" | "jobseeker") => {
+  const signup = async (email: string, password: string, role: "recruiter" | "jobseeker", firstName: string, lastName: string, gender: string, city: string) => {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, role }),
+      body: JSON.stringify({ email, password, role, firstName, lastName, gender, city }),
     });
     
     if (!res.ok) {

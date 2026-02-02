@@ -35,7 +35,12 @@ The frontend follows a pages-based structure with reusable components. API contr
 The server implements a storage pattern (`IStorage` interface) for database operations, making it easy to swap implementations if needed.
 
 ### Data Model
-Single table design for jobs:
+**Users table**:
+- `users`: Stores user accounts with email, password, role (recruiter/jobseeker)
+- Profile fields: firstName, lastName, gender, city
+- Header displays user's full name instead of email when logged in
+
+**Jobs tables**:
 - `jobs`: Stores aggregated job listings with fields for title, company, location, description (HTML), remote flag, tags array, salary, source API identifier, and timestamps
 - Uses `externalId` for deduplication when syncing from external APIs
 - `category` field: "un", "ngo", or "international"

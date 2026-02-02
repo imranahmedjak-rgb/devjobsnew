@@ -16,6 +16,10 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [gender, setGender] = useState("");
+  const [city, setCity] = useState("");
   const [role, setRole] = useState<"recruiter" | "jobseeker">("jobseeker");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +33,7 @@ export default function Auth() {
         await login(email, password);
         toast({ title: "Welcome back!", description: "You have successfully logged in." });
       } else {
-        await signup(email, password, role);
+        await signup(email, password, role, firstName, lastName, gender, city);
         toast({ title: "Account created!", description: "Welcome to Dev Global Jobs." });
       }
       
@@ -110,31 +114,92 @@ export default function Auth() {
               </div>
               
               {!isLogin && (
-                <div className="space-y-3">
-                  <Label>I am a...</Label>
+                <>
                   <div className="grid grid-cols-2 gap-3">
-                    <Button
-                      type="button"
-                      variant={role === "jobseeker" ? "default" : "outline"}
-                      className="h-auto py-4 flex flex-col items-center gap-2"
-                      onClick={() => setRole("jobseeker")}
-                      data-testid="button-role-jobseeker"
-                    >
-                      <User className="h-6 w-6" />
-                      <span>Job Seeker</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={role === "recruiter" ? "default" : "outline"}
-                      className="h-auto py-4 flex flex-col items-center gap-2"
-                      onClick={() => setRole("recruiter")}
-                      data-testid="button-role-recruiter"
-                    >
-                      <Briefcase className="h-6 w-6" />
-                      <span>Recruiter</span>
-                    </Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder="John"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                        data-testid="input-first-name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder="Doe"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                        data-testid="input-last-name"
+                      />
+                    </div>
                   </div>
-                </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <select
+                        id="gender"
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        required
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        data-testid="select-gender"
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input
+                        id="city"
+                        type="text"
+                        placeholder="New York"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        required
+                        data-testid="input-city"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>I am a...</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        variant={role === "jobseeker" ? "default" : "outline"}
+                        className="h-auto py-4 flex flex-col items-center gap-2"
+                        onClick={() => setRole("jobseeker")}
+                        data-testid="button-role-jobseeker"
+                      >
+                        <User className="h-6 w-6" />
+                        <span>Job Seeker</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={role === "recruiter" ? "default" : "outline"}
+                        className="h-auto py-4 flex flex-col items-center gap-2"
+                        onClick={() => setRole("recruiter")}
+                        data-testid="button-role-recruiter"
+                      >
+                        <Briefcase className="h-6 w-6" />
+                        <span>Recruiter</span>
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
               
               <Button 

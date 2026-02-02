@@ -2867,7 +2867,7 @@ export async function registerRoutes(
   // Sign up
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { email, password, role } = req.body;
+      const { email, password, role, firstName, lastName, gender, city } = req.body;
       
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
@@ -2875,6 +2875,10 @@ export async function registerRoutes(
       
       if (password.length < 6) {
         return res.status(400).json({ error: "Password must be at least 6 characters" });
+      }
+      
+      if (!firstName || !lastName) {
+        return res.status(400).json({ error: "First name and last name are required" });
       }
       
       const validRole = role === "recruiter" ? "recruiter" : "jobseeker";
@@ -2894,6 +2898,10 @@ export async function registerRoutes(
         email: email.toLowerCase(),
         password: hashedPassword,
         role: validRole,
+        firstName: firstName?.trim() || null,
+        lastName: lastName?.trim() || null,
+        gender: gender || null,
+        city: city?.trim() || null,
       });
       
       // Set verification token
@@ -2911,7 +2919,16 @@ export async function registerRoutes(
       
       res.json({ 
         token, 
-        user: { id: user.id, email: user.email, role: user.role, emailVerified: true }
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          role: user.role, 
+          firstName: user.firstName,
+          lastName: user.lastName,
+          gender: user.gender,
+          city: user.city,
+          emailVerified: true 
+        }
       });
     } catch (error) {
       console.error("Signup error:", error);
@@ -2946,7 +2963,16 @@ export async function registerRoutes(
       
       res.json({ 
         token, 
-        user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified }
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          role: user.role, 
+          firstName: user.firstName,
+          lastName: user.lastName,
+          gender: user.gender,
+          city: user.city,
+          emailVerified: user.emailVerified 
+        }
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -2971,7 +2997,16 @@ export async function registerRoutes(
       }
       
       res.json({ 
-        user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified },
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          role: user.role, 
+          firstName: user.firstName,
+          lastName: user.lastName,
+          gender: user.gender,
+          city: user.city,
+          emailVerified: user.emailVerified 
+        },
         profile
       });
     } catch (error) {
