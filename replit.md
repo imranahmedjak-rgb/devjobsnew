@@ -205,3 +205,30 @@ The server implements a storage pattern (`IStorage` interface) for database oper
   - `POST /api/conversations/:id/messages`: Send message and receive streaming response
 - **Component**: `client/src/components/AIChatWidget.tsx`
 - **Routes**: `server/replit_integrations/chat/routes.ts`
+
+### AI-Powered Profile Development (Job Seekers)
+- **Route**: `/profile-development`
+- **Purpose**: Step-by-step wizard to build professional CV/resume with AI assistance
+- **Access**: Available only to logged-in job seekers (via "Build CV" menu option)
+- **Features**:
+  - 6-step wizard: Personal Details → Experience → Achievements → Projects → References → Review & CV
+  - AI-generated achievements from work experience descriptions
+  - Skills, languages, and technologies tagging
+  - Professional reference management
+  - CV generation in British format (coming soon)
+- **Database Tables**:
+  - `candidate_experiences`: Work history with job title, company, location, dates, description
+  - `candidate_achievements`: Accomplishments linked to experiences, supports AI-generated content
+  - `candidate_projects`: Portfolio projects with technologies and URLs
+  - `candidate_references`: Professional references with contact details
+  - `job_applications`: Tracks Easy Apply submissions
+- **API Endpoints**:
+  - `GET /api/candidate/full-profile`: Get complete profile with all sections
+  - `POST /api/candidate/profile`: Update personal profile data
+  - `POST /api/candidate/experiences`: Add work experience
+  - `POST /api/candidate/achievements`: Add achievement
+  - `POST /api/candidate/projects`: Add project
+  - `POST /api/candidate/references`: Add reference
+  - `POST /api/ai/generate-achievements`: AI generates achievements from experience
+- **AI Integration**: Uses OpenAI via Replit AI Integrations for achievement generation
+- **Component**: `client/src/pages/ProfileDevelopment.tsx`

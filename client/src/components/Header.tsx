@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Briefcase, Plus, RefreshCw, Globe, User, LogOut, LogIn } from "lucide-react";
+import { Briefcase, Plus, RefreshCw, Globe, User, LogOut, LogIn, FileUser } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSyncJobs } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
@@ -117,6 +117,14 @@ export function Header() {
                         Profile
                       </DropdownMenuItem>
                     </Link>
+                    {user.role === "jobseeker" && (
+                      <Link href="/profile-development">
+                        <DropdownMenuItem className="cursor-pointer" data-testid="menu-build-cv">
+                          <FileUser className="w-4 h-4 mr-2" />
+                          Build CV
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
                     {user.role === "recruiter" && (
                       <Link href="/post-job">
                         <DropdownMenuItem className="cursor-pointer" data-testid="menu-post-job">

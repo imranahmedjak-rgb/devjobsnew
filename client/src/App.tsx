@@ -17,6 +17,7 @@ import Privacy from "@/pages/Privacy";
 import Cookies from "@/pages/Cookies";
 import Disclaimer from "@/pages/Disclaimer";
 import NotFound from "@/pages/not-found";
+import ProfileDevelopment from "@/pages/ProfileDevelopment";
 import AIChatWidget from "@/components/AIChatWidget";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/auth" component={Auth} />
       <Route path="/profile" component={Profile} />
+      <Route path="/profile-development" component={ProfileDevelopment} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
       <Route path="/terms" component={Terms} />

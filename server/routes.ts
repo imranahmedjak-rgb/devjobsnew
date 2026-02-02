@@ -3143,6 +3143,397 @@ export async function registerRoutes(
     }
   });
 
+  // ================== CANDIDATE PROFILE ROUTES ==================
+  
+  // Create/update candidate profile (alias for /api/jobseeker/profile)
+  app.post("/api/candidate/profile", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const { 
+        name, country, phone, dateOfBirth, nationality, linkedinUrl, portfolioUrl,
+        professionalSummary, currentJobTitle, yearsOfExperience, skills, languages,
+        education, certifications, cvUrl 
+      } = req.body;
+      
+      const existingProfile = await storage.getJobSeekerProfile(req.user!.id);
+      
+      if (existingProfile) {
+        const updated = await storage.updateJobSeekerProfile(req.user!.id, {
+          name, country, phone, dateOfBirth, nationality, linkedinUrl, portfolioUrl,
+          professionalSummary, currentJobTitle, yearsOfExperience, skills, languages,
+          education, certifications, cvUrl
+        });
+        res.json(updated);
+      } else {
+        const profile = await storage.createJobSeekerProfile({
+          userId: req.user!.id,
+          name: name || "",
+          country, phone, dateOfBirth, nationality, linkedinUrl, portfolioUrl,
+          professionalSummary, currentJobTitle, yearsOfExperience, skills, languages,
+          education, certifications, cvUrl
+        });
+        res.json(profile);
+      }
+    } catch (error) {
+      console.error("Update candidate profile error:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+  
+  // Get full candidate profile with all sections
+  app.get("/api/candidate/full-profile", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const [profile, experiences, achievements, projects, references] = await Promise.all([
+        storage.getJobSeekerProfile(req.user!.id),
+        storage.getCandidateExperiences(req.user!.id),
+        storage.getCandidateAchievements(req.user!.id),
+        storage.getCandidateProjects(req.user!.id),
+        storage.getCandidateReferences(req.user!.id)
+      ]);
+      
+      res.json({
+        profile,
+        experiences,
+        achievements,
+        projects,
+        references
+      });
+    } catch (error) {
+      console.error("Get full profile error:", error);
+      res.status(500).json({ error: "Failed to get profile" });
+    }
+  });
+  
+  // Candidate Experiences CRUD
+  app.post("/api/candidate/experiences", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const experience = await storage.createCandidateExperience({
+        ...req.body,
+        userId: req.user!.id
+      });
+      res.json(experience);
+    } catch (error) {
+      console.error("Create experience error:", error);
+      res.status(500).json({ error: "Failed to create experience" });
+    }
+  });
+  
+  app.get("/api/candidate/experiences", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const experiences = await storage.getCandidateExperiences(req.user!.id);
+      res.json(experiences);
+    } catch (error) {
+      console.error("Get experiences error:", error);
+      res.status(500).json({ error: "Failed to get experiences" });
+    }
+  });
+  
+  app.put("/api/candidate/experiences/:id", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      // Verify ownership
+      const existing = await storage.getCandidateExperienceById(id);
+      if (!existing || existing.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to update this experience" });
+      }
+      const experience = await storage.updateCandidateExperience(id, req.body);
+      res.json(experience);
+    } catch (error) {
+      console.error("Update experience error:", error);
+      res.status(500).json({ error: "Failed to update experience" });
+    }
+  });
+  
+  app.delete("/api/candidate/experiences/:id", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      // Verify ownership
+      const existing = await storage.getCandidateExperienceById(id);
+      if (!existing || existing.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to delete this experience" });
+      }
+      await storage.deleteCandidateExperience(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete experience error:", error);
+      res.status(500).json({ error: "Failed to delete experience" });
+    }
+  });
+  
+  // Candidate Achievements CRUD
+  app.post("/api/candidate/achievements", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const achievement = await storage.createCandidateAchievement({
+        ...req.body,
+        userId: req.user!.id
+      });
+      res.json(achievement);
+    } catch (error) {
+      console.error("Create achievement error:", error);
+      res.status(500).json({ error: "Failed to create achievement" });
+    }
+  });
+  
+  app.get("/api/candidate/achievements", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const achievements = await storage.getCandidateAchievements(req.user!.id);
+      res.json(achievements);
+    } catch (error) {
+      console.error("Get achievements error:", error);
+      res.status(500).json({ error: "Failed to get achievements" });
+    }
+  });
+  
+  app.delete("/api/candidate/achievements/:id", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      // Verify ownership
+      const existing = await storage.getCandidateAchievementById(id);
+      if (!existing || existing.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to delete this achievement" });
+      }
+      await storage.deleteCandidateAchievement(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete achievement error:", error);
+      res.status(500).json({ error: "Failed to delete achievement" });
+    }
+  });
+  
+  // Candidate Projects CRUD
+  app.post("/api/candidate/projects", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const project = await storage.createCandidateProject({
+        ...req.body,
+        userId: req.user!.id
+      });
+      res.json(project);
+    } catch (error) {
+      console.error("Create project error:", error);
+      res.status(500).json({ error: "Failed to create project" });
+    }
+  });
+  
+  app.get("/api/candidate/projects", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const projects = await storage.getCandidateProjects(req.user!.id);
+      res.json(projects);
+    } catch (error) {
+      console.error("Get projects error:", error);
+      res.status(500).json({ error: "Failed to get projects" });
+    }
+  });
+  
+  app.put("/api/candidate/projects/:id", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      // Verify ownership
+      const existing = await storage.getCandidateProjectById(id);
+      if (!existing || existing.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to update this project" });
+      }
+      const project = await storage.updateCandidateProject(id, req.body);
+      res.json(project);
+    } catch (error) {
+      console.error("Update project error:", error);
+      res.status(500).json({ error: "Failed to update project" });
+    }
+  });
+  
+  app.delete("/api/candidate/projects/:id", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      // Verify ownership
+      const existing = await storage.getCandidateProjectById(id);
+      if (!existing || existing.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to delete this project" });
+      }
+      await storage.deleteCandidateProject(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete project error:", error);
+      res.status(500).json({ error: "Failed to delete project" });
+    }
+  });
+  
+  // Candidate References CRUD
+  app.post("/api/candidate/references", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const reference = await storage.createCandidateReference({
+        ...req.body,
+        userId: req.user!.id
+      });
+      res.json(reference);
+    } catch (error) {
+      console.error("Create reference error:", error);
+      res.status(500).json({ error: "Failed to create reference" });
+    }
+  });
+  
+  app.get("/api/candidate/references", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const references = await storage.getCandidateReferences(req.user!.id);
+      res.json(references);
+    } catch (error) {
+      console.error("Get references error:", error);
+      res.status(500).json({ error: "Failed to get references" });
+    }
+  });
+  
+  app.put("/api/candidate/references/:id", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      // Verify ownership
+      const existing = await storage.getCandidateReferenceById(id);
+      if (!existing || existing.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to update this reference" });
+      }
+      const reference = await storage.updateCandidateReference(id, req.body);
+      res.json(reference);
+    } catch (error) {
+      console.error("Update reference error:", error);
+      res.status(500).json({ error: "Failed to update reference" });
+    }
+  });
+  
+  app.delete("/api/candidate/references/:id", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      // Verify ownership
+      const existing = await storage.getCandidateReferenceById(id);
+      if (!existing || existing.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to delete this reference" });
+      }
+      await storage.deleteCandidateReference(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete reference error:", error);
+      res.status(500).json({ error: "Failed to delete reference" });
+    }
+  });
+  
+  // Job Applications
+  app.post("/api/candidate/apply", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const { jobId, directJobId, recruiterEmail } = req.body;
+      
+      // Check if already applied
+      if (jobId) {
+        const existing = await storage.getJobApplication(req.user!.id, jobId);
+        if (existing) {
+          return res.status(400).json({ error: "You have already applied to this job" });
+        }
+      }
+      
+      const application = await storage.createJobApplication({
+        userId: req.user!.id,
+        jobId,
+        directJobId,
+        recruiterEmail
+      });
+      
+      res.json(application);
+    } catch (error) {
+      console.error("Apply to job error:", error);
+      res.status(500).json({ error: "Failed to apply to job" });
+    }
+  });
+  
+  app.get("/api/candidate/applications", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const applications = await storage.getJobApplicationsByUser(req.user!.id);
+      res.json(applications);
+    } catch (error) {
+      console.error("Get applications error:", error);
+      res.status(500).json({ error: "Failed to get applications" });
+    }
+  });
+
+  // ================== AI ACHIEVEMENT GENERATION ==================
+  
+  app.post("/api/ai/generate-achievements", authMiddleware as any, async (req: AuthRequest, res) => {
+    try {
+      const { experienceId } = req.body;
+      
+      if (!experienceId) {
+        return res.status(400).json({ error: "Missing experienceId" });
+      }
+      
+      // Fetch the experience from the database
+      const experience = await storage.getCandidateExperienceById(experienceId);
+      if (!experience) {
+        return res.status(404).json({ error: "Experience not found" });
+      }
+      
+      // Verify the experience belongs to the user
+      if (experience.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Not authorized to access this experience" });
+      }
+      
+      const OpenAI = (await import("openai")).default;
+      const openai = new OpenAI({
+        apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+        baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+      });
+      
+      const prompt = `You are a professional CV/resume writer. Based on the following job experience, generate 3-5 specific, quantifiable achievements that would strengthen a CV for international development, UN, or NGO positions.
+
+Job Title: ${experience.jobTitle}
+Organization: ${experience.company}
+Responsibilities: ${experience.description || 'General responsibilities for this role'}
+Duration: ${experience.startDate || 'Not specified'} to ${experience.isCurrent ? 'Present' : experience.endDate || 'Not specified'}
+
+Generate achievements that:
+1. Start with strong action verbs
+2. Include specific metrics or percentages where possible
+3. Highlight impact and results
+4. Are relevant to international development/humanitarian sector
+5. Follow the STAR method (Situation, Task, Action, Result)
+
+Return ONLY a JSON array of achievement strings, no other text. Example format:
+["Led team of 15 to deliver $2M project 20% under budget", "Increased program reach by 45% across 3 countries"]`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are an expert CV writer specializing in international development careers. Return only valid JSON arrays." },
+          { role: "user", content: prompt }
+        ],
+        max_completion_tokens: 1000,
+      });
+      
+      const content = response.choices[0]?.message?.content || "[]";
+      let achievements: string[] = [];
+      
+      try {
+        achievements = JSON.parse(content);
+      } catch (parseError) {
+        // Try to extract array from response if not pure JSON
+        const match = content.match(/\[[\s\S]*\]/);
+        if (match) {
+          achievements = JSON.parse(match[0]);
+        }
+      }
+      
+      // Save the generated achievements to the database
+      for (const achievementText of achievements) {
+        await storage.createCandidateAchievement({
+          userId: req.user!.id,
+          experienceId: experienceId,
+          title: achievementText,
+          description: null,
+          metrics: null,
+          date: null,
+          isAiGenerated: true
+        });
+      }
+      
+      res.json({ achievements, message: `${achievements.length} achievements generated and saved` });
+    } catch (error) {
+      console.error("Generate achievements error:", error);
+      res.status(500).json({ error: "Failed to generate achievements" });
+    }
+  });
+
   // ================== STRIPE PAYMENT ROUTES ==================
 
   const JOB_POSTING_PRICE_ID = "price_1Sw7OMD8mo7cB4Da5oksygga";

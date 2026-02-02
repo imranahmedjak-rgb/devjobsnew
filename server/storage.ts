@@ -6,7 +6,12 @@ import {
   recruiterProfiles, type InsertRecruiterProfile, type RecruiterProfile,
   jobSeekerProfiles, type InsertJobSeekerProfile, type JobSeekerProfile,
   directJobs, type InsertDirectJob, type DirectJob,
-  pendingJobs, type InsertPendingJob, type PendingJob
+  pendingJobs, type InsertPendingJob, type PendingJob,
+  candidateExperiences, type InsertCandidateExperience, type CandidateExperience,
+  candidateAchievements, type InsertCandidateAchievement, type CandidateAchievement,
+  candidateProjects, type InsertCandidateProject, type CandidateProject,
+  candidateReferences, type InsertCandidateReference, type CandidateReference,
+  jobApplications, type InsertJobApplication, type JobApplication
 } from "@shared/schema";
 import { eq, ilike, and, desc, or, sql, count, countDistinct } from "drizzle-orm";
 
@@ -58,6 +63,12 @@ export interface IStorage {
   
   // Countries
   getUniqueCountries(): Promise<string[]>;
+  
+  // Single items by ID
+  getCandidateExperienceById(id: number): Promise<CandidateExperience | undefined>;
+  getCandidateProjectById(id: number): Promise<CandidateProject | undefined>;
+  getCandidateReferenceById(id: number): Promise<CandidateReference | undefined>;
+  getCandidateAchievementById(id: number): Promise<CandidateAchievement | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -385,6 +396,151 @@ export class DatabaseStorage implements IStorage {
       .sort((a, b) => a.localeCompare(b));
     
     return [...regularCountries, ...special];
+  }
+  
+  // Candidate Experiences
+  async createCandidateExperience(experience: InsertCandidateExperience): Promise<CandidateExperience> {
+    const [created] = await db.insert(candidateExperiences).values(experience).returning();
+    return created;
+  }
+  
+  async getCandidateExperiences(userId: number): Promise<CandidateExperience[]> {
+    return db.select().from(candidateExperiences)
+      .where(eq(candidateExperiences.userId, userId))
+      .orderBy(desc(candidateExperiences.startDate));
+  }
+  
+  async getCandidateExperienceById(id: number): Promise<CandidateExperience | undefined> {
+    const [experience] = await db.select().from(candidateExperiences)
+      .where(eq(candidateExperiences.id, id));
+    return experience;
+  }
+  
+  async updateCandidateExperience(id: number, data: Partial<InsertCandidateExperience>): Promise<CandidateExperience | undefined> {
+    const [updated] = await db.update(candidateExperiences)
+      .set(data)
+      .where(eq(candidateExperiences.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteCandidateExperience(id: number): Promise<void> {
+    await db.delete(candidateExperiences).where(eq(candidateExperiences.id, id));
+  }
+  
+  // Candidate Achievements
+  async createCandidateAchievement(achievement: InsertCandidateAchievement): Promise<CandidateAchievement> {
+    const [created] = await db.insert(candidateAchievements).values(achievement).returning();
+    return created;
+  }
+  
+  async getCandidateAchievements(userId: number): Promise<CandidateAchievement[]> {
+    return db.select().from(candidateAchievements)
+      .where(eq(candidateAchievements.userId, userId))
+      .orderBy(desc(candidateAchievements.createdAt));
+  }
+  
+  async getCandidateAchievementsByExperience(experienceId: number): Promise<CandidateAchievement[]> {
+    return db.select().from(candidateAchievements)
+      .where(eq(candidateAchievements.experienceId, experienceId));
+  }
+  
+  async deleteCandidateAchievement(id: number): Promise<void> {
+    await db.delete(candidateAchievements).where(eq(candidateAchievements.id, id));
+  }
+  
+  async getCandidateAchievementById(id: number): Promise<CandidateAchievement | undefined> {
+    const [achievement] = await db.select().from(candidateAchievements)
+      .where(eq(candidateAchievements.id, id));
+    return achievement;
+  }
+  
+  // Candidate Projects
+  async createCandidateProject(project: InsertCandidateProject): Promise<CandidateProject> {
+    const [created] = await db.insert(candidateProjects).values(project).returning();
+    return created;
+  }
+  
+  async getCandidateProjects(userId: number): Promise<CandidateProject[]> {
+    return db.select().from(candidateProjects)
+      .where(eq(candidateProjects.userId, userId))
+      .orderBy(desc(candidateProjects.createdAt));
+  }
+  
+  async updateCandidateProject(id: number, data: Partial<InsertCandidateProject>): Promise<CandidateProject | undefined> {
+    const [updated] = await db.update(candidateProjects)
+      .set(data)
+      .where(eq(candidateProjects.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteCandidateProject(id: number): Promise<void> {
+    await db.delete(candidateProjects).where(eq(candidateProjects.id, id));
+  }
+  
+  async getCandidateProjectById(id: number): Promise<CandidateProject | undefined> {
+    const [project] = await db.select().from(candidateProjects)
+      .where(eq(candidateProjects.id, id));
+    return project;
+  }
+  
+  // Candidate References
+  async createCandidateReference(reference: InsertCandidateReference): Promise<CandidateReference> {
+    const [created] = await db.insert(candidateReferences).values(reference).returning();
+    return created;
+  }
+  
+  async getCandidateReferences(userId: number): Promise<CandidateReference[]> {
+    return db.select().from(candidateReferences)
+      .where(eq(candidateReferences.userId, userId));
+  }
+  
+  async updateCandidateReference(id: number, data: Partial<InsertCandidateReference>): Promise<CandidateReference | undefined> {
+    const [updated] = await db.update(candidateReferences)
+      .set(data)
+      .where(eq(candidateReferences.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async deleteCandidateReference(id: number): Promise<void> {
+    await db.delete(candidateReferences).where(eq(candidateReferences.id, id));
+  }
+  
+  async getCandidateReferenceById(id: number): Promise<CandidateReference | undefined> {
+    const [reference] = await db.select().from(candidateReferences)
+      .where(eq(candidateReferences.id, id));
+    return reference;
+  }
+  
+  // Job Applications
+  async createJobApplication(application: InsertJobApplication): Promise<JobApplication> {
+    const [created] = await db.insert(jobApplications).values(application).returning();
+    return created;
+  }
+  
+  async getJobApplicationsByUser(userId: number): Promise<JobApplication[]> {
+    return db.select().from(jobApplications)
+      .where(eq(jobApplications.userId, userId))
+      .orderBy(desc(jobApplications.appliedAt));
+  }
+  
+  async getJobApplication(userId: number, jobId: number): Promise<JobApplication | undefined> {
+    const [application] = await db.select().from(jobApplications)
+      .where(and(
+        eq(jobApplications.userId, userId),
+        eq(jobApplications.jobId, jobId)
+      ));
+    return application;
+  }
+  
+  async updateJobApplication(id: number, data: Partial<InsertJobApplication>): Promise<JobApplication | undefined> {
+    const [updated] = await db.update(jobApplications)
+      .set(data)
+      .where(eq(jobApplications.id, id))
+      .returning();
+    return updated;
   }
 }
 
