@@ -3597,6 +3597,11 @@ export async function registerRoutes(
         return res.status(403).json({ error: "Not authorized to access this experience" });
       }
       
+      // Check if OpenAI API key is available
+      if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+        return res.status(503).json({ error: "AI achievement generation is not available. OpenAI API key not configured." });
+      }
+      
       const OpenAI = (await import("openai")).default;
       const openai = new OpenAI({
         apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,

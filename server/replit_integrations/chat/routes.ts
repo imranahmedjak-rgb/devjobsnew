@@ -1,11 +1,22 @@
 import type { Express, Request, Response } from "express";
-import OpenAI from "openai";
 import { chatStorage } from "./storage";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+// OpenAI is optional - only initialize if API key is available
+let openai: any = null;
+
+async function getOpenAIClient() {
+  if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+    return null;
+  }
+  if (!openai) {
+    const OpenAI = (await import("openai")).default;
+    openai = new OpenAI({
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+    });
+  }
+  return openai;
+}
 
 const SYSTEM_PROMPT = `You are the Dev Global Jobs Career Assistant, a professional AI chatbot for Dev Global Jobs - a global employment and career opportunities platform operated by Trend Nova World Ltd.
 
@@ -140,13 +151,19 @@ export function registerChatRoutes(app: Express): void {
         })),
       ];
 
+      // Check if OpenAI is available
+      const client = await getOpenAIClient();
+      if (!client) {
+        return res.status(503).json({ error: "AI chat is not available. OpenAI API key not configured." });
+      }
+
       // Set up SSE
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
       // Stream response from OpenAI
-      const stream = await openai.chat.completions.create({
+      const stream = await client.chat.completions.create({
         model: "gpt-4.1-mini",
         messages: chatMessages,
         stream: true,
