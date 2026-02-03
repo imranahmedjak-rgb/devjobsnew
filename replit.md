@@ -1,7 +1,7 @@
-# Dev Global Jobs - International Job Board Platform
+# Dev Global Jobs - Development Sector Job Platform
 
 ## Overview
-Dev Global Jobs, by Trend Nova World Ltd., is an international job aggregation platform that consolidates professional job listings from diverse global sources. It categorizes jobs into three main types: UN Jobs (United Nations, World Bank, IMF), NGO Jobs (non-governmental and humanitarian organizations), and International Jobs (professional opportunities from over 200 sources worldwide across various industries). The platform aims to be a comprehensive resource for job seekers targeting international and development sector roles.
+Dev Global Jobs, by Trend Nova World Ltd., is a development sector job platform that aggregates professional listings from UN agencies and NGO humanitarian organizations. It features two job categories: UN Jobs (United Nations agencies, World Bank, IMF, UNDP, UNICEF, WHO, WFP, UNHCR) and NGO Jobs (humanitarian and civil society organizations). Jobs are sourced from ReliefWeb API and official UN career portals.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -22,34 +22,29 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: Express 5 on Node.js with TypeScript
 - **API Design**: RESTful endpoints defined in `shared/routes.ts`
 - **Database ORM**: Drizzle ORM with PostgreSQL
-- **Job Sync**: Background job synchronization runs every 2 minutes.
+- **Job Sync**: Background job synchronization runs every 2 minutes from ReliefWeb and UN sources.
 - **Build Process**: esbuild for production bundling.
 - **Data Access**: Implements a storage pattern (`IStorage` interface) for database operations.
 
 ### Data Model
-- **Users**: Stores user accounts, profile details, and email verification status.
-- **Jobs**: Stores aggregated listings with title, company, location, description, remote flag, tags, salary, source identifier, and timestamps. Features an `externalId` for deduplication and a `category` field ("un", "ngo", "international").
+- **Jobs**: Stores aggregated listings with title, company, location, description, remote flag, tags, salary, source identifier, and timestamps. Features an `externalId` for deduplication and a `category` field ("un" or "ngo").
 
 ### Key Design Patterns
 - **Shared Schema**: Database schema and API routes in `shared/` for full-stack type safety.
 - **Storage Abstraction**: `DatabaseStorage` class implementing `IStorage`.
-- **Multi-Source Aggregation**: Fetches jobs from 200+ sources.
+- **Development Sector Focus**: Jobs from ReliefWeb and UN career portals only.
 - **Query-based Filtering**: Supports search, location, remote, and category filters via SQL queries.
-- **Three-Category System**: Jobs classified into "un", "ngo", or "international".
+- **Two-Category System**: Jobs classified into "un" or "ngo".
 
 ### Key Features
-- **Job Categories**: Dedicated tabs for UN, NGO, and International jobs.
-- **Job Posting**: Recruiters can post jobs with full validation and Stripe integration for payment.
+- **Job Categories**: Two tabs for UN Jobs and NGO Jobs.
+- **Job Posting**: Organizations can post development sector jobs with Stripe payment ($2 USD).
 - **Job Statistics**: Displays total jobs, countries covered, and sources.
 - **Dynamic Country Filter**: Searchable dropdown and badges for countries, dynamically populated from job data.
 - **Auto-Refresh System**: Server syncs jobs every 2 minutes, client refreshes every 15 seconds.
-- **SEO Optimization**: Comprehensive meta-data, sitemap, robots.txt, structured data schemas (Organization, WebSite, JobPosting Aggregate, BreadcrumbList, FAQPage, Job Schema Markup), Open Graph, Twitter Cards, SEO-friendly URLs.
-- **Legal Pages**: Standard About Us, Contact Us, Terms, Privacy, Cookie, Disclaimer pages.
+- **SEO Optimization**: Development sector focused meta-data, structured data schemas (Organization, WebSite, CollectionPage, BreadcrumbList, FAQPage, EmploymentAgency), Open Graph, Twitter Cards.
+- **Legal Pages**: About Us, Contact Us, Terms, Privacy, Cookie, Disclaimer pages.
 - **Job Application Links**: Direct application links from original sources.
-- **AI Chat Assistant**: Floating widget using OpenAI GPT via Replit AI for job search and career advice, with real-time streaming and conversation history persistence.
-- **AI-Powered Profile Development**: A 5-step wizard for job seekers to build professional CVs with live preview and one-click PDF download.
-- **Easy Apply**: For direct-posted jobs, allows job seekers to apply using their platform profile data, supporting email or URL methods, with application history tracking.
-- **Social Login**: Integration with Replit Auth for Google, Apple, X, and GitHub logins.
 
 ## External Dependencies
 
@@ -66,13 +61,13 @@ Preferred communication style: Simple, everyday language.
 - `zod`
 
 ### External APIs / Services
-- **ReliefWeb API v2**: UN and humanitarian sector jobs.
-- **UN Careers**: Official UN job feed.
-- **Arbeitnow API**: European and remote jobs.
-- **RemoteOK API**: Remote jobs worldwide.
-- **Jobicy API**: Remote job listings.
-- **Himalayas API**: Remote job opportunities.
-- **Stripe**: For secure payment processing for paid job postings.
-- **OpenAI GPT models**: Via Replit AI Integrations for the AI Chat Assistant.
-- **Resend API**: For sending application emails (if configured).
-- **Replit Auth**: For social login integration.
+- **ReliefWeb API v2**: UN and humanitarian sector jobs (appname: TrendNova-v5ofdaDo).
+- **UN Careers**: Official UN job feed (careers.un.org).
+- **UNDP Jobs**: UN Development Programme careers.
+- **Stripe**: For secure payment processing for paid job postings ($2 USD).
+
+### Company Information
+- **Company**: Trend Nova World Limited
+- **UK Company Number**: 16709289
+- **Founded**: 2025-07-22
+- **Address**: 27 Old Gloucester Street, London WC1N 3AX, UK

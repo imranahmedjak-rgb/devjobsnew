@@ -272,7 +272,7 @@ export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
-export const jobCategories = ["un", "ngo", "international"] as const;
+export const jobCategories = ["un", "ngo"] as const;
 export type JobCategory = typeof jobCategories[number];
 
 export const jobs = pgTable("jobs", {

@@ -2776,47 +2776,17 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromFAO(),
   ]);
   
-  // 2. Fetch International jobs from real APIs (all have direct job links)
-  console.log("\n--- International Jobs (Real APIs with Direct Links) ---");
-  const apiCounts = await Promise.all([
-    fetchJobsFromArbeitnow(),
-    fetchJobsFromRemoteOK(),
-    fetchJobsFromJobicy(),
-    fetchJobsFromHimalayas(),
-    fetchJobsFromRemotive(),
-    fetchJobsFromFindWork(),
-    fetchJobsFromWWR(),
-    fetchJobsFromAuthenticJobs(),
-    fetchJobsFromLandingJobs(),
-    fetchJobsFromGreenhouseBoards(),
-    fetchJobsFromLeverBoards(),
-    fetchJobsFromCryptoJobs(),
-    fetchJobsFromWeb3Career(),
-    fetchJobsFromDevITjobsUK(),
-    fetchJobsFromAshbyBoards(),
-    fetchJobsFromWorkableBoards(),
-    fetchJobsFromRecruiteeBoards(),
-    fetchJobsFromTheMuse(),
-    fetchJobsFromArbeitsamt(),
-    fetchJobsFromEuropeRemotely(),
-    fetchJobsFromNoDesk(),
-    fetchJobsFromRemoteCo(),
-    fetchJobsFrom4DayWeek(),
-  ]);
-  
-  // Calculate totals - include all UN agency feeds
+  // Calculate totals - include all UN agency feeds (Development Sector Only)
   const unAgencyTotal = unicefCounts + wfpCounts + unhcrCounts + unopsCounts + iomCounts + unescoCounts + whoCounts + iloCounts + faoCounts;
   const unTotal = reliefWebCounts.un + unCareersCounts + undpCounts + unAgencyTotal;
   const ngoTotal = reliefWebCounts.ngo;
-  const intlTotal = apiCounts.reduce((acc, count) => acc + count, 0);
-  const total = unTotal + ngoTotal + intlTotal;
+  const total = unTotal + ngoTotal;
   
-  console.log(`\n=== Sync Complete ===`);
+  console.log(`\n=== Sync Complete (Development Sector Only) ===`);
   console.log(`UN jobs added: ${unTotal} (ReliefWeb: ${reliefWebCounts.un}, UN Careers: ${unCareersCounts}, UNDP: ${undpCounts}, UNICEF: ${unicefCounts}, WFP: ${wfpCounts}, UNHCR: ${unhcrCounts}, UNOPS: ${unopsCounts}, IOM: ${iomCounts}, UNESCO: ${unescoCounts})`);
   console.log(`NGO jobs added: ${ngoTotal}`);
-  console.log(`International jobs: ${intlTotal}`);
   console.log(`Total new jobs added: ${total}`);
-  console.log(`All jobs have direct application links only!`);
+  console.log(`Development sector jobs from ReliefWeb and UN sources only!`);
   
   return total;
 }
@@ -2844,7 +2814,7 @@ export async function registerRoutes(
   // Clear old mock data and sync fresh from real APIs
   (async () => {
     try {
-      console.log('Clearing old data and starting fresh sync from real APIs...');
+      console.log('Clearing old data and starting fresh sync from development sector sources...');
       await storage.clearAllJobs();
       console.log('Database cleared. Starting job sync...');
       // Small delay to ensure database is ready

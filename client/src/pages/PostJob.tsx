@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { useAuth, apiRequest } from "@/lib/auth";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import { motion } from "framer-motion";
 
 interface JobFormData {
   title: string;
+  companyName: string;
   location: string;
   description: string;
   category: string;
@@ -29,15 +29,13 @@ interface JobFormData {
 
 export default function PostJob() {
   const [, setLocation] = useLocation();
-  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
-  const [hasProfile, setHasProfile] = useState(false);
-  const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<JobFormData>({
     title: "",
+    companyName: "",
     location: "",
     description: "",
     category: "",
@@ -48,53 +46,10 @@ export default function PostJob() {
     salary: "",
   });
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        setLocation("/auth");
-        return;
-      }
-      if (user.role !== "recruiter") {
-        toast({
-          title: "Access Denied",
-          description: "Only recruiters can post jobs. Please sign up as a recruiter.",
-          variant: "destructive",
-        });
-        setLocation("/auth");
-        return;
-      }
-      checkProfile();
-    }
-  }, [user, authLoading]);
-
-  const checkProfile = async () => {
-    try {
-      const res = await apiRequest("/api/recruiter/profile");
-      if (res.ok) {
-        const profile = await res.json();
-        if (profile && profile.organizationName) {
-          setHasProfile(true);
-        } else {
-          toast({
-            title: "Complete Your Profile",
-            description: "Please complete your recruiter profile before posting jobs.",
-          });
-          setLocation("/profile");
-        }
-      } else {
-        setLocation("/profile");
-      }
-    } catch (error) {
-      console.error("Error checking profile:", error);
-    } finally {
-      setIsCheckingProfile(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.location || !formData.description || !formData.category || !formData.applyValue) {
+    if (!formData.title || !formData.companyName || !formData.location || !formData.description || !formData.category || !formData.applyValue) {
       toast({
         title: "Missing Required Fields",
         description: "Please fill in all required fields.",
@@ -125,31 +80,27 @@ export default function PostJob() {
     try {
       localStorage.setItem("pendingJobData", JSON.stringify(formData));
 
-      const res = await apiRequest("/api/stripe/create-job-payment-session", {
+      const res = await fetch("/api/stripe/create-job-payment-session", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           jobData: {
             title: formData.title,
+            company: formData.companyName,
             location: formData.location,
             description: formData.description,
             category: formData.category,
             applyMethod: formData.applyMethod,
             applyValue: formData.applyValue,
             remote: formData.remote,
+            tags: formData.tags,
+            salary: formData.salary,
           },
         }),
       });
 
       if (!res.ok) {
         let errorMessage = "Failed to create payment session";
-        
-        // Handle 401 specifically - session expired
-        if (res.status === 401) {
-          localStorage.removeItem("auth_token");
-          window.location.href = "/auth";
-          throw new Error("Your session has expired. Redirecting to login...");
-        }
-        
         try {
           const error = await res.json();
           errorMessage = error.error || errorMessage;
@@ -180,20 +131,6 @@ export default function PostJob() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  if (authLoading || isCheckingProfile) {
-    return (
-      <div className="min-h-screen bg-background font-sans flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (submitted) {
     return (
       <div className="min-h-screen bg-background font-sans flex flex-col">
@@ -222,7 +159,7 @@ export default function PostJob() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Jobs
               </Button>
-              <Button onClick={() => { setSubmitted(false); setFormData({ title: "", location: "", description: "", category: "", applyMethod: "link", applyValue: "", remote: false, tags: "", salary: "" }); }} data-testid="button-post-another">
+              <Button onClick={() => { setSubmitted(false); setFormData({ title: "", companyName: "", location: "", description: "", category: "", applyMethod: "link", applyValue: "", remote: false, tags: "", salary: "" }); }} data-testid="button-post-another">
                 Post Another Job
               </Button>
             </div>
@@ -251,13 +188,13 @@ export default function PostJob() {
           </div>
 
           <div className="text-center space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold font-display">Post a Job</h1>
+            <h1 className="text-3xl md:text-4xl font-bold font-display">Post a Development Sector Job</h1>
             <p className="text-muted-foreground text-lg">
-              Reach qualified candidates across 193 countries
+              Reach qualified candidates in UN agencies and NGOs worldwide
             </p>
           </div>
 
-          <Card className="border-border/50 shadow-xl">
+          <Card className="border-border/50 shadow-xl" data-testid="post-job-form">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Briefcase className="w-5 h-5 text-primary" />
@@ -291,14 +228,23 @@ export default function PostJob() {
                           NGO Jobs
                         </span>
                       </SelectItem>
-                      <SelectItem value="international">
-                        <span className="flex items-center gap-2">
-                          <Briefcase className="w-4 h-4 text-purple-600" />
-                          International Jobs
-                        </span>
-                      </SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyName" className="flex items-center gap-2">
+                    <Building className="w-4 h-4" />
+                    Organization Name *
+                  </Label>
+                  <Input
+                    id="companyName"
+                    placeholder="e.g., UNICEF, World Vision, Save the Children"
+                    value={formData.companyName}
+                    onChange={(e) => handleChange("companyName", e.target.value)}
+                    required
+                    data-testid="input-company-name"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -445,7 +391,7 @@ export default function PostJob() {
                       <CreditCard className="w-5 h-5 text-primary" />
                       <span className="font-medium">Job Posting Fee</span>
                     </div>
-                    <span className="text-2xl font-bold text-primary">$2.00 USD</span>
+                    <span className="text-2xl font-bold text-primary" data-testid="text-price">$2.00 USD</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
                     One-time payment to publish your job listing worldwide

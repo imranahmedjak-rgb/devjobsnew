@@ -20,7 +20,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [remote, setRemote] = useState(false);
-  const [category, setCategory] = useState<JobCategory>("international");
+  const [category, setCategory] = useState<JobCategory>("un");
   const [countryOpen, setCountryOpen] = useState(false);
   
   // Fetch unique countries for filtering
@@ -54,16 +54,14 @@ export default function Home() {
     switch (category) {
       case "un": return "UN Agency Jobs";
       case "ngo": return "NGO & Humanitarian Jobs";
-      case "international": return "International Jobs";
-      default: return "Jobs";
+      default: return "Development Sector Jobs";
     }
   };
 
   const getCategoryDescription = () => {
     switch (category) {
-      case "un": return "United Nations agencies, World Bank, IMF, and international development banks";
-      case "ngo": return "Non-governmental organizations, humanitarian agencies, and civil society";
-      case "international": return "Professional opportunities from 200+ sources across US, Canada, Europe, Middle East, Asia Pacific, Australia, and worldwide";
+      case "un": return "United Nations agencies, World Bank, IMF, UNDP, UNICEF, WHO, and international development organizations";
+      case "ngo": return "Non-governmental organizations, humanitarian agencies, and international civil society organizations";
       default: return "";
     }
   };
@@ -83,7 +81,7 @@ export default function Home() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-4"
           >
             <CheckCircle className="w-4 h-4" />
-            Verified Jobs from 200+ Sources
+            Verified Development Sector Jobs
           </motion.div>
           
           <motion.h1 
@@ -92,7 +90,7 @@ export default function Home() {
             className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight text-foreground"
           >
             Your Gateway to <span className="text-primary relative inline-block">
-              Global Careers
+              Development Careers
               <svg className="absolute w-full h-3 -bottom-1 left-0 text-primary/20" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
               </svg>
@@ -104,8 +102,8 @@ export default function Home() {
             transition={{ delay: 0.1 }}
             className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
           >
-            Curated opportunities from UN agencies, NGOs, development banks, 
-            and top global companies. Real-time updates from trusted sources worldwide.
+            Curated opportunities from UN agencies, NGOs, and international development organizations. 
+            Real-time updates from ReliefWeb, UN Careers, and trusted humanitarian sources.
           </motion.p>
 
           {/* Stats */}
@@ -156,33 +154,22 @@ export default function Home() {
           transition={{ delay: 0.2 }}
         >
           <Tabs value={category} onValueChange={(v) => setCategory(v as JobCategory)} className="w-full">
-            <TabsList className="w-full max-w-3xl mx-auto h-auto p-1.5 bg-muted/50 border border-border/50 rounded-xl grid grid-cols-3 gap-1">
+            <TabsList className="w-full max-w-2xl mx-auto h-auto p-1.5 bg-muted/50 border border-border/50 rounded-xl grid grid-cols-2 gap-1">
               <TabsTrigger 
                 value="un" 
-                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
                 data-testid="tab-un"
               >
                 <Landmark className="w-4 h-4" />
-                <span className="font-semibold hidden sm:inline">UN Jobs</span>
-                <span className="font-semibold sm:hidden">UN</span>
+                <span className="font-semibold">UN Jobs</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="ngo" 
-                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
                 data-testid="tab-ngo"
               >
                 <Heart className="w-4 h-4" />
-                <span className="font-semibold hidden sm:inline">NGO Jobs</span>
-                <span className="font-semibold sm:hidden">NGO</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="international" 
-                className="flex items-center justify-center gap-2 py-3 px-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
-                data-testid="tab-international"
-              >
-                <Globe className="w-4 h-4" />
-                <span className="font-semibold hidden sm:inline">International</span>
-                <span className="font-semibold sm:hidden">Intl</span>
+                <span className="font-semibold">NGO Jobs</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -465,7 +452,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              <span>200+ Job Sources</span>
+              <span>Trusted Sources</span>
             </div>
           </div>
         </div>

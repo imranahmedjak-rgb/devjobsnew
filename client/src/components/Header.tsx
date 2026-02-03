@@ -1,23 +1,14 @@
 import { Link } from "wouter";
-import { Briefcase, Plus, RefreshCw, Globe, User, LogOut, LogIn, FileUser } from "lucide-react";
+import { Briefcase, Plus, RefreshCw, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSyncJobs } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { useAuth } from "@/lib/auth";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const { mutate: syncJobs, isPending } = useSyncJobs();
   const { toast } = useToast();
   const [isRotating, setIsRotating] = useState(false);
-  const { user, logout, isLoading } = useAuth();
 
   const handleSync = () => {
     setIsRotating(true);
@@ -25,7 +16,7 @@ export function Header() {
       onSuccess: (data) => {
         toast({
           title: "Jobs Updated",
-          description: `${data.count} new jobs added from worldwide sources.`,
+          description: `${data.count} new jobs added from development sector sources.`,
         });
         setTimeout(() => setIsRotating(false), 1000);
       },
@@ -37,14 +28,6 @@ export function Header() {
         });
         setIsRotating(false);
       }
-    });
-  };
-
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
     });
   };
 
@@ -68,7 +51,7 @@ export function Header() {
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
             <Globe className="w-4 h-4 text-primary" />
-            <span>193 Countries</span>
+            <span>Development Sector</span>
           </div>
           
           <div className="h-6 w-px bg-border/60 hidden md:block" />
@@ -91,65 +74,6 @@ export function Header() {
               <Plus className="w-4 h-4 ml-1.5" />
             </Button>
           </Link>
-
-          {!isLoading && (
-            <>
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" data-testid="button-user-menu">
-                      <User className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline max-w-[120px] truncate">
-                        {user.firstName && user.lastName 
-                          ? `${user.firstName} ${user.lastName}` 
-                          : user.firstName || user.email.split('@')[0]}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem className="text-xs text-muted-foreground">
-                      {user.role === "recruiter" ? "Recruiter" : "Job Seeker"}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <Link href="/profile">
-                      <DropdownMenuItem className="cursor-pointer" data-testid="menu-profile">
-                        <User className="w-4 h-4 mr-2" />
-                        Profile
-                      </DropdownMenuItem>
-                    </Link>
-                    {user.role === "jobseeker" && (
-                      <Link href="/profile-development">
-                        <DropdownMenuItem className="cursor-pointer" data-testid="menu-build-cv">
-                          <FileUser className="w-4 h-4 mr-2" />
-                          Build CV
-                        </DropdownMenuItem>
-                      </Link>
-                    )}
-                    {user.role === "recruiter" && (
-                      <Link href="/post-job">
-                        <DropdownMenuItem className="cursor-pointer" data-testid="menu-post-job">
-                          <Briefcase className="w-4 h-4 mr-2" />
-                          Post a Job
-                        </DropdownMenuItem>
-                      </Link>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600" data-testid="menu-logout">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Log Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/auth">
-                  <Button variant="outline" size="sm" data-testid="button-login">
-                    <LogIn className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Login</span>
-                  </Button>
-                </Link>
-              )}
-            </>
-          )}
         </div>
       </div>
     </header>
