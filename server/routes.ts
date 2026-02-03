@@ -3662,7 +3662,7 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
 
   // ================== STRIPE PAYMENT ROUTES ==================
 
-  const JOB_POSTING_PRICE_ID = "price_1SwRMKIA7ufjjB9hWSadi40v";
+  const JOB_POSTING_AMOUNT = 1000; // $10.00 USD in cents
 
   app.get("/api/stripe/publishable-key", async (req, res) => {
     try {
@@ -3674,20 +3674,16 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
     }
   });
 
-  app.post("/api/stripe/create-job-payment-session", authMiddleware as any, async (req: AuthRequest, res) => {
+  // Public job payment session - no auth required
+  app.post("/api/stripe/create-job-payment-session", async (req, res) => {
     try {
-      if (req.user!.role !== "recruiter") {
-        return res.status(403).json({ error: "Only recruiters can post jobs" });
-      }
-
-      const profile = await storage.getRecruiterProfile(req.user!.id);
-      if (!profile) {
-        return res.status(400).json({ error: "Please complete your recruiter profile first" });
-      }
-
       const { jobData } = req.body;
-      if (!jobData || !jobData.title || !jobData.location || !jobData.description || !jobData.category) {
-        return res.status(400).json({ error: "Invalid job data" });
+      if (!jobData || !jobData.title || !jobData.company || !jobData.location || !jobData.description || !jobData.category) {
+        return res.status(400).json({ error: "Invalid job data. Title, company, location, description, and category are required." });
+      }
+
+      if (!["un", "ngo"].includes(jobData.category)) {
+        return res.status(400).json({ error: "Invalid category. Must be 'un' or 'ngo'" });
       }
 
       const stripe = await getUncachableStripeClient();
@@ -3699,16 +3695,24 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [{
-          price: JOB_POSTING_PRICE_ID,
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Job Posting - Dev Global Jobs',
+              description: `${jobData.category === 'un' ? 'UN Jobs' : 'NGO Jobs'} - ${jobData.title}`,
+            },
+            unit_amount: JOB_POSTING_AMOUNT,
+          },
           quantity: 1,
         }],
         mode: 'payment',
         success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/post-job?cancelled=true`,
         metadata: {
-          user_id: req.user!.id.toString(),
+          job_title: jobData.title,
+          job_company: jobData.company,
+          job_category: jobData.category,
         },
-        customer_email: req.user!.email,
       });
 
       const expiresAt = new Date();
@@ -3716,14 +3720,14 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
 
       await storage.createPendingJob({
         sessionId: session.id,
-        userId: req.user!.id,
+        userId: 0,
         title: jobData.title,
-        company: profile.organizationName,
+        company: jobData.company,
         location: jobData.location,
         description: jobData.description,
         category: jobData.category,
-        applyMethod: jobData.applyMethod,
-        applyValue: jobData.applyValue,
+        applyMethod: jobData.applyMethod || 'link',
+        applyValue: jobData.applyValue || '',
         remote: jobData.remote || false,
         tags: jobData.tags ? jobData.tags.split(",").map((t: string) => t.trim()) : [],
         salary: jobData.salary || null,
@@ -3739,7 +3743,8 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
     }
   });
 
-  app.post("/api/stripe/verify-payment", authMiddleware as any, async (req: AuthRequest, res) => {
+  // Public payment verification - no auth required
+  app.post("/api/stripe/verify-payment", async (req, res) => {
     try {
       const { sessionId } = req.body;
       if (!sessionId) {
@@ -3753,13 +3758,8 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
         return res.status(400).json({ error: "Payment not completed" });
       }
 
-      if (session.amount_total !== 200) {
+      if (session.amount_total !== JOB_POSTING_AMOUNT) {
         return res.status(400).json({ error: "Invalid payment amount" });
-      }
-
-      const metadata = session.metadata;
-      if (!metadata || metadata.user_id !== req.user!.id.toString()) {
-        return res.status(403).json({ error: "Unauthorized" });
       }
 
       const pendingJob = await storage.getPendingJobBySessionId(sessionId);
@@ -3767,17 +3767,13 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
         return res.status(400).json({ error: "Job data not found or already processed" });
       }
 
-      if (pendingJob.userId !== req.user!.id) {
-        return res.status(403).json({ error: "Unauthorized - user mismatch" });
-      }
-
       const job = await storage.createDirectJob({
-        recruiterId: req.user!.id,
+        recruiterId: 0,
         title: pendingJob.title,
         company: pendingJob.company,
         location: pendingJob.location,
         description: pendingJob.description,
-        category: pendingJob.category as "un" | "ngo" | "international",
+        category: pendingJob.category as "un" | "ngo",
         applyMethod: pendingJob.applyMethod as "link" | "email",
         applyValue: pendingJob.applyValue,
         remote: pendingJob.remote || false,

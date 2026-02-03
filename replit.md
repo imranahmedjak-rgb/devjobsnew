@@ -37,14 +37,13 @@ Preferred communication style: Simple, everyday language.
 - **Two-Category System**: Jobs classified into "un" or "ngo".
 
 ### Key Features
-- **Job Categories**: Two tabs for UN Jobs and NGO Jobs.
-- **Job Posting**: Organizations can post development sector jobs with Stripe payment ($2 USD).
-- **Job Statistics**: Displays total jobs, countries covered, and sources.
+- **Job Categories**: Two tabs for UN Jobs and NGO Jobs (no authentication required).
+- **Job Posting**: Organizations can post development sector jobs with Stripe payment ($10 USD).
 - **Dynamic Country Filter**: Searchable dropdown and badges for countries, dynamically populated from job data.
 - **Auto-Refresh System**: Server syncs jobs every 2 minutes, client refreshes every 15 seconds.
 - **SEO Optimization**: Development sector focused meta-data, structured data schemas (Organization, WebSite, CollectionPage, BreadcrumbList, FAQPage, EmploymentAgency), Open Graph, Twitter Cards.
 - **Legal Pages**: About Us, Contact Us, Terms, Privacy, Cookie, Disclaimer pages.
-- **Job Application Links**: Direct application links from original sources.
+- **Trust Section**: Verified Sources, Real-time Updates, Global Coverage.
 
 ## External Dependencies
 

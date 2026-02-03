@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Search, MapPin, Globe, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Zap, Award, ArrowRight } from "lucide-react";
+import { Search, MapPin, Globe, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Award, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -112,10 +112,6 @@ export default function Home() {
               <div className="flex items-center gap-2 text-sm text-slate-300">
                 <Clock className="w-4 h-4 text-blue-400" />
                 <span>Updated Every 2 Minutes</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-300">
-                <Zap className="w-4 h-4 text-yellow-400" />
-                <span>Direct Application Links</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-300">
                 <Award className="w-4 h-4 text-green-400" />
@@ -433,7 +429,7 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-4 rounded-xl bg-card border border-border/50">
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
                   <Shield className="w-6 h-6 text-blue-600" />
@@ -456,14 +452,6 @@ export default function Home() {
                 </div>
                 <h4 className="font-semibold text-sm">Global Coverage</h4>
                 <p className="text-xs text-muted-foreground mt-1">Positions worldwide</p>
-              </div>
-              
-              <div className="text-center p-4 rounded-xl bg-card border border-border/50">
-                <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mx-auto mb-3">
-                  <Zap className="w-6 h-6 text-orange-600" />
-                </div>
-                <h4 className="font-semibold text-sm">Direct Links</h4>
-                <p className="text-xs text-muted-foreground mt-1">Apply on official sites</p>
               </div>
             </div>
 

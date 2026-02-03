@@ -391,7 +391,7 @@ export default function PostJob() {
                       <CreditCard className="w-5 h-5 text-primary" />
                       <span className="font-medium">Job Posting Fee</span>
                     </div>
-                    <span className="text-2xl font-bold text-primary" data-testid="text-price">$2.00 USD</span>
+                    <span className="text-2xl font-bold text-primary" data-testid="text-price">$10.00 USD</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
                     One-time payment to publish your job listing worldwide
@@ -414,7 +414,7 @@ export default function PostJob() {
                     data-testid="button-submit-job"
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {isSubmitting ? "Processing..." : "Pay $2 & Post Job"}
+                    {isSubmitting ? "Processing..." : "Pay $10 & Post Job"}
                   </Button>
                 </div>
               </form>
