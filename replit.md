@@ -1,268 +1,78 @@
 # Dev Global Jobs - International Job Board Platform
 
 ## Overview
-
-Dev Global Jobs is an international job aggregation platform by Trend Nova World Ltd. that aggregates professional job listings from worldwide sources. The platform features three job categories:
-
-1. **UN Jobs**: United Nations agencies, World Bank, IMF, and international development banks
-2. **NGO Jobs**: Non-governmental organizations, humanitarian agencies, and civil society
-3. **International Jobs**: Professional opportunities from 200+ sources across all industries worldwide
+Dev Global Jobs, by Trend Nova World Ltd., is an international job aggregation platform that consolidates professional job listings from diverse global sources. It categorizes jobs into three main types: UN Jobs (United Nations, World Bank, IMF), NGO Jobs (non-governmental and humanitarian organizations), and International Jobs (professional opportunities from over 200 sources worldwide across various industries). The platform aims to be a comprehensive resource for job seekers targeting international and development sector roles.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
+### Frontend
 - **Framework**: React 18 with TypeScript
-- **Routing**: Wouter (lightweight React router)
-- **State Management**: TanStack React Query for server state caching and synchronization
-- **Styling**: Tailwind CSS with shadcn/ui component library (New York style variant)
-- **Animations**: Framer Motion for smooth list and interaction animations
-- **Build Tool**: Vite with custom development plugins for Replit integration
-- **Auto-Refresh**: Client refreshes job listings every 15 seconds
+- **Routing**: Wouter
+- **State Management**: TanStack React Query
+- **Styling**: Tailwind CSS with shadcn/ui (New York style)
+- **Animations**: Framer Motion
+- **Build Tool**: Vite
+- **Data Refresh**: Client refreshes job listings every 15 seconds.
+- **Structure**: Pages-based with reusable components; API contracts defined in `shared/routes.ts` using Zod for type safety.
 
-The frontend follows a pages-based structure with reusable components. API contracts are defined in `shared/routes.ts` using Zod schemas, ensuring type safety between client and server.
-
-### Backend Architecture
+### Backend
 - **Framework**: Express 5 on Node.js with TypeScript
-- **API Design**: RESTful endpoints defined in `shared/routes.ts` for consistency
-- **Database ORM**: Drizzle ORM with PostgreSQL dialect
-- **Job Sync**: Background job sync runs every 2 minutes for near real-time updates
-- **Build Process**: esbuild for production bundling with selective dependency bundling to optimize cold start times
-
-The server implements a storage pattern (`IStorage` interface) for database operations, making it easy to swap implementations if needed.
+- **API Design**: RESTful endpoints defined in `shared/routes.ts`
+- **Database ORM**: Drizzle ORM with PostgreSQL
+- **Job Sync**: Background job synchronization runs every 2 minutes.
+- **Build Process**: esbuild for production bundling.
+- **Data Access**: Implements a storage pattern (`IStorage` interface) for database operations.
 
 ### Data Model
-**Users table**:
-- `users`: Stores user accounts with email, password, role (recruiter/jobseeker)
-- Profile fields: firstName, lastName, gender, city
-- Email verification fields: verificationCode (6-digit string), verificationCodeExpiry (timestamp), emailVerified (boolean)
-- Header displays user's full name instead of email when logged in
-
-**Jobs tables**:
-- `jobs`: Stores aggregated job listings with fields for title, company, location, description (HTML), remote flag, tags array, salary, source API identifier, and timestamps
-- Uses `externalId` for deduplication when syncing from external APIs
-- `category` field: "un", "ngo", or "international"
+- **Users**: Stores user accounts, profile details, and email verification status.
+- **Jobs**: Stores aggregated listings with title, company, location, description, remote flag, tags, salary, source identifier, and timestamps. Features an `externalId` for deduplication and a `category` field ("un", "ngo", "international").
 
 ### Key Design Patterns
-1. **Shared Schema**: Database schema and API routes defined in `shared/` directory for full-stack type safety
-2. **Storage Abstraction**: `DatabaseStorage` class implements `IStorage` interface for clean data access
-3. **Multi-Source Aggregation**: Background sync fetches jobs from 200+ sources (APIs + global companies)
-4. **Query-based Filtering**: Search, location, remote, and category filters handled via SQL queries with Drizzle ORM
-5. **Three-Category System**: Jobs categorized as "un", "ngo", or "international"
+- **Shared Schema**: Database schema and API routes in `shared/` for full-stack type safety.
+- **Storage Abstraction**: `DatabaseStorage` class implementing `IStorage`.
+- **Multi-Source Aggregation**: Fetches jobs from 200+ sources.
+- **Query-based Filtering**: Supports search, location, remote, and category filters via SQL queries.
+- **Three-Category System**: Jobs classified into "un", "ngo", or "international".
 
-## Job Categories
-
-### UN Jobs
-- **Organizations**: UNICEF, UNDP, UNHCR, WFP, WHO, FAO, UNESCO, ILO, UNEP, UN Women, UNFPA, OCHA, World Bank, IMF, ADB, AfDB, EBRD, and more
-- **Sources**: ReliefWeb API, generated positions from 30+ UN agencies
-- **Coverage**: Global duty stations including HQ locations (New York, Geneva, Vienna, Rome, etc.) and field offices
-
-### NGO Jobs
-- **Organizations**: ICRC, IFRC, MSF, Oxfam, Save the Children, World Vision, CARE, Mercy Corps, IRC, NRC, DRC, USAID, GIZ, and more
-- **Sources**: ReliefWeb API, generated positions from 30+ humanitarian organizations
-- **Coverage**: Humanitarian response locations, development program countries, and remote positions
-
-### International Jobs
-- **Coverage**: Professional opportunities from 200+ sources worldwide
-- **Regions**: USA, Canada, Europe, UK, Middle East, Asia Pacific, Australia, Latin America, Africa, Remote
-- **Industries**: Technology, Finance, Consulting, Healthcare, Engineering, Marketing, Sales, Operations, Legal, HR, and more
-- **Companies**: Google, Microsoft, Amazon, Apple, Meta, Goldman Sachs, McKinsey, Deloitte, BMW, HSBC, Samsung, Emirates, Shopify, Atlassian, and 100+ more
-
-## Job Sources (200+)
-
-### External APIs (Active)
-- **ReliefWeb API v2**: UN and humanitarian sector jobs
-  - Appname: `TrendNova-v5ofdaDo` (approved by ReliefWeb team)
-  - API: https://api.reliefweb.int/v2/jobs
-  - RSS Fallback: https://reliefweb.int/jobs/rss.xml
-  - Note: Uses curl via child_process because Node.js fetch gets 202 empty response
-- **UN Careers**: Official UN job feed (https://careers.un.org/jobfeed)
-- **Arbeitnow API**: European and remote jobs (https://www.arbeitnow.com/api/job-board-api)
-- **RemoteOK API**: Remote jobs worldwide (https://remoteok.com/api)
-- **Jobicy API**: Remote job listings (https://jobicy.com/api/v2/remote-jobs)
-- **Himalayas API**: Remote job opportunities (https://himalayas.app/jobs/api)
-
-### Generated Job Sources
-- **UN Agencies**: 30+ agencies with 150+ positions per sync
-- **NGO Organizations**: 30+ organizations with 150+ positions per sync
-- **International Companies**: 100+ global companies with region-specific positions
-- **Regional Coverage**:
-  - US: 100 positions
-  - Canada: 80 positions
-  - EU: 150 positions
-  - Middle East: 100 positions
-  - Asia Pacific: 100 positions
-  - Diverse international: 500+ positions
-
-### Total Coverage
-- 100+ countries represented
-- 1500+ jobs per sync across all categories
-- Real-time updates every 2 minutes
-- Direct application links
+### Key Features
+- **Job Categories**: Dedicated tabs for UN, NGO, and International jobs.
+- **Job Posting**: Recruiters can post jobs with full validation and Stripe integration for payment.
+- **Job Statistics**: Displays total jobs, countries covered, and sources.
+- **Dynamic Country Filter**: Searchable dropdown and badges for countries, dynamically populated from job data.
+- **Auto-Refresh System**: Server syncs jobs every 2 minutes, client refreshes every 15 seconds.
+- **SEO Optimization**: Comprehensive meta-data, sitemap, robots.txt, structured data schemas (Organization, WebSite, JobPosting Aggregate, BreadcrumbList, FAQPage, Job Schema Markup), Open Graph, Twitter Cards, SEO-friendly URLs.
+- **Legal Pages**: Standard About Us, Contact Us, Terms, Privacy, Cookie, Disclaimer pages.
+- **Job Application Links**: Direct application links from original sources.
+- **AI Chat Assistant**: Floating widget using OpenAI GPT via Replit AI for job search and career advice, with real-time streaming and conversation history persistence.
+- **AI-Powered Profile Development**: A 5-step wizard for job seekers to build professional CVs with live preview and one-click PDF download.
+- **Easy Apply**: For direct-posted jobs, allows job seekers to apply using their platform profile data, supporting email or URL methods, with application history tracking.
+- **Social Login**: Integration with Replit Auth for Google, Apple, X, and GitHub logins.
 
 ## External Dependencies
 
 ### Database
-- **PostgreSQL**: Primary database accessed via `DATABASE_URL` environment variable
-- **Drizzle Kit**: Database migrations stored in `./migrations` directory
+- **PostgreSQL**: Primary database.
+- **Drizzle Kit**: For database migrations.
 
 ### Key NPM Packages
-- `@tanstack/react-query`: Client-side data fetching and caching
-- `drizzle-orm` / `drizzle-zod`: Type-safe database operations
-- `date-fns`: Date formatting (relative time display)
-- `framer-motion`: UI animations
-- `wouter`: Lightweight routing
-- `zod`: Runtime type validation for API contracts
+- `@tanstack/react-query`
+- `drizzle-orm` / `drizzle-zod`
+- `date-fns`
+- `framer-motion`
+- `wouter`
+- `zod`
 
-### Development Tools
-- `@replit/vite-plugin-runtime-error-modal`: Development error overlay
-- `@replit/vite-plugin-cartographer`: Replit-specific tooling
-- `tsx`: TypeScript execution for development server
-
-## Key Features
-
-### Three Category Tabs
-- UN Jobs: Development sector positions
-- NGO Jobs: Humanitarian and non-profit positions
-- International Jobs: Global professional opportunities
-
-### Post a Job
-- Full form validation for job submissions
-- Auto-generated external ID and timestamps
-- Server-side validation with Zod schemas
-- Success confirmation flow
-
-### Job Statistics
-- Total jobs count (1500+)
-- Countries covered (100+)
-- Number of sources (200+)
-- Real-time updates
-
-### Dynamic Country Filter
-- **Searchable Dropdown**: Users can search and select from all countries with available jobs
-- **Dynamic Population**: Countries are automatically extracted from job data (no hard-coded list)
-- **Country Badges**: Top 12 countries shown as clickable badges for quick filtering
-- **Normalization**: Handles country name variations (USA/US/United States, UK/United Kingdom, etc.)
-- **API Endpoint**: `GET /api/countries` returns dynamically generated country list
-- **Mobile Friendly**: Popover-based dropdown works on all screen sizes
-
-### Auto-Refresh System
-- Server syncs new jobs every 2 minutes
-- Client refreshes listings every 15 seconds
-- Window focus triggers immediate refresh
-
-### SEO Optimization
-- **Sitemap**: Dynamic sitemap.xml at `/sitemap.xml` with all job pages
-- **Robots.txt**: Available at `/robots.txt` for search engine crawling
-- **Job Schema Markup**: JSON-LD structured data on job detail pages (Google Jobs compatible)
-- **Meta Tags**: Full Open Graph and Twitter Card meta tags
-- **SEO-Friendly URLs**: Clean `/jobs/:id` URL structure for job pages
-
-### Legal Pages
-- About Us (`/about`)
-- Contact Us (`/contact`)
-- Terms and Conditions (`/terms`)
-- Privacy Policy (`/privacy`)
-- Cookie Policy (`/cookies`)
-- Disclaimer (`/disclaimer`)
-
-### Job Application Links
-- All jobs have direct application links
-- Sources: ReliefWeb, Arbeitnow, RemoteOK, Jobicy, Himalayas, UN Careers, and company career pages
-- Verified URLs from trusted sources
-
-### Paid Job Posting (Recruiters)
-- **Price**: $2.00 USD per job posting
-- **Payment**: Stripe integration with secure checkout
-- **Flow**: Recruiter fills form → pays $2 via Stripe → job published
-- **Security**: 
-  - Job data stored server-side in `pending_jobs` table before payment
-  - Payment verified via Stripe session (amount, user ID, payment status)
-  - No client-side data used for job creation (prevents tampering)
-- **Database Tables**:
-  - `pending_jobs`: Temporary storage during payment flow
-  - `direct_jobs`: Published recruiter job listings
-- **API Endpoints**:
-  - `POST /api/stripe/create-job-payment-session`: Create Stripe checkout session
-  - `POST /api/stripe/verify-payment`: Verify payment and publish job
-
-### AI Chat Assistant
-- **Location**: Floating button in bottom-right corner of all pages
-- **Purpose**: Helps users with job searching, career advice, and platform navigation
-- **Technology**: OpenAI GPT models via Replit AI Integrations (no API key required)
-- **Features**:
-  - Real-time streaming responses using Server-Sent Events (SSE)
-  - Conversation history persisted in PostgreSQL database
-  - New chat functionality to start fresh conversations
-- **Database Tables**:
-  - `conversations`: Stores chat sessions with title and timestamps
-  - `messages`: Individual messages with role (user/assistant), content, and timestamps
-- **API Endpoints**:
-  - `POST /api/conversations`: Create new conversation
-  - `GET /api/conversations/:id`: Get conversation with messages
-  - `POST /api/conversations/:id/messages`: Send message and receive streaming response
-- **Component**: `client/src/components/AIChatWidget.tsx`
-- **Routes**: `server/replit_integrations/chat/routes.ts`
-
-### AI-Powered Profile Development (Job Seekers)
-- **Route**: `/profile-development`
-- **Purpose**: Step-by-step wizard to build professional CV/resume
-- **Access**: Available only to logged-in job seekers (via "Build CV" menu option)
-- **Features**:
-  - 5-step wizard: Personal Details → Experience → Projects → References → Review & CV
-  - One-click PDF CV download in British format (using jsPDF)
-  - Live CV preview showing data as it's filled
-  - Skills, languages, and technologies tagging
-  - Professional reference management
-- **Database Tables**:
-  - `candidate_experiences`: Work history with job title, company, location, dates, description
-  - `candidate_projects`: Portfolio projects with technologies and URLs
-  - `candidate_references`: Professional references with contact details
-  - `job_applications`: Tracks Easy Apply submissions
-- **API Endpoints**:
-  - `GET /api/candidate/full-profile`: Get complete profile with all sections
-  - `POST /api/candidate/profile`: Update personal profile data
-  - `POST /api/candidate/experiences`: Add work experience
-  - `POST /api/candidate/projects`: Add project
-  - `POST /api/candidate/references`: Add reference
-- **Component**: `client/src/pages/ProfileDevelopment.tsx`
-
-### Easy Apply (Job Seekers)
-- **Location**: Job detail pages for direct-posted jobs
-- **Purpose**: Apply to jobs directly without leaving the platform
-- **Professional Display**: Shows application method indicator with verified badge
-- **Two Application Methods**:
-  1. **Email Method** (`applyMethod: "email"`): Green "Apply via Email" button that sends profile/CV directly to recruiter
-  2. **URL Method** (`applyMethod: "url"`): "Apply via Company Website" button that links directly to recruiter's website
-- **Requirements**:
-  - Job seeker account with completed profile
-  - Job must be a "direct job" posted on the platform (not from external API)
-- **Features**:
-  - One-click application - no form or dialog required
-  - Email appears FROM the candidate (e.g., "John Doe via Dev Global Jobs")
-  - Uses profile data already filled in - NO CV storage or file uploads
-  - Includes candidate's name, email, phone, current role, years of experience, skills, summary
-  - Reply-to header set to candidate's email for direct recruiter responses
-  - Application history tracked in database
-- **Email Service**: Uses Resend API for reliable email delivery (requires `RESEND_API_KEY` secret)
-  - If Resend not configured, emails are logged to console for development/testing
-  - Emails sent via `applications@devglobaljobs.com` but show candidate's name in From field
-- **API Endpoint**: `POST /api/candidate/apply` with `directJobId`
-- **Security**: Only authenticated job seekers with complete profiles can apply (server-side role check)
-- **Component**: `client/src/pages/JobDetail.tsx`
-- **Email Templates**: `server/emailService.ts` (HTML and plain text versions)
-
-### Social Login (Replit Auth)
-- **Location**: Auth page (`/auth`)
-- **Purpose**: Allow users to sign in with international platform accounts
-- **Supported Providers**: Google, Apple, X (Twitter), GitHub
-- **Technology**: Replit Auth OpenID Connect integration
-- **Routes**:
-  - `/api/login`: Initiates OAuth login flow
-  - `/api/logout`: Logs out user
-  - `/api/callback`: OAuth callback handler
-- **Database**: Sessions table for OAuth session management
-- **Note**: Social login buttons redirect to Replit's OIDC provider which handles provider selection
+### External APIs / Services
+- **ReliefWeb API v2**: UN and humanitarian sector jobs.
+- **UN Careers**: Official UN job feed.
+- **Arbeitnow API**: European and remote jobs.
+- **RemoteOK API**: Remote jobs worldwide.
+- **Jobicy API**: Remote job listings.
+- **Himalayas API**: Remote job opportunities.
+- **Stripe**: For secure payment processing for paid job postings.
+- **OpenAI GPT models**: Via Replit AI Integrations for the AI Chat Assistant.
+- **Resend API**: For sending application emails (if configured).
+- **Replit Auth**: For social login integration.
