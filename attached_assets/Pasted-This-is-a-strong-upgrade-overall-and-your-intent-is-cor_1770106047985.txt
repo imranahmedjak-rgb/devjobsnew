@@ -1,0 +1,194 @@
+This is a strong upgrade overall, and your intent is correct: positioning Dev Global Jobs as a multi-sector international job board, not only UN/NGO.
+However, for Google trust, rankings, and long-term authority, a few important refinements are needed. I’ll go section by section and be very precise.
+
+✅ 1️⃣ Updated Title – GOOD IDEA, but TOO LONG (Critical)
+Your current title:
+
+“Dev Global Jobs | International Jobs in All Sectors - UN, NGO, Technology, Finance, Healthcare & Global Careers 2025”
+
+Issues:
+
+❌ Far too long (≈110+ characters)
+
+❌ Will be truncated in Google
+
+❌ Dilutes primary focus (Google prefers clarity, not lists)
+
+❌ Year “2025” will age quickly
+
+✅ SEO-Safe, High-Authority Version (Recommended)
+Dev Global Jobs | International Jobs Across All Sectors Worldwide
+
+✅ Alternative (Sector clarity without overstuffing)
+Dev Global Jobs | UN, NGO, Technology, Finance & Global Careers
+
+
+👉 Rule:
+Titles should signal breadth, not list every sector.
+
+✅ 2️⃣ Meta Description – CONCEPT IS RIGHT, EXECUTION NEEDS POLISH
+Your description idea is good, but listing brand names is risky:
+
+Google does not reward brand name stuffing
+
+Potential legal / trust concerns
+
+Reduces editorial credibility
+
+✅ High-Authority, Safe Version (Devex / Indeed style)
+Dev Global Jobs is a global career platform featuring international job opportunities across UN agencies, NGOs, technology, finance, healthcare, engineering, consulting, and more in 193 countries.
+
+✅ Alternative (Publisher / aggregator tone)
+Dev Global Jobs aggregates international job opportunities from UN agencies, NGOs, and leading global employers across technology, finance, healthcare, engineering, consulting, and all professional sectors.
+
+
+✔ Clear
+✔ Broad
+✔ Trust-safe
+✔ Scalable
+
+⚠️ 3️⃣ Keywords Section – IMPORTANT WARNING
+
+You mentioned adding Google, Microsoft, Amazon, Goldman Sachs, McKinsey, etc.
+
+⚠️ Be careful:
+
+Google ignores meta keywords
+
+Overusing brand names can:
+
+Trigger spam signals
+
+Create trademark issues
+
+Hurt E-E-A-T
+
+✅ What Google ACTUALLY wants instead:
+
+Use sector-based keywords, not brand stuffing.
+
+Correct approach:
+
+“technology jobs”
+
+“finance careers”
+
+“consulting jobs”
+
+“healthcare jobs”
+
+“engineering jobs”
+
+“international jobs”
+
+“global careers”
+
+👉 Brand names should appear only inside job listings, not site-wide SEO.
+
+✅ 4️⃣ Structured Data – EXCELLENT, but ONE BIG RULE ⚠️
+
+You listed 7 schemas — that’s good if implemented correctly.
+
+✅ Correct & Recommended Schemas:
+
+Organization ✅
+
+WebSite (SearchAction) ✅
+
+BreadcrumbList ✅
+
+FAQPage ✅
+
+EmploymentAgency ✅
+
+JobPosting ✅ (per job page)
+
+CollectionPage / ItemList (for job categories)
+
+⚠️ CRITICAL RULE (Very Important)
+
+❌ DO NOT use “JobPosting Aggregate” on the homepage
+
+Google requires:
+
+ONE JobPosting = ONE real job
+
+Aggregation must use:
+
+ItemList
+
+CollectionPage
+
+If Google detects fake or aggregate JobPosting:
+🚨 Google Jobs eligibility can be revoked
+
+✅ 5️⃣ Correct Way to Handle “All Sectors” in Schema
+Homepage:
+
+Organization
+
+WebSite
+
+FAQPage
+
+EmploymentAgency
+
+BreadcrumbList
+
+Category Pages:
+
+CollectionPage
+
+ItemList (UN Jobs, Tech Jobs, Finance Jobs, etc.)
+
+Individual Job Pages:
+
+JobPosting (single job only)
+
+👉 This is how Indeed, LinkedIn, Devex do it.
+
+✅ 6️⃣ Does Your New SEO Accurately Represent the Site?
+✅ YES — conceptually correct
+
+You are now positioned as:
+
+🌍 International
+
+🏛 UN & NGO
+
+💻 Technology
+
+💰 Finance
+
+🏥 Healthcare
+
+🛠 Engineering
+
+📊 Consulting
+
+🌐 All regions
+
+⚠️ BUT Google will only trust this if:
+
+You publish real content for each sector
+
+You create dedicated category pages
+
+You avoid brand name overuse
+
+You follow schema rules strictly
+
+✅ 7️⃣ Final Verdict (Honest & Professional)
+
+Your direction is right.
+With 2–3 refinements, this becomes enterprise-level SEO.
+
+✅ What to adjust now:
+
+Shorten title (most important)
+
+Remove brand stuffing from meta description
+
+Use sector-based keywords, not company names
+
+Ensure JobPosting schema is only on job pages
