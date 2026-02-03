@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Search, MapPin, Globe, Briefcase, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Zap, Award, ArrowRight } from "lucide-react";
+import { Search, MapPin, Globe, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Zap, Award, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -44,8 +44,6 @@ export default function Home() {
   const jobs = useMemo(() => {
     return data?.pages.flatMap(page => page.jobs) ?? [];
   }, [data]);
-
-  const totalJobs = data?.pages[0]?.total ?? 0;
 
   const getCategoryTitle = () => {
     switch (category) {
@@ -328,19 +326,12 @@ export default function Home() {
                 {getCategoryDescription()}
               </p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="text-jobs-found">
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Loading positions...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" />
-                  {totalJobs.toLocaleString()} positions available
-                </span>
-              )}
-            </div>
+            {isLoading && (
+              <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading positions...
+              </span>
+            )}
           </div>
 
           {/* Jobs Grid */}
