@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useJobs, useJobStats } from "@/hooks/use-jobs";
+import { useJobs } from "@/hooks/use-jobs";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Search, MapPin, Globe, Briefcase, Building2, TrendingUp, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X } from "lucide-react";
+import { Search, MapPin, Globe, Briefcase, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Zap, Award, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -23,7 +23,6 @@ export default function Home() {
   const [category, setCategory] = useState<JobCategory>("un");
   const [countryOpen, setCountryOpen] = useState(false);
   
-  // Fetch unique countries for filtering
   const { data: countriesData } = useQuery<{ countries: string[] }>({
     queryKey: ['/api/countries'],
   });
@@ -48,20 +47,18 @@ export default function Home() {
 
   const totalJobs = data?.pages[0]?.total ?? 0;
 
-  const { data: stats } = useJobStats();
-
   const getCategoryTitle = () => {
     switch (category) {
-      case "un": return "UN Agency Jobs";
-      case "ngo": return "NGO & Humanitarian Jobs";
-      default: return "Development Sector Jobs";
+      case "un": return "UN Agency Opportunities";
+      case "ngo": return "NGO & Humanitarian Careers";
+      default: return "Development Sector Opportunities";
     }
   };
 
   const getCategoryDescription = () => {
     switch (category) {
-      case "un": return "United Nations agencies, World Bank, IMF, UNDP, UNICEF, WHO, and international development organizations";
-      case "ngo": return "Non-governmental organizations, humanitarian agencies, and international civil society organizations";
+      case "un": return "Positions at United Nations agencies, World Bank, IMF, and international development organizations";
+      case "ngo": return "Careers with humanitarian organizations, relief agencies, and civil society organizations";
       default: return "";
     }
   };
@@ -70,389 +67,436 @@ export default function Home() {
     <div className="min-h-screen bg-background font-sans selection:bg-primary/20 flex flex-col">
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative pt-12 pb-16 px-4 overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
+      {/* Hero Section - ReliefWeb Inspired Clean Design */}
+      <section className="relative bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.03%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
         
-        <div className="container mx-auto max-w-5xl text-center space-y-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-4"
-          >
-            <CheckCircle className="w-4 h-4" />
-            Verified Development Sector Jobs
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight text-foreground"
-          >
-            Your Gateway to <span className="text-primary relative inline-block">
-              Development Careers
-              <svg className="absolute w-full h-3 -bottom-1 left-0 text-primary/20" viewBox="0 0 100 10" preserveAspectRatio="none">
-                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
-              </svg>
-            </span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
-          >
-            Curated opportunities from UN agencies, NGOs, and international development organizations. 
-            Real-time updates from ReliefWeb, UN Careers, and trusted humanitarian sources.
-          </motion.p>
-
-          {/* Stats */}
-          {stats && (
+        <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="flex flex-wrap justify-center gap-4 md:gap-8 pt-2"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm font-medium"
             >
-              <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-card border border-border/50">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Briefcase className="w-5 h-5 text-primary" />
-                </div>
-                <div className="text-left">
-                  <span className="text-xl md:text-2xl font-bold block" data-testid="text-total-jobs">{stats.totalJobs.toLocaleString()}</span>
-                  <span className="text-xs text-muted-foreground">Active Jobs</span>
-                </div>
+              <Shield className="w-4 h-4 text-blue-400" />
+              <span>Verified Development Sector Positions</span>
+            </motion.div>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
+            >
+              International Development
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                Career Opportunities
+              </span>
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed"
+            >
+              Access verified positions from UN agencies, World Bank, IMF, and leading humanitarian NGOs. 
+              Updated continuously from ReliefWeb and official UN career portals.
+            </motion.p>
+
+            {/* Quick Feature Highlights */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap justify-center gap-6 pt-4"
+            >
+              <div className="flex items-center gap-2 text-sm text-slate-300">
+                <Clock className="w-4 h-4 text-blue-400" />
+                <span>Updated Every 2 Minutes</span>
               </div>
-              <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-card border border-border/50">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Globe className="w-5 h-5 text-primary" />
-                </div>
-                <div className="text-left">
-                  <span className="text-xl md:text-2xl font-bold block" data-testid="text-countries">{stats.countriesCount}+</span>
-                  <span className="text-xs text-muted-foreground">Countries</span>
-                </div>
+              <div className="flex items-center gap-2 text-sm text-slate-300">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                <span>Direct Application Links</span>
               </div>
-              <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-card border border-border/50">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Building2 className="w-5 h-5 text-primary" />
-                </div>
-                <div className="text-left">
-                  <span className="text-xl md:text-2xl font-bold block" data-testid="text-sources">{stats.sourcesCount}+</span>
-                  <span className="text-xs text-muted-foreground">Sources</span>
-                </div>
+              <div className="flex items-center gap-2 text-sm text-slate-300">
+                <Award className="w-4 h-4 text-green-400" />
+                <span>Trusted Sources Only</span>
               </div>
             </motion.div>
-          )}
+          </div>
+        </div>
+
+        {/* Wave Divider */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" className="fill-background"/>
+          </svg>
         </div>
       </section>
 
-      {/* Category Tabs */}
-      <section className="container mx-auto px-4 -mt-4">
+      {/* Category Selection */}
+      <section className="container mx-auto px-4 -mt-8 relative z-20">
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.4 }}
+          className="max-w-3xl mx-auto"
         >
           <Tabs value={category} onValueChange={(v) => setCategory(v as JobCategory)} className="w-full">
-            <TabsList className="w-full max-w-2xl mx-auto h-auto p-1.5 bg-muted/50 border border-border/50 rounded-xl grid grid-cols-2 gap-1">
+            <TabsList className="w-full h-auto p-2 bg-card shadow-xl border border-border/50 rounded-2xl grid grid-cols-2 gap-2">
               <TabsTrigger 
                 value="un" 
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                className="flex items-center justify-center gap-3 py-4 px-6 rounded-xl data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
                 data-testid="tab-un"
               >
-                <Landmark className="w-4 h-4" />
-                <span className="font-semibold">UN Jobs</span>
+                <div className="p-2 rounded-lg bg-blue-500/20 data-[state=active]:bg-white/20">
+                  <Landmark className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <span className="font-semibold block">UN Jobs</span>
+                  <span className="text-xs opacity-70">UN Agencies & IFIs</span>
+                </div>
               </TabsTrigger>
               <TabsTrigger 
                 value="ngo" 
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all text-sm"
+                className="flex items-center justify-center gap-3 py-4 px-6 rounded-xl data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
                 data-testid="tab-ngo"
               >
-                <Heart className="w-4 h-4" />
-                <span className="font-semibold">NGO Jobs</span>
+                <div className="p-2 rounded-lg bg-green-500/20 data-[state=active]:bg-white/20">
+                  <Heart className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <span className="font-semibold block">NGO Jobs</span>
+                  <span className="text-xs opacity-70">Humanitarian & Relief</span>
+                </div>
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </motion.div>
-
-        {/* Category Description */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
-          className="max-w-2xl mx-auto mt-4 text-center"
-        >
-          <AnimatePresence mode="wait">
-            <motion.p 
-              key={category}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              className="text-sm text-muted-foreground"
-            >
-              {getCategoryDescription()}
-            </motion.p>
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Country Tags - Dynamic from job data */}
-        {countriesData?.countries && countriesData.countries.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto mt-4"
-          >
-            {countriesData.countries.slice(0, 12).map((country) => (
-              <Badge 
-                key={country}
-                variant={location === country ? "default" : "secondary"} 
-                className="px-3 py-1.5 text-xs cursor-pointer hover-elevate" 
-                data-testid={`badge-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
-                onClick={() => setLocation(location === country ? "" : country)}
-              >
-                <Globe className="w-3 h-3 mr-1" /> {country}
-              </Badge>
-            ))}
-            {countriesData.countries.length > 12 && (
-              <Badge 
-                variant="outline" 
-                className="px-3 py-1.5 text-xs cursor-pointer"
-                data-testid="badge-more-countries"
-                onClick={() => setCountryOpen(true)}
-              >
-                +{countriesData.countries.length - 12} more
-              </Badge>
-            )}
-          </motion.div>
-        )}
       </section>
 
-      {/* Search Bar */}
-      <section className="container mx-auto px-4 mt-8">
+      {/* Search & Filters */}
+      <section className="container mx-auto px-4 py-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="p-2 bg-card rounded-2xl shadow-xl shadow-black/5 border border-border/50 max-w-4xl mx-auto flex flex-col md:flex-row gap-2"
+          transition={{ delay: 0.5 }}
+          className="max-w-4xl mx-auto space-y-4"
         >
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
-            <Input 
-              placeholder="Job title, keywords, or company..." 
-              className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 bg-transparent text-base"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              data-testid="input-search"
-            />
-          </div>
-          <div className="w-px bg-border my-2 hidden md:block" />
-          <div className="relative flex-1">
-            <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  role="combobox"
-                  aria-expanded={countryOpen}
-                  className="w-full h-12 justify-start text-left font-normal hover:bg-transparent"
-                  data-testid="button-country-filter"
-                >
-                  <MapPin className="mr-2 h-5 w-5 text-muted-foreground shrink-0" />
-                  {location ? (
-                    <span className="flex items-center gap-2 flex-1">
-                      <span className="truncate">{location}</span>
-                      <X 
-                        className="h-4 w-4 text-muted-foreground hover:text-foreground shrink-0" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLocation("");
-                        }}
-                      />
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground flex-1">Select country...</span>
-                  )}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[320px] p-0" align="start" sideOffset={8}>
-                <Command className="rounded-lg border shadow-lg">
-                  <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
-                    <Search className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Select Country</span>
-                  </div>
-                  <CommandInput 
-                    placeholder="Type to search countries..." 
-                    className="h-11 text-base"
-                    data-testid="input-country-search" 
-                  />
-                  <CommandList className="max-h-[300px]">
-                    <CommandEmpty className="py-6 text-center text-sm">No country found.</CommandEmpty>
-                    <CommandGroup heading={`${countriesData?.countries.length || 0} countries available`}>
-                      {countriesData?.countries.map((country) => (
-                        <CommandItem
-                          key={country}
-                          value={country}
-                          onSelect={(value) => {
-                            setLocation(value === location ? "" : value);
-                            setCountryOpen(false);
-                          }}
-                          className="py-2.5 cursor-pointer"
-                          data-testid={`option-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
-                        >
-                          <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
-                          <span className="flex-1">{country}</span>
-                          {location === country && (
-                            <CheckCircle className="ml-auto h-4 w-4 text-primary" />
-                          )}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <Button size="lg" className="h-12 px-8 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30" data-testid="button-search">
-            Search Jobs
-          </Button>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          className="flex items-center justify-center gap-2 pt-4"
-        >
-          <div className="flex items-center space-x-2 bg-secondary/50 px-4 py-2 rounded-full border border-border/50">
-            <Switch 
-              id="remote-mode" 
-              checked={remote}
-              onCheckedChange={setRemote}
-              data-testid="switch-remote-only"
-            />
-            <Label htmlFor="remote-mode" className="cursor-pointer font-medium flex items-center gap-2">
-              <Globe className="w-4 h-4 text-primary" />
-              Remote Only
-            </Label>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Jobs Grid */}
-      <section className="container mx-auto px-4 py-12 flex-1">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            {getCategoryTitle()}
-          </h2>
-          <span className="text-sm text-muted-foreground" data-testid="text-jobs-found">
-            {isLoading ? 'Loading...' : `Showing ${jobs.length} of ${totalJobs.toLocaleString()} jobs`}
-          </span>
-        </div>
-
-        <AnimatePresence mode="wait">
-          {isLoading ? (
-            <motion.div 
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-64 rounded-xl bg-muted/30 animate-pulse border border-border/50" />
-              ))}
-            </motion.div>
-          ) : error ? (
-            <motion.div 
-              key="error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center py-20 bg-destructive/5 rounded-2xl border border-destructive/20"
-            >
-              <h3 className="text-lg font-semibold text-destructive">Failed to load jobs</h3>
-              <p className="text-muted-foreground">Please try refreshing the page.</p>
-            </motion.div>
-          ) : jobs.length === 0 ? (
-            <motion.div 
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center py-20 bg-muted/30 rounded-2xl border border-border/50"
-            >
-              <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold">No jobs found</h3>
-              <p className="text-muted-foreground">Try adjusting your search filters or switch categories.</p>
-            </motion.div>
-          ) : (
-            <motion.div 
-              key="jobs"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-8"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobs.map((job, index) => (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(index * 0.03, 0.5) }}
+          {/* Search Bar */}
+          <div className="p-2 bg-card rounded-2xl shadow-lg border border-border/50 flex flex-col md:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Input 
+                placeholder="Search by job title, organization, or keywords..." 
+                className="pl-12 h-14 border-none shadow-none focus-visible:ring-0 bg-transparent text-base"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                data-testid="input-search"
+              />
+            </div>
+            <div className="w-px bg-border my-2 hidden md:block" />
+            <div className="relative flex-1">
+              <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    role="combobox"
+                    aria-expanded={countryOpen}
+                    className="w-full h-14 justify-start text-left font-normal hover:bg-transparent px-4"
+                    data-testid="button-country-filter"
                   >
-                    <JobCard job={job} />
-                  </motion.div>
+                    <MapPin className="mr-3 h-5 w-5 text-muted-foreground shrink-0" />
+                    {location ? (
+                      <span className="flex items-center gap-2 flex-1">
+                        <span className="truncate">{location}</span>
+                        <X 
+                          className="h-4 w-4 text-muted-foreground hover:text-foreground shrink-0" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLocation("");
+                          }}
+                        />
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground flex-1">Filter by country...</span>
+                    )}
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[320px] p-0" align="start" sideOffset={8}>
+                  <Command className="rounded-lg border shadow-lg">
+                    <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/50">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Select Duty Station</span>
+                    </div>
+                    <CommandInput 
+                      placeholder="Search countries..." 
+                      className="h-11 text-base"
+                      data-testid="input-country-search" 
+                    />
+                    <CommandList className="max-h-[300px]">
+                      <CommandEmpty className="py-6 text-center text-sm">No country found.</CommandEmpty>
+                      <CommandGroup heading="Available Locations">
+                        {countriesData?.countries.map((country) => (
+                          <CommandItem
+                            key={country}
+                            value={country}
+                            onSelect={(value) => {
+                              setLocation(value === location ? "" : value);
+                              setCountryOpen(false);
+                            }}
+                            className="py-2.5 cursor-pointer"
+                            data-testid={`option-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
+                          >
+                            <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                            <span className="flex-1">{country}</span>
+                            {location === country && (
+                              <CheckCircle className="ml-auto h-4 w-4 text-primary" />
+                            )}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <Button size="lg" className="h-14 px-8 rounded-xl font-semibold" data-testid="button-search">
+              <Search className="w-4 h-4 mr-2" />
+              Search
+            </Button>
+          </div>
+
+          {/* Filters Row */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center space-x-2 bg-card px-4 py-2.5 rounded-full border border-border/50">
+                <Switch 
+                  id="remote-mode" 
+                  checked={remote}
+                  onCheckedChange={setRemote}
+                  data-testid="switch-remote-only"
+                />
+                <Label htmlFor="remote-mode" className="cursor-pointer font-medium flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary" />
+                  Remote Positions
+                </Label>
+              </div>
+            </div>
+
+            {/* Popular Countries */}
+            {countriesData?.countries && countriesData.countries.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {countriesData.countries.slice(0, 5).map((country) => (
+                  <Badge 
+                    key={country}
+                    variant={location === country ? "default" : "outline"} 
+                    className="px-3 py-1.5 cursor-pointer hover-elevate" 
+                    data-testid={`badge-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
+                    onClick={() => setLocation(location === country ? "" : country)}
+                  >
+                    {country}
+                  </Badge>
                 ))}
               </div>
-              
-              {hasNextPage && (
-                <div className="flex justify-center pt-4">
-                  <Button
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                    size="lg"
-                    variant="outline"
-                    className="px-8"
-                    data-testid="button-load-more"
-                  >
-                    {isFetchingNextPage ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      `Load More Jobs`
-                    )}
-                  </Button>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </div>
+        </motion.div>
       </section>
 
-      {/* Trust Indicators */}
-      <section className="border-t border-border/50 bg-muted/30 py-8">
+      {/* Jobs Section */}
+      <section className="container mx-auto px-4 pb-16 flex-1">
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-border/50">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-3">
+                {category === "un" ? (
+                  <div className="p-2 rounded-lg bg-blue-500/10">
+                    <Landmark className="w-5 h-5 text-blue-600" />
+                  </div>
+                ) : (
+                  <div className="p-2 rounded-lg bg-green-500/10">
+                    <Heart className="w-5 h-5 text-green-600" />
+                  </div>
+                )}
+                {getCategoryTitle()}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {getCategoryDescription()}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="text-jobs-found">
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading positions...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  {totalJobs.toLocaleString()} positions available
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Jobs Grid */}
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div 
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-64 rounded-xl bg-muted/30 animate-pulse border border-border/50" />
+                ))}
+              </motion.div>
+            ) : error ? (
+              <motion.div 
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-20 bg-destructive/5 rounded-2xl border border-destructive/20"
+              >
+                <h3 className="text-lg font-semibold text-destructive">Unable to load positions</h3>
+                <p className="text-muted-foreground mt-2">Please refresh the page and try again.</p>
+              </motion.div>
+            ) : jobs.length === 0 ? (
+              <motion.div 
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-20 bg-muted/30 rounded-2xl border border-border/50"
+              >
+                <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-semibold">No positions found</h3>
+                <p className="text-muted-foreground mt-2">Try adjusting your search criteria or selecting a different category.</p>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="jobs"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-8"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {jobs.map((job, index) => (
+                    <motion.div
+                      key={job.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(index * 0.03, 0.5) }}
+                    >
+                      <JobCard job={job} />
+                    </motion.div>
+                  ))}
+                </div>
+                
+                {hasNextPage && (
+                  <div className="flex justify-center pt-4">
+                    <Button
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                      size="lg"
+                      variant="outline"
+                      className="px-8"
+                      data-testid="button-load-more"
+                    >
+                      {isFetchingNextPage ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          Load More Positions
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="border-t border-border/50 bg-gradient-to-b from-muted/30 to-background py-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-primary" />
-              <span>Verified Jobs</span>
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h3 className="text-lg font-semibold mb-2">Trusted by Development Professionals Worldwide</h3>
+              <p className="text-sm text-muted-foreground">
+                Aggregating verified opportunities from official sources
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <span>Real-time Updates</span>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center p-4 rounded-xl bg-card border border-border/50">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
+                  <Shield className="w-6 h-6 text-blue-600" />
+                </div>
+                <h4 className="font-semibold text-sm">Verified Sources</h4>
+                <p className="text-xs text-muted-foreground mt-1">ReliefWeb & UN Careers</p>
+              </div>
+              
+              <div className="text-center p-4 rounded-xl bg-card border border-border/50">
+                <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-6 h-6 text-green-600" />
+                </div>
+                <h4 className="font-semibold text-sm">Real-time Updates</h4>
+                <p className="text-xs text-muted-foreground mt-1">Synced every 2 minutes</p>
+              </div>
+              
+              <div className="text-center p-4 rounded-xl bg-card border border-border/50">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
+                  <Globe className="w-6 h-6 text-purple-600" />
+                </div>
+                <h4 className="font-semibold text-sm">Global Coverage</h4>
+                <p className="text-xs text-muted-foreground mt-1">Positions worldwide</p>
+              </div>
+              
+              <div className="text-center p-4 rounded-xl bg-card border border-border/50">
+                <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mx-auto mb-3">
+                  <Zap className="w-6 h-6 text-orange-600" />
+                </div>
+                <h4 className="font-semibold text-sm">Direct Links</h4>
+                <p className="text-xs text-muted-foreground mt-1">Apply on official sites</p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-primary" />
-              <span>100+ Countries</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <span>Trusted Sources</span>
+
+            {/* Source Logos/Names */}
+            <div className="mt-8 pt-6 border-t border-border/50">
+              <p className="text-center text-xs text-muted-foreground mb-4">Data sourced from</p>
+              <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
+                  <Building2 className="w-4 h-4" />
+                  <span>ReliefWeb</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
+                  <Landmark className="w-4 h-4" />
+                  <span>UN Careers</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
+                  <Globe className="w-4 h-4" />
+                  <span>UNDP Jobs</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
+                  <Users className="w-4 h-4" />
+                  <span>UN Agency Portals</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
