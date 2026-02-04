@@ -281,40 +281,6 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Filters Row */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center space-x-2 bg-card px-4 py-2.5 rounded-full border border-border/50">
-                <Switch 
-                  id="remote-mode" 
-                  checked={remote}
-                  onCheckedChange={setRemote}
-                  data-testid="switch-remote-only"
-                />
-                <Label htmlFor="remote-mode" className="cursor-pointer font-medium flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-primary" />
-                  Remote Positions
-                </Label>
-              </div>
-            </div>
-
-            {/* Popular Countries */}
-            {countriesData?.countries && countriesData.countries.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {countriesData.countries.slice(0, 5).map((country) => (
-                  <Badge 
-                    key={country}
-                    variant={location === country ? "default" : "outline"} 
-                    className="px-3 py-1.5 cursor-pointer hover-elevate" 
-                    data-testid={`badge-country-${country.toLowerCase().replace(/\s+/g, '-')}`}
-                    onClick={() => setLocation(location === country ? "" : country)}
-                  >
-                    {country}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
         </motion.div>
       </section>
 
