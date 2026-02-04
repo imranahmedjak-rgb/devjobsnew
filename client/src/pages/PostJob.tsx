@@ -228,6 +228,18 @@ export default function PostJob() {
                           NGO Jobs
                         </span>
                       </SelectItem>
+                      <SelectItem value="remote">
+                        <span className="flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-purple-600" />
+                          Remote Jobs
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="international">
+                        <span className="flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-orange-600" />
+                          International Jobs
+                        </span>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
