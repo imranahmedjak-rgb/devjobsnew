@@ -526,7 +526,7 @@ async function fetchJobsFromRemoteOK(): Promise<number> {
       tags: [...(apiJob.tags || []), "Remote", "International"],
       salary: apiJob.salary_min && apiJob.salary_max ? `$${apiJob.salary_min} - $${apiJob.salary_max}` : null,
       source: "RemoteOK",
-      category: "international",
+      category: "remote",
       postedAt: apiJob.date ? new Date(apiJob.date) : new Date(),
     }));
 
@@ -572,7 +572,7 @@ async function fetchJobsFromJobicy(): Promise<number> {
         tags: [industry, "Remote", "International"],
         salary: job.annualSalaryMin && job.annualSalaryMax ? `$${job.annualSalaryMin} - $${job.annualSalaryMax}` : null,
         source: "Jobicy",
-        category: "international",
+        category: "remote",
         postedAt: job.pubDate ? new Date(job.pubDate) : new Date(),
       };
     });
@@ -613,7 +613,7 @@ async function fetchJobsFromHimalayas(): Promise<number> {
       tags: [job.categories?.[0] || "Technology", "Remote", "International"].filter(Boolean),
       salary: job.salaryCurrency && job.salaryMin ? `${job.salaryCurrency}${job.salaryMin} - ${job.salaryMax}` : null,
       source: "Himalayas",
-      category: "international",
+      category: "remote",
       postedAt: job.pubDate ? new Date(job.pubDate) : new Date(),
     }));
 
@@ -653,7 +653,7 @@ async function fetchJobsFromRemotive(): Promise<number> {
       tags: [job.category || "Technology", "Remote", job.job_type || "Full-time"].filter(Boolean),
       salary: job.salary || null,
       source: "Remotive",
-      category: "international",
+      category: "remote",
       postedAt: job.publication_date ? new Date(job.publication_date) : new Date(),
     }));
 
@@ -2776,17 +2776,35 @@ async function syncAllJobs(): Promise<number> {
     fetchJobsFromFAO(),
   ]);
   
-  // Calculate totals - include all UN agency feeds (Development Sector Only)
+  // 2. Fetch Remote Jobs from multiple sources
+  console.log("\n--- Remote Jobs (Remotive + Jobicy + RemoteOK + Himalayas) ---");
+  const [remotiveCount, jobicyCount, remoteOKCount, himalayasCount] = await Promise.all([
+    fetchJobsFromRemotive(),
+    fetchJobsFromJobicy(),
+    fetchJobsFromRemoteOK(),
+    fetchJobsFromHimalayas(),
+  ]);
+  
+  // 3. Fetch International Jobs
+  console.log("\n--- International Jobs (Arbeitnow) ---");
+  const [arbeitnowCount] = await Promise.all([
+    fetchJobsFromArbeitnow(),
+  ]);
+  
+  // Calculate totals
   const unAgencyTotal = unicefCounts + wfpCounts + unhcrCounts + unopsCounts + iomCounts + unescoCounts + whoCounts + iloCounts + faoCounts;
   const unTotal = reliefWebCounts.un + unCareersCounts + undpCounts + unAgencyTotal;
   const ngoTotal = reliefWebCounts.ngo;
-  const total = unTotal + ngoTotal;
+  const remoteTotal = remotiveCount + jobicyCount + remoteOKCount + himalayasCount;
+  const internationalTotal = arbeitnowCount;
+  const total = unTotal + ngoTotal + remoteTotal + internationalTotal;
   
-  console.log(`\n=== Sync Complete (Development Sector Only) ===`);
+  console.log(`\n=== Sync Complete (All Categories) ===`);
   console.log(`UN jobs added: ${unTotal} (ReliefWeb: ${reliefWebCounts.un}, UN Careers: ${unCareersCounts}, UNDP: ${undpCounts}, UNICEF: ${unicefCounts}, WFP: ${wfpCounts}, UNHCR: ${unhcrCounts}, UNOPS: ${unopsCounts}, IOM: ${iomCounts}, UNESCO: ${unescoCounts})`);
   console.log(`NGO jobs added: ${ngoTotal}`);
+  console.log(`Remote jobs added: ${remoteTotal} (Remotive: ${remotiveCount}, Jobicy: ${jobicyCount}, RemoteOK: ${remoteOKCount}, Himalayas: ${himalayasCount})`);
+  console.log(`International jobs added: ${internationalTotal} (Arbeitnow: ${arbeitnowCount})`);
   console.log(`Total new jobs added: ${total}`);
-  console.log(`Development sector jobs from ReliefWeb and UN sources only!`);
   
   return total;
 }

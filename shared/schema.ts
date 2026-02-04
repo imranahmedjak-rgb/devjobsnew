@@ -155,7 +155,7 @@ export const directJobs = pgTable("direct_jobs", {
   company: text("company").notNull(),
   location: text("location").notNull(),
   description: text("description").notNull(),
-  category: text("category").notNull(), // un, ngo, international
+  category: text("category").notNull(), // un, ngo, remote, international
   applyMethod: text("apply_method").notNull(), // "link" or "email"
   applyValue: text("apply_value").notNull(), // URL or email address
   remote: boolean("remote").default(false),
@@ -272,7 +272,7 @@ export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
-export const jobCategories = ["un", "ngo"] as const;
+export const jobCategories = ["un", "ngo", "remote", "international"] as const;
 export type JobCategory = typeof jobCategories[number];
 
 export const jobs = pgTable("jobs", {

@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Search, MapPin, Globe, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Award, ArrowRight } from "lucide-react";
+import { Search, MapPin, Globe, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Award, ArrowRight, Wifi, Plane } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -49,7 +49,9 @@ export default function Home() {
     switch (category) {
       case "un": return "UN Agency Opportunities";
       case "ngo": return "NGO & Humanitarian Careers";
-      default: return "Development Sector Opportunities";
+      case "remote": return "Remote Work Opportunities";
+      case "international": return "International Careers";
+      default: return "Global Job Opportunities";
     }
   };
 
@@ -57,6 +59,8 @@ export default function Home() {
     switch (category) {
       case "un": return "Positions at United Nations agencies, World Bank, IMF, and international development organizations";
       case "ngo": return "Careers with humanitarian organizations, relief agencies, and civil society organizations";
+      case "remote": return "Work from anywhere - verified remote positions from top global companies";
+      case "international": return "Global career opportunities from international employers worldwide";
       default: return "";
     }
   };
@@ -138,31 +142,45 @@ export default function Home() {
           className="max-w-3xl mx-auto"
         >
           <Tabs value={category} onValueChange={(v) => setCategory(v as JobCategory)} className="w-full">
-            <TabsList className="w-full h-auto p-2 bg-card shadow-xl border border-border/50 rounded-2xl grid grid-cols-2 gap-2">
+            <TabsList className="w-full h-auto p-2 bg-card shadow-xl border border-border/50 rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-2">
               <TabsTrigger 
                 value="un" 
-                className="flex items-center justify-center gap-3 py-4 px-6 rounded-xl data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
                 data-testid="tab-un"
               >
-                <div className="p-2 rounded-lg bg-blue-500/20 data-[state=active]:bg-white/20">
-                  <Landmark className="w-5 h-5" />
-                </div>
+                <Landmark className="w-4 h-4" />
                 <div className="text-left">
-                  <span className="font-semibold block">UN Jobs</span>
-                  <span className="text-xs opacity-70">UN Agencies & IFIs</span>
+                  <span className="font-semibold block text-sm">UN Jobs</span>
                 </div>
               </TabsTrigger>
               <TabsTrigger 
                 value="ngo" 
-                className="flex items-center justify-center gap-3 py-4 px-6 rounded-xl data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
                 data-testid="tab-ngo"
               >
-                <div className="p-2 rounded-lg bg-green-500/20 data-[state=active]:bg-white/20">
-                  <Heart className="w-5 h-5" />
-                </div>
+                <Heart className="w-4 h-4" />
                 <div className="text-left">
-                  <span className="font-semibold block">NGO Jobs</span>
-                  <span className="text-xs opacity-70">Humanitarian & Relief</span>
+                  <span className="font-semibold block text-sm">NGO Jobs</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="remote" 
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                data-testid="tab-remote"
+              >
+                <Wifi className="w-4 h-4" />
+                <div className="text-left">
+                  <span className="font-semibold block text-sm">Remote</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="international" 
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                data-testid="tab-international"
+              >
+                <Plane className="w-4 h-4" />
+                <div className="text-left">
+                  <span className="font-semibold block text-sm">International</span>
                 </div>
               </TabsTrigger>
             </TabsList>

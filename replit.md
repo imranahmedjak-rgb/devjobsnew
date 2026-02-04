@@ -1,7 +1,7 @@
 # Dev Global Jobs - Development Sector Job Platform
 
 ## Overview
-Dev Global Jobs, by Trend Nova World Ltd., is a development sector job platform that aggregates professional listings from UN agencies and NGO humanitarian organizations. It features two job categories: UN Jobs (United Nations agencies, World Bank, IMF, UNDP, UNICEF, WHO, WFP, UNHCR) and NGO Jobs (humanitarian and civil society organizations). Jobs are sourced from ReliefWeb API and official UN career portals.
+Dev Global Jobs, by Trend Nova World Ltd., is a global job platform featuring four categories: UN Jobs (United Nations agencies, World Bank, IMF, UNDP, UNICEF, WHO, WFP, UNHCR), NGO Jobs (humanitarian and civil society organizations), Remote Jobs (work from anywhere positions), and International Jobs (global career opportunities). Jobs are sourced from ReliefWeb API, UN career portals, Remotive, Jobicy, RemoteOK, Himalayas, and Arbeitnow.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -34,14 +34,14 @@ Preferred communication style: Simple, everyday language.
 - **Storage Abstraction**: `DatabaseStorage` class implementing `IStorage`.
 - **Development Sector Focus**: Jobs from ReliefWeb and UN career portals only.
 - **Query-based Filtering**: Supports search, location, remote, and category filters via SQL queries.
-- **Two-Category System**: Jobs classified into "un" or "ngo".
+- **Four-Category System**: Jobs classified into "un", "ngo", "remote", or "international".
 
 ### Key Features
-- **Job Categories**: Two tabs for UN Jobs and NGO Jobs (no authentication required).
+- **Job Categories**: Four tabs - UN Jobs, NGO Jobs, Remote Jobs, International Jobs (no authentication required).
 - **Job Posting**: Organizations can post development sector jobs with Stripe payment ($10 USD).
 - **Dynamic Country Filter**: Searchable dropdown and badges for countries, dynamically populated from job data.
-- **Auto-Refresh System**: Server syncs jobs every 2 minutes, client refreshes every 15 seconds.
-- **SEO Optimization**: Development sector focused meta-data, structured data schemas (Organization, WebSite, CollectionPage, BreadcrumbList, FAQPage, EmploymentAgency), Open Graph, Twitter Cards.
+- **Auto-Refresh System**: Server syncs jobs every 1 minute, client refreshes every 15 seconds.
+- **SEO Optimization**: Multi-category focused meta-data, structured data schemas (Organization, WebSite, CollectionPage, BreadcrumbList, FAQPage, EmploymentAgency), Open Graph, Twitter Cards.
 - **Legal Pages**: About Us, Contact Us, Terms, Privacy, Cookie, Disclaimer pages.
 - **Trust Section**: Verified Sources, Real-time Updates, Global Coverage.
 
