@@ -439,32 +439,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Source Logos/Names */}
-            <div className="mt-8 pt-6 border-t border-border/50">
-              <p className="text-center text-xs text-muted-foreground mb-4">Data sourced from</p>
-              <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-                  <Landmark className="w-4 h-4" />
-                  <span>UN Careers</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-                  <Building2 className="w-4 h-4" />
-                  <span>Remotive</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-                  <Globe className="w-4 h-4" />
-                  <span>Arbeitnow</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-                  <Users className="w-4 h-4" />
-                  <span>Jobicy</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-                  <Briefcase className="w-4 h-4" />
-                  <span>RemoteOK</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
