@@ -406,7 +406,7 @@ export default function PostJob() {
                     <span className="text-2xl font-bold text-primary" data-testid="text-price">$10.00 USD</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    One-time payment to publish your job listing worldwide
+                    Per job posting - Publish your listing to reach candidates worldwide
                   </p>
                 </div>
 
