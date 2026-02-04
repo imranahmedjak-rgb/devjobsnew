@@ -81,7 +81,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm font-medium"
             >
               <Shield className="w-4 h-4 text-blue-400" />
-              <span>Verified Development Sector Positions</span>
+              <span>Verified International Career Opportunities</span>
             </motion.div>
             
             <motion.h1 
@@ -90,9 +90,9 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
             >
-              International Development
+              Global Jobs
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
-                Career Opportunities
+                Worldwide Opportunities
               </span>
             </motion.h1>
             
@@ -102,8 +102,8 @@ export default function Home() {
               transition={{ delay: 0.2 }}
               className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed"
             >
-              Access verified positions from UN agencies, World Bank, IMF, and leading humanitarian NGOs. 
-              Updated continuously from ReliefWeb and official UN career portals.
+              Discover international careers across UN agencies, NGOs, remote positions, and global organizations. 
+              Jobs from 200+ trusted sources updated continuously worldwide.
             </motion.p>
 
             {/* Quick Feature Highlights */}

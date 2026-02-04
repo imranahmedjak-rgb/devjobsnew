@@ -16,7 +16,7 @@ export default function Footer() {
             Associated with Trend Nova World Ltd.
           </span>
           <p className="text-sm leading-relaxed text-slate-400">
-            Dev Global Jobs is a development sector job platform by Trend Nova World Limited. We feature opportunities across two categories: UN Jobs from United Nations agencies, World Bank, IMF and international development organizations, and NGO Jobs from humanitarian, nonprofit and civil society organizations worldwide.
+            Dev Global Jobs is an international job platform by Trend Nova World Limited. We feature global career opportunities across four categories: UN Jobs, NGO Jobs, Remote Jobs, and International Jobs. Discover positions from UN agencies, humanitarian organizations, tech companies, and employers worldwide.
           </p>
           <div className="flex justify-center md:justify-start gap-3 pt-2">
             <a 
