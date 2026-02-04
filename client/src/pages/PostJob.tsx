@@ -188,9 +188,9 @@ export default function PostJob() {
           </div>
 
           <div className="text-center space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold font-display">Post a Development Sector Job</h1>
+            <h1 className="text-3xl md:text-4xl font-bold font-display">Post a Job</h1>
             <p className="text-muted-foreground text-lg">
-              Reach qualified candidates in UN agencies and NGOs worldwide
+              Reach qualified candidates worldwide
             </p>
           </div>
 

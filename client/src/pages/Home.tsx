@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Search, MapPin, Globe, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Award, ArrowRight, Wifi, Plane } from "lucide-react";
+import { Search, MapPin, Globe, Building2, Heart, Landmark, Users, CheckCircle, Loader2, ChevronDown, X, Shield, Clock, Award, ArrowRight, Wifi, Plane, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { JobCategory } from "@shared/schema";
 
@@ -407,9 +407,9 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
-              <h3 className="text-lg font-semibold mb-2">Trusted by Development Professionals Worldwide</h3>
+              <h3 className="text-lg font-semibold mb-2">Trusted by Professionals Worldwide</h3>
               <p className="text-sm text-muted-foreground">
-                Aggregating verified opportunities from official sources
+                Aggregating verified opportunities from 200+ trusted sources globally
               </p>
             </div>
             
@@ -419,7 +419,7 @@ export default function Home() {
                   <Shield className="w-6 h-6 text-blue-600" />
                 </div>
                 <h4 className="font-semibold text-sm">Verified Sources</h4>
-                <p className="text-xs text-muted-foreground mt-1">ReliefWeb & UN Careers</p>
+                <p className="text-xs text-muted-foreground mt-1">200+ Trusted Employers</p>
               </div>
               
               <div className="text-center p-4 rounded-xl bg-card border border-border/50">
@@ -442,22 +442,26 @@ export default function Home() {
             {/* Source Logos/Names */}
             <div className="mt-8 pt-6 border-t border-border/50">
               <p className="text-center text-xs text-muted-foreground mb-4">Data sourced from</p>
-              <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
-                  <Building2 className="w-4 h-4" />
-                  <span>ReliefWeb</span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
+              <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
                   <Landmark className="w-4 h-4" />
                   <span>UN Careers</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
-                  <Globe className="w-4 h-4" />
-                  <span>UNDP Jobs</span>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
+                  <Building2 className="w-4 h-4" />
+                  <span>Remotive</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
+                  <Globe className="w-4 h-4" />
+                  <span>Arbeitnow</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
                   <Users className="w-4 h-4" />
-                  <span>UN Agency Portals</span>
+                  <span>Jobicy</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
+                  <Briefcase className="w-4 h-4" />
+                  <span>RemoteOK</span>
                 </div>
               </div>
             </div>

@@ -51,7 +51,7 @@ export function Header() {
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
             <Globe className="w-4 h-4 text-primary" />
-            <span>Development Sector</span>
+            <span>Global Careers</span>
           </div>
           
           <div className="h-6 w-px bg-border/60 hidden md:block" />
