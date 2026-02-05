@@ -4,7 +4,7 @@
   "description": "Dev Global Jobs - Global Development Sector Job Platform",
   "main": "index.cjs",
   "scripts": {
-    "start": "node index.cjs"
+    "start": "node -r dotenv/config index.cjs"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -13,6 +13,7 @@
     "@neondatabase/serverless": "^0.10.4",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "drizzle-orm": "^0.39.1",
     "express": "^5.0.0",
     "express-session": "^1.18.0",
