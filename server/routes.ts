@@ -3705,8 +3705,8 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
         return res.status(400).json({ error: "Invalid job data. Title, company, location, description, and category are required." });
       }
 
-      if (!["un", "ngo"].includes(jobData.category)) {
-        return res.status(400).json({ error: "Invalid category. Must be 'un' or 'ngo'" });
+      if (!["un", "ngo", "remote", "international"].includes(jobData.category)) {
+        return res.status(400).json({ error: "Invalid category. Must be 'un', 'ngo', 'remote', or 'international'" });
       }
 
       const stripe = await getUncachableStripeClient();
@@ -3834,8 +3834,8 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
         return res.status(400).json({ error: "Title, location, description, category, apply method, and apply value are required" });
       }
       
-      if (!["un", "ngo", "international"].includes(category)) {
-        return res.status(400).json({ error: "Invalid category. Must be un, ngo, or international" });
+      if (!["un", "ngo", "remote", "international"].includes(category)) {
+        return res.status(400).json({ error: "Invalid category. Must be un, ngo, remote, or international" });
       }
       
       if (!["link", "email"].includes(applyMethod)) {
