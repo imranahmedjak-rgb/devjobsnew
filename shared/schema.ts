@@ -132,7 +132,7 @@ export const jobApplications = pgTable("job_applications", {
 export const pendingJobs = pgTable("pending_jobs", {
   id: serial("id").primaryKey(),
   sessionId: text("session_id").notNull().unique(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   company: text("company").notNull(),
   location: text("location").notNull(),

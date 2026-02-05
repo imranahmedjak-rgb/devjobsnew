@@ -3743,7 +3743,7 @@ Return ONLY a JSON array of achievement strings, no other text. Example format:
 
       await storage.createPendingJob({
         sessionId: session.id,
-        userId: 0,
+        userId: null,
         title: jobData.title,
         company: jobData.company,
         location: jobData.location,
