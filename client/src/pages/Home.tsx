@@ -27,6 +27,17 @@ export default function Home() {
     queryKey: ['/api/countries'],
   });
   
+  // Fetch job counts per category
+  const { data: statsData } = useQuery<{ 
+    totalJobs: number; 
+    unJobs: number; 
+    ngoJobs: number; 
+    remoteJobs: number; 
+    internationalJobs: number;
+  }>({
+    queryKey: ['/api/jobs/stats'],
+  });
+  
   const { 
     data, 
     isLoading, 
@@ -151,6 +162,9 @@ export default function Home() {
                 <Landmark className="w-4 h-4" />
                 <div className="text-left">
                   <span className="font-semibold block text-sm">UN Jobs</span>
+                  {statsData?.unJobs !== undefined && (
+                    <span className="text-xs opacity-80">{statsData.unJobs.toLocaleString()} active</span>
+                  )}
                 </div>
               </TabsTrigger>
               <TabsTrigger 
@@ -161,6 +175,9 @@ export default function Home() {
                 <Heart className="w-4 h-4" />
                 <div className="text-left">
                   <span className="font-semibold block text-sm">NGO Jobs</span>
+                  {statsData?.ngoJobs !== undefined && (
+                    <span className="text-xs opacity-80">{statsData.ngoJobs.toLocaleString()} active</span>
+                  )}
                 </div>
               </TabsTrigger>
               <TabsTrigger 
@@ -171,6 +188,9 @@ export default function Home() {
                 <Wifi className="w-4 h-4" />
                 <div className="text-left">
                   <span className="font-semibold block text-sm">Remote</span>
+                  {statsData?.remoteJobs !== undefined && (
+                    <span className="text-xs opacity-80">{statsData.remoteJobs.toLocaleString()} active</span>
+                  )}
                 </div>
               </TabsTrigger>
               <TabsTrigger 
@@ -181,6 +201,9 @@ export default function Home() {
                 <Plane className="w-4 h-4" />
                 <div className="text-left">
                   <span className="font-semibold block text-sm">International</span>
+                  {statsData?.internationalJobs !== undefined && (
+                    <span className="text-xs opacity-80">{statsData.internationalJobs.toLocaleString()} active</span>
+                  )}
                 </div>
               </TabsTrigger>
             </TabsList>

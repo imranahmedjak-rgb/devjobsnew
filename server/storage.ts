@@ -153,13 +153,28 @@ export class DatabaseStorage implements IStorage {
       .returning();
   }
 
-  async getJobStats(): Promise<{ totalJobs: number; countriesCount: number; sourcesCount: number; lastUpdated: string }> {
+  async getJobStats(): Promise<{ 
+    totalJobs: number; 
+    countriesCount: number; 
+    sourcesCount: number; 
+    lastUpdated: string;
+    unJobs: number;
+    ngoJobs: number;
+    remoteJobs: number;
+    internationalJobs: number;
+  }> {
     const [totalResult] = await db.select({ count: count() }).from(jobs);
     const [directJobsResult] = await db.select({ count: count() }).from(directJobs);
     const [sourcesResult] = await db.select({ count: countDistinct(jobs.source) }).from(jobs);
     const [locationResult] = await db.select({ count: countDistinct(jobs.location) }).from(jobs);
     const [latestJob] = await db.select({ createdAt: jobs.createdAt }).from(jobs).orderBy(desc(jobs.createdAt)).limit(1);
     const [latestDirectJob] = await db.select({ postedAt: directJobs.postedAt }).from(directJobs).orderBy(desc(directJobs.postedAt)).limit(1);
+    
+    // Category counts
+    const [unResult] = await db.select({ count: count() }).from(jobs).where(eq(jobs.category, 'un'));
+    const [ngoResult] = await db.select({ count: count() }).from(jobs).where(eq(jobs.category, 'ngo'));
+    const [remoteResult] = await db.select({ count: count() }).from(jobs).where(eq(jobs.category, 'remote'));
+    const [internationalResult] = await db.select({ count: count() }).from(jobs).where(eq(jobs.category, 'international'));
     
     const totalJobs = (totalResult?.count || 0) + (directJobsResult?.count || 0);
     const sourcesCount = (sourcesResult?.count || 0) + ((directJobsResult?.count || 0) > 0 ? 1 : 0);
@@ -173,6 +188,10 @@ export class DatabaseStorage implements IStorage {
       countriesCount: Math.min(locationResult?.count || 0, 193),
       sourcesCount,
       lastUpdated: lastUpdated.toISOString(),
+      unJobs: unResult?.count || 0,
+      ngoJobs: ngoResult?.count || 0,
+      remoteJobs: remoteResult?.count || 0,
+      internationalJobs: internationalResult?.count || 0,
     };
   }
 

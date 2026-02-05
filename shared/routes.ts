@@ -6,7 +6,7 @@ export type JobFilter = {
   search?: string;
   location?: string;
   remote?: boolean;
-  category?: "un" | "ngo" | "international";
+  category?: "un" | "ngo" | "remote" | "international";
 };
 
 export const api = {
